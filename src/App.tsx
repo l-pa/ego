@@ -1,25 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef } from "react";
+import "./App.css";
+import CSVReader from "react-csv-reader";
+import { Network } from "./objects/Network";
+import { Node } from "./objects/Node";
+import { Matrix } from "./objects/Matrix";
+import { ThemeProvider, CSSReset } from "@chakra-ui/core";
 
 function App() {
+  const network: Network = new Network([], []);
+  let matrix: Matrix;
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider>
+      <CSSReset />
+
+      <div className="App">
+        <CSVReader
+          onFileLoaded={(data, fileInfo) => {
+            console.log(fileInfo);
+            data.forEach((row) => {
+              network.addEdge(
+                new Node(row[0]),
+                new Node(row[1]),
+                Number.parseFloat(row[2])
+              );
+            });
+            matrix = new Matrix(network);
+            matrix.CalculateDependecy();
+          }}
+        />
+      </div>
+    </ThemeProvider>
   );
 }
 
