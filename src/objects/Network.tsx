@@ -11,7 +11,11 @@ export class Network {
   }
 
   /**
-   * addNode
+   * Adds a node to the network.
+   *
+   *
+   * @param node - Node to be added to the network.
+   *
    */
   public addNode(node: Node) {
     if (!this.Nodes.some((e) => e.Id === node.Id)) {
@@ -20,9 +24,14 @@ export class Network {
   }
 
   /**
-   * addEdge
+   * Adds an edge to the network.
+   *
+   * @param nodeA - First node of the edge.
+   * @param nodeB - Second node of the edge.
+   * @param weight - The edge weight.
+   *
    */
-  public addEdge(nodeA: Node, nodeB: Node, weight?: Number) {
+  public addEdge(nodeA: Node, nodeB: Node, weight?: number) {
     this.addNode(nodeA);
     this.addNode(nodeB);
 

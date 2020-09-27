@@ -3,9 +3,9 @@ import { Node } from "./Node";
 export class Edge {
   public NodeA: Node;
   public NodeB: Node;
-  public Weight: Number = 1;
+  public Weight: number = 1;
 
-  constructor(nodeA: Node, nodeB: Node, weight?: Number) {
+  constructor(nodeA: Node, nodeB: Node, weight?: number) {
     this.NodeA = nodeA;
     this.NodeB = nodeB;
 

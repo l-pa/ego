@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
 import { Network } from "./objects/Network";
