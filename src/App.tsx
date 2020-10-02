@@ -5,6 +5,7 @@ import { Network } from "./objects/Network";
 import { Node } from "./objects/Node";
 import { Matrix } from "./objects/Matrix";
 import { ThemeProvider, CSSReset } from "@chakra-ui/core";
+import { log } from "console";
 
 function App() {
   const network: Network = new Network([], []);
@@ -17,15 +18,25 @@ function App() {
         <CSVReader
           onFileLoaded={(data, fileInfo) => {
             console.log(fileInfo);
-            data.forEach((row) => {
+            for (let i = 0; i < data.length; i++) {
+              const element = data[i];
               network.addEdge(
-                new Node(row[0]),
-                new Node(row[1]),
-                Number.parseFloat(row[2])
+                new Node(element[0]),
+                new Node(element[1]),
+                Number.parseFloat(element[2])
               );
-            });
+            }
+            console.log(data[data.length - 1]);
+
             matrix = new Matrix(network);
-            matrix.CalculateDependecy();
+            matrix.calculateNodesDependency();
+
+            network.Nodes.forEach((node) => {
+              if (node.OwInDep.length > 0 && node.isProminent() === 0) {
+                console.log(node);
+              }
+            });
+            console.log(network.Nodes);
           }}
         />
       </div>

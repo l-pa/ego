@@ -4,8 +4,8 @@ import { Node } from "./Node";
 export class Matrix {
   private network: Network;
 
-  public AdjencyMatrix: number[][];
-  public CommonNeighbors: Node[][];
+  private AdjencyMatrix: number[][];
+  private CommonNeighbors: Node[][];
 
   constructor(network: Network) {
     this.network = network;
@@ -22,14 +22,14 @@ export class Matrix {
   }
 
   /**
-   * Calculates the boolean dependency matrix.
+   * Calculates the dependency matrix.
    *
    *
    * @param isDirected - If a network is directed ->
-   * @returns Boolean dependency matrix.
+   * @returns Dependency matrix.
    *
    */
-  public CalculateDependecy(isDirected: boolean = false) {
+  public calculateDependecy(isDirected: boolean = false): number[][] {
     this.network.Edges.forEach((edge) => {
       this.AdjencyMatrix[Number.parseInt(edge.NodeA.Id.toString())][
         Number.parseInt(edge.NodeB.Id.toString())
@@ -60,17 +60,85 @@ export class Matrix {
       this.CommonNeighbors[i] = column;
     }
 
-    let copyAdjencyMatrix = JSON.parse(JSON.stringify(this.AdjencyMatrix));
+    const DependencyMatrix: number[][] = new Array(
+      this.network.Nodes.length + 1
+    )
+      .fill(-1)
+      .map(() => new Array(this.network.Nodes.length + 1).fill(-1));
 
     this.network.Edges.forEach((edge) => {
-      copyAdjencyMatrix[Number.parseInt(edge.NodeA.Id.toString())][
+      DependencyMatrix[Number.parseInt(edge.NodeA.Id.toString())][
         Number.parseInt(edge.NodeB.Id.toString())
-      ] = this.Dependency(edge.NodeA, edge.NodeB);
-      copyAdjencyMatrix[Number.parseInt(edge.NodeB.Id.toString())][
-        Number.parseInt(edge.NodeA.Id.toString())
-      ] = this.Dependency(edge.NodeB, edge.NodeA);
+      ] = this.isDependent(edge.NodeA, edge.NodeB);
+      if (!isDirected) {
+        DependencyMatrix[Number.parseInt(edge.NodeB.Id.toString())][
+          Number.parseInt(edge.NodeA.Id.toString())
+        ] = this.isDependent(edge.NodeB, edge.NodeA);
+      }
     });
-    console.log(copyAdjencyMatrix);
+
+    console.log(DependencyMatrix);
+    return DependencyMatrix;
+  }
+
+  public calculateNodesDependency() {
+    const minNodeId = Math.min.apply(
+      Math,
+      this.network.Nodes.map(function (o) {
+        return o.Id;
+      })
+    );
+
+    const dependencyMatrix = this.calculateDependecy();
+
+    for (let i = minNodeId; i <= this.network.Nodes.length; i++) {
+      const node = dependencyMatrix[i];
+      for (let j = minNodeId; j <= node.length; j++) {
+        const dependency = node[j];
+
+        if (j !== i) {
+          if (dependency === 1 && dependencyMatrix[j][i] === 0) {
+            this.network.Nodes.filter(
+              (n) => Number.parseInt(n.Id.toString()) === i
+            )[0].OwDep.push(
+              this.network.Nodes.filter(
+                (n) => Number.parseInt(n.Id.toString()) === j
+              )[0]
+            );
+          }
+
+          if (dependency === 0 && dependencyMatrix[j][i] === 1) {
+            this.network.Nodes.filter(
+              (n) => Number.parseInt(n.Id.toString()) === i
+            )[0].OwInDep.push(
+              this.network.Nodes.filter(
+                (n) => Number.parseInt(n.Id.toString()) === j
+              )[0]
+            );
+          }
+
+          if (dependency === 1 && dependencyMatrix[j][i] === 1) {
+            this.network.Nodes.filter(
+              (n) => Number.parseInt(n.Id.toString()) === i
+            )[0].TwDep.push(
+              this.network.Nodes.filter(
+                (n) => Number.parseInt(n.Id.toString()) === j
+              )[0]
+            );
+          }
+
+          if (dependency === 0 && dependencyMatrix[j][i] === 0) {
+            this.network.Nodes.filter(
+              (n) => Number.parseInt(n.Id.toString()) === i
+            )[0].TwInDep.push(
+              this.network.Nodes.filter(
+                (n) => Number.parseInt(n.Id.toString()) === j
+              )[0]
+            );
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -84,7 +152,7 @@ export class Matrix {
    * @returns Weight between the nodeA and the nodeB.
    *
    */
-  private Weight(nodeA: Node, nodeB: Node): number {
+  private weight(nodeA: Node, nodeB: Node): number {
     const r = this.network.Edges.filter(
       (e) => e.NodeA.Id === nodeA.Id && e.NodeB.Id === nodeB.Id
     )[0];
@@ -104,9 +172,9 @@ export class Matrix {
    * @beta
    */
 
-  private R(nodeA: Node, commonNode: Node, nodeB: Node): number {
-    let y: number = this.Weight(commonNode, nodeB);
-    return y / (this.Weight(nodeA, commonNode) + y);
+  private r(nodeA: Node, commonNode: Node, nodeB: Node): number {
+    let y: number = this.weight(commonNode, nodeB);
+    return y / (this.weight(nodeA, commonNode) + y);
   }
 
   /**
@@ -122,8 +190,8 @@ export class Matrix {
    * @beta
    */
 
-  private Dependency(nodeA: Node, nodeB: Node): number {
-    const w = this.Weight(nodeA, nodeB);
+  private dependency(nodeA: Node, nodeB: Node): number {
+    const w = this.weight(nodeA, nodeB);
     const cN = this.CommonNeighbors[
       Number.parseInt(nodeA.Id.toString())
     ].filter((value) =>
@@ -134,11 +202,11 @@ export class Matrix {
     let cNSum = 0;
     let NSum = 0;
     cN.forEach((element) => {
-      cNSum += this.Weight(nodeA, element) * this.R(nodeA, element, nodeB);
+      cNSum += this.weight(nodeA, element) * this.r(nodeA, element, nodeB);
     });
 
     N.forEach((element) => {
-      NSum += this.Weight(nodeA, element);
+      NSum += this.weight(nodeA, element);
     });
 
     return (w + cNSum) / NSum;
@@ -149,7 +217,7 @@ export class Matrix {
    *
    * @param nodeA - The first node.
    * @param nodeB - The second node.
-   * @returns Boolean value if the nodeA is dependent on the nodeB.
+   * @returns Binary value if the nodeA is dependent on the nodeB.
    *
    */
 
@@ -157,7 +225,8 @@ export class Matrix {
     nodeA: Node,
     nodeB: Node,
     threshold: number = 0.5
-  ): boolean {
-    return this.Dependency(nodeA, nodeB) > threshold ? true : false;
+  ): number {
+    const d = this.dependency(nodeA, nodeB);
+    return d >= threshold ? 1 : 0;
   }
 }
