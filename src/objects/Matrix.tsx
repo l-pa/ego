@@ -24,12 +24,10 @@ export class Matrix {
   /**
    * Calculates the dependency matrix.
    *
-   *
-   * @param isDirected - If a network is directed ->
    * @returns Dependency matrix.
    *
    */
-  public calculateDependecy(isDirected: boolean = false): number[][] {
+  public calculateDependecy(): number[][] {
     this.network.Edges.forEach((edge) => {
       this.AdjencyMatrix[Number.parseInt(edge.NodeA.Id.toString())][
         Number.parseInt(edge.NodeB.Id.toString())
@@ -49,7 +47,7 @@ export class Matrix {
             )[0]
           );
         }
-        if (e2 !== 0 && !isDirected) {
+        if (e2 !== 0 && !this.network.Directed) {
           column.push(
             this.network.Nodes.filter(
               (e) => Number.parseInt(e.Id.toString()) === j
@@ -70,7 +68,7 @@ export class Matrix {
       DependencyMatrix[Number.parseInt(edge.NodeA.Id.toString())][
         Number.parseInt(edge.NodeB.Id.toString())
       ] = this.isDependent(edge.NodeA, edge.NodeB);
-      if (!isDirected) {
+      if (!this.network.Directed) {
         DependencyMatrix[Number.parseInt(edge.NodeB.Id.toString())][
           Number.parseInt(edge.NodeA.Id.toString())
         ] = this.isDependent(edge.NodeB, edge.NodeA);

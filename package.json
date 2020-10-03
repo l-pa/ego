@@ -9,6 +9,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "@types/cytoscape": "^3.14.7",
     "@types/jest": "^24.9.1",
     "@types/node": "^12.12.62",
     "@types/react": "^16.9.49",

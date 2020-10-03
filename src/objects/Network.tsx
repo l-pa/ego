@@ -4,10 +4,14 @@ import { Edge } from "./Edge";
 export class Network {
   public Nodes: Node[];
   public Edges: Edge[];
+  public Directed: boolean = false;
 
-  constructor(nodes: Node[], edges: Edge[]) {
+  constructor(nodes: Node[], edges: Edge[], directed?: boolean) {
     this.Edges = edges;
     this.Nodes = nodes;
+    if (directed) {
+      this.Directed = directed;
+    }
   }
 
   /**
@@ -35,6 +39,6 @@ export class Network {
     this.addNode(nodeA);
     this.addNode(nodeB);
 
-    this.Edges.push(new Edge(nodeA, nodeB, weight));
+    this.Edges.push(new Edge(nodeA, nodeB, this.Edges.length, weight));
   }
 }

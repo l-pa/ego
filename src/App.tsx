@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
 import { Network } from "./objects/Network";
 import { Node } from "./objects/Node";
 import { Matrix } from "./objects/Matrix";
 import { ThemeProvider, CSSReset } from "@chakra-ui/core";
-import { log } from "console";
+import { Graph } from "./components/Cytoscape";
 
 function App() {
-  const network: Network = new Network([], []);
-  let matrix: Matrix;
+  let network = new Network([], []);
+
+  const [graph, setGraph] = useState<Network>(new Network([], []));
+
   return (
     <ThemeProvider>
       <CSSReset />
@@ -17,6 +19,7 @@ function App() {
       <div className="App">
         <CSVReader
           onFileLoaded={(data, fileInfo) => {
+            network = new Network([], []);
             console.log(fileInfo);
             for (let i = 0; i < data.length; i++) {
               const element = data[i];
@@ -26,19 +29,13 @@ function App() {
                 Number.parseFloat(element[2])
               );
             }
-            console.log(data[data.length - 1]);
 
-            matrix = new Matrix(network);
-            matrix.calculateNodesDependency();
-
-            network.Nodes.forEach((node) => {
-              if (node.OwInDep.length > 0 && node.isProminent() === 0) {
-                console.log(node);
-              }
-            });
-            console.log(network.Nodes);
+            new Matrix(network).calculateNodesDependency();
+            setGraph(network);
           }}
         />
+
+        <Graph network={graph} />
       </div>
     </ThemeProvider>
   );
