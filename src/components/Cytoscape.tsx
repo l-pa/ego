@@ -2,6 +2,11 @@ import cytoscape, { ElementDefinition } from "cytoscape";
 import React, { useRef, useEffect } from "react";
 import "./style.css";
 import { Network } from "../objects/Network";
+import { Button } from "@chakra-ui/core";
+
+const cola = require("cytoscape-cola");
+
+cytoscape.use(cola);
 
 export const Graph: React.FunctionComponent<{
   network: Network;
@@ -24,7 +29,7 @@ export const Graph: React.FunctionComponent<{
             : "nonProminent",
       });
     });
-
+    /*
     network.Edges.forEach((edge, i) => {
       edges.current.push({
         data: {
@@ -33,20 +38,53 @@ export const Graph: React.FunctionComponent<{
         },
       });
     });
+    */
+
+    network.Nodes.forEach((node) => {
+      node.OwDep.forEach((owdep) => {
+        edges.current.push({
+          data: {
+            source: node.Id.toString(),
+            target: owdep.Id.toString(),
+          },
+          classes: "owdep",
+        });
+      });
+
+      node.OwInDep.forEach((owindep) => {
+        edges.current.push({
+          data: {
+            target: node.Id.toString(),
+            source: owindep.Id.toString(),
+          },
+          classes: "owindep",
+        });
+      });
+
+      node.TwDep.forEach((twdep) => {
+        edges.current.push({
+          data: {
+            source: node.Id.toString(),
+            target: twdep.Id.toString(),
+          },
+          classes: "twdep",
+        });
+      });
+
+      node.TwInDep.forEach((twindep) => {
+        edges.current.push({
+          data: {
+            source: node.Id.toString(),
+            target: twindep.Id.toString(),
+          },
+          classes: "twindep",
+        });
+      });
+    });
 
     graph.current = cytoscape({
       container: container.current,
       elements: [...nodes.current, ...edges.current],
-
-      layout: {
-        name: "cose",
-
-        fit: true,
-        padding: 30,
-        boundingBox: undefined,
-        animate: true,
-        animationDuration: 5000,
-      },
 
       style: [
         // the stylesheet for the graph
@@ -86,32 +124,40 @@ export const Graph: React.FunctionComponent<{
         {
           selector: ".owdep",
           style: {
-            "background-color": "lime",
-            label: "data(id)",
+            "line-color": "#ccc",
+            "target-arrow-color": "#ccc",
+            "target-arrow-shape": "triangle",
+            "curve-style": "straight",
           },
         },
 
         {
           selector: ".twdep",
           style: {
-            "background-color": "lime",
-            label: "data(id)",
+            "line-color": "purple",
+            "target-arrow-color": "purple",
+            "target-arrow-shape": "triangle",
+            "source-arrow-color": "purple",
+            "source-arrow-shape": "triangle",
+            "curve-style": "straight",
           },
         },
 
         {
           selector: ".owindep",
           style: {
-            "background-color": "lime",
-            label: "data(id)",
+            "line-color": "#ccc",
+            "target-arrow-color": "#ccc",
+            "target-arrow-shape": "triangle",
+            "curve-style": "straight",
           },
         },
 
         {
           selector: ".twindep",
           style: {
-            "background-color": "lime",
-            label: "data(id)",
+            "line-color": "grey",
+            "curve-style": "straight",
           },
         },
 
@@ -119,14 +165,13 @@ export const Graph: React.FunctionComponent<{
           selector: "edge",
           style: {
             width: 3,
-            "line-color": "#ccc",
-            "target-arrow-color": "#ccc",
-            "target-arrow-shape": "triangle",
-            "curve-style": "bezier",
           },
         },
       ],
     });
+
+    graph.current.elements().makeLayout({ name: "cola" }).start();
+
     return () => {
       console.log("destroy");
       graph.current && graph.current.destroy();
@@ -135,5 +180,9 @@ export const Graph: React.FunctionComponent<{
     };
   }, [network]);
 
-  return <div className="graph" ref={container} />;
+  return (
+    <div>
+      <div className="graph" ref={container}></div>
+    </div>
+  );
 };
