@@ -2,7 +2,7 @@ import cytoscape, { ElementDefinition } from "cytoscape";
 import React, { useRef, useEffect } from "react";
 import "./style.css";
 import { Network } from "../objects/Network";
-import { Button } from "@chakra-ui/core";
+import { Zone } from "../objects/Zone";
 
 const cola = require("cytoscape-cola");
 
@@ -172,8 +172,15 @@ export const Graph: React.FunctionComponent<{
 
     graph.current.elements().makeLayout({ name: "cola" }).start();
 
+    graph.current.on("mouseover", "node", (event) => {
+      new Zone(
+        network.Nodes.filter(
+          (e) => e.Id.toString() === event.target._private.data.id
+        )[0]
+      );
+    });
+
     return () => {
-      console.log("destroy");
       graph.current && graph.current.destroy();
       nodes.current = [];
       edges.current = [];
