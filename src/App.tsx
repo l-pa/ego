@@ -23,28 +23,38 @@ function App() {
       <CSSReset />
       <ZoneContext.Provider value={{ zones: zones.current }}>
         <div className="App">
-          <Stack>
-            <Stack align="center" direction="row" justify="center">
-              <CSVReader
-                onFileLoaded={(data, fileInfo) => {
-                  network = new Network([], []);
-                  console.log(fileInfo);
-                  for (let i = 0; i < data.length; i++) {
-                    const element = data[i];
-                    network.addEdge(
-                      new Node(element[0]),
-                      new Node(element[1]),
-                      Number.parseFloat(element[2])
-                    );
-                  }
-                  new Matrix(network).calculateNodesDependency();
-                  setGraph(network);
-                }}
-              />
-            </Stack>
+          <Stack paddingTop="3vh" display="flex" direction="row" justifyContent="flex-end">
+            <Stack
+              position="absolute"
+              width="20vw"
+              direction="column"
+            >
+            {zones.current.map((component, i) => <div key={i}>{component.Ego.Id}</div>)}    
 
+            </Stack>
             <Stack>
-              <Graph network={graph} />
+              <Stack align="center" direction="row" justify="center">
+              </Stack>
+
+              <Stack display="inline">
+                <CSVReader
+                  onFileLoaded={(data, fileInfo) => {
+                    network = new Network([], []);
+                    console.log(fileInfo);
+                    for (let i = 0; i < data.length; i++) {
+                      const element = data[i];
+                      network.addEdge(
+                        new Node(element[0]),
+                        new Node(element[1]),
+                        Number.parseFloat(element[2])
+                      );
+                    }
+                    new Matrix(network).calculateNodesDependency();
+                    setGraph(network);
+                  }}
+                />
+                <Graph network={graph} />
+              </Stack>
             </Stack>
           </Stack>
         </div>

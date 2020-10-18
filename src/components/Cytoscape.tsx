@@ -4,11 +4,6 @@ import "./style.css";
 import { Network } from "../objects/Network";
 import { Zone } from "../objects/Zone";
 import { ZoneContext } from "../context/ZoneContext";
-import {
-  BubbleSetPath,
-  bubbleSets,
-  BubbleSetsPlugin,
-} from "cytoscape-bubblesets";
 
 import {
   Button,
@@ -17,14 +12,17 @@ import {
   SliderFilledTrack,
   SliderThumb,
   SliderTrack,
-  Box,
+  Spinner
 } from "@chakra-ui/core";
 
 const cola = require("cytoscape-cola");
 
 const iwanthue = require("iwanthue");
 
+const cycanvas = require("cytoscape-canvas");
+
 cytoscape.use(cola);
+cytoscape.use(cycanvas);
 
 export const Graph: React.FunctionComponent<{
   network: Network;
@@ -37,9 +35,10 @@ export const Graph: React.FunctionComponent<{
   const nodes = useRef<ElementDefinition[]>([]);
   const edges = useRef<ElementDefinition[]>([]);
 
-  const bubbleSetPlugin = useRef<BubbleSetsPlugin>();
-
   const zoneContext = useContext(ZoneContext);
+
+  const isGeneratingZones = useRef<boolean>(false);
+
 
   useEffect(() => {
     network.Nodes.forEach((node) => {
@@ -222,7 +221,6 @@ export const Graph: React.FunctionComponent<{
       .makeLayout({ name: "cola", randomize: true, padding: 30 })
       .start();
 
-    bubbleSetPlugin.current = new BubbleSetsPlugin(graph.current);
 
     graph.current.on("mouseover", "node", (event) => {
       if (graph.current) {
@@ -285,7 +283,6 @@ export const Graph: React.FunctionComponent<{
               (e) => e.Id === event.target._private.data.id
             )[0],
             graph.current,
-            bubbleSetPlugin.current,
             iwanthue(nodes.current.length)[event.target._private.data.id]
           )
         );
@@ -306,6 +303,7 @@ export const Graph: React.FunctionComponent<{
       <Stack align="center" isInline={true} spacing="10" justify="center">
         <Button
           onClick={() => {
+
             zoneContext.zones.forEach((z) => {
               z.clearPath();
             });
@@ -316,7 +314,6 @@ export const Graph: React.FunctionComponent<{
                   new Zone(
                     n,
                     graph.current,
-                    bubbleSetPlugin.current,
                     iwanthue(nodes.current.length)[n.Id - 1],
                     alpha.current
                   )
@@ -325,7 +322,9 @@ export const Graph: React.FunctionComponent<{
             });
           }}
         >
-          Prominent zones
+          {
+            !isGeneratingZones.current ? "Prominent zones" : <Spinner/>
+          }
         </Button>
 
         <Button
