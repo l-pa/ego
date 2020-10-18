@@ -1,6 +1,10 @@
-export class Node {
+import { NodeCollection, NodeDefinition } from "cytoscape";
+
+export class Node implements NodeDefinition {
   public Id: number;
   public Label?: string;
+
+  public data = {};
 
   public OwDep: Node[] = [];
   public OwInDep: Node[] = [];
@@ -10,6 +14,7 @@ export class Node {
   constructor(id: number, label?: string) {
     this.Id = id;
     this.Label = label;
+    this.data = {   id: id   };
   }
 
   /**
