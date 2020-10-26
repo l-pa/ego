@@ -1,4 +1,4 @@
-import { NodeCollection, NodeDefinition } from "cytoscape";
+import { NodeDefinition } from "cytoscape";
 
 export class Node implements NodeDefinition {
   public Id: number;

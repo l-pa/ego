@@ -1,44 +1,53 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
-import React, { useRef, useEffect, useContext } from "react";
+import React, { useRef, useEffect, useContext, useState } from "react";
 import "./style.css";
 import { Network } from "../objects/Network";
 import { Zone } from "../objects/Zone";
-import { ZoneContext } from "../context/ZoneContext";
+import { AppContext } from "../context/ZoneContext";
 
-import {
-  Button,
-  Stack,
-  Slider,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderTrack,
-  Spinner
-} from "@chakra-ui/core";
+import { Types } from "../reducers";
+import { GraphContext } from "../context/GraphContext";
 
 const cola = require("cytoscape-cola");
+const cise = require("cytoscape-cise");
+const cose = require("cytoscape-cose-bilkent");
+const fcose = require("cytoscape-fcose");
+
+const automove = require("cytoscape-automove");
+
+
+
 
 const iwanthue = require("iwanthue");
 
 const cycanvas = require("cytoscape-canvas");
 
 cytoscape.use(cola);
+cytoscape.use(cise);
+cytoscape.use(cose);
+cytoscape.use(fcose);
+
+cytoscape.use(automove);
 cytoscape.use(cycanvas);
+
 
 export const Graph: React.FunctionComponent<{
   network: Network;
 }> = ({ network }) => {
+  
+  const {dispatch, state} = useContext(AppContext)
+  const {graphDispatch,graphState} = useContext(GraphContext)
+
+  
   const graph = useRef<cytoscape.Core>();
   const container = useRef<HTMLDivElement>(null);
+
+//  const [zones, setZones] = useState<Zone[]>([]);
 
   const alpha = useRef<string>();
 
   const nodes = useRef<ElementDefinition[]>([]);
   const edges = useRef<ElementDefinition[]>([]);
-
-  const zoneContext = useContext(ZoneContext);
-
-  const isGeneratingZones = useRef<boolean>(false);
-
 
   useEffect(() => {
     network.Nodes.forEach((node) => {
@@ -111,6 +120,51 @@ export const Graph: React.FunctionComponent<{
           classes: "twindep",
         });
       });
+
+      edges.current.forEach(e => {
+
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === 1 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === 1) {
+          e.classes = e.classes + " wptowp"
+        }
+
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === 0 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === 0) {
+          e.classes = e.classes + " sptosp"
+        }
+
+        
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === -1 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === -1) {
+          e.classes = e.classes + " nptonp"
+        }
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === 0 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === 1) {
+          e.classes = e.classes + " sptowp"
+        }
+
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === 1 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === 0) {
+          e.classes = e.classes + " sptowp"
+        }
+
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === -1 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === 1) {
+          e.classes = e.classes + " wptonp"
+        }
+
+        
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === 1 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === -1) {
+          e.classes = e.classes + " wptonp"
+        }
+
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === -1 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === 0) {
+          e.classes = e.classes + " sptonp"
+        }
+
+        if (network.Nodes.filter(n => n.Id === e.data.source)[0].isProminent() === 0 && network.Nodes.filter(n => n.Id === e.data.target)[0].isProminent() === -1) {
+          e.classes = e.classes + " sptonp"
+        }
+
+
+
+        
+      })
+
     });
 
     graph.current = cytoscape({
@@ -170,29 +224,79 @@ export const Graph: React.FunctionComponent<{
         {
           selector: ".owdep",
           style: {
-            "line-color": "#ccc",
-            "target-arrow-color": "#ccc",
             "target-arrow-shape": "triangle",
             "curve-style": "straight",
+          },
+        },
+
+        {
+          selector: ".hide",
+          style: {
+            display: "none"
+          },
+        },
+
+        {
+          selector: ".show",
+          style: {
+            display: "displayed"
           },
         },
 
         {
           selector: ".twdep",
           style: {
-            "line-color": "purple",
-            "target-arrow-color": "purple",
             "target-arrow-shape": "triangle",
-            "source-arrow-color": "purple",
             "source-arrow-shape": "triangle",
             "curve-style": "straight",
           },
         },
 
         {
+          selector: ".sptowp",
+          style: {
+            "line-color": "orange",
+          },
+        },
+
+        {
+          selector: ".sptosp",
+          style: {
+            "line-color": "red",
+          },
+        },
+
+        {
+          selector: ".wptowp",
+          style: {
+            "line-color": "yellow",
+          },
+        },
+
+        {
+          selector: ".wptonp",
+          style: {
+            "line-color": "lime",
+          },
+        },
+
+        {
+          selector: ".sptonp",
+          style: {
+            "line-color": "brown",
+          },
+        },
+
+        {
+          selector: ".nptonp",
+          style: {
+            "line-color": "green",
+          },
+        },
+
+        {
           selector: ".owindep",
           style: {
-            "line-color": "#ccc",
             "target-arrow-color": "#ccc",
             "target-arrow-shape": "triangle",
             "curve-style": "straight",
@@ -202,9 +306,9 @@ export const Graph: React.FunctionComponent<{
         {
           selector: ".twindep",
           style: {
-            "line-color": "grey",
             "curve-style": "straight",
           },
+          
         },
 
         {
@@ -216,13 +320,20 @@ export const Graph: React.FunctionComponent<{
       ],
     });
 
+    graphDispatch({
+      type:Types.Add,
+      payload:{
+        graph:graph.current
+      }
+    })
+    
     graph.current
       .elements()
-      .makeLayout({ name: "cola", randomize: true, padding: 30 })
+      .makeLayout({ name: "cose-bilkent" })
       .start();
 
-
     graph.current.on("mouseover", "node", (event) => {
+      
       if (graph.current) {
         const z = new Zone(
           network.Nodes.filter(
@@ -265,32 +376,51 @@ export const Graph: React.FunctionComponent<{
 
     graph.current.on("mouseout", "node", (event) => {
       if (graph.current) {
+        
         graph.current.elements("node").forEach((element) => {
           element.classes(element.data().nodeType);
         });
+        
       }
     });
 
-    graph.current.on("click", "node", function (event) {
-      if (
-        zoneContext.zones.filter(
-          (e) => e.Ego.Id === event.target._private.data.id
-        ).length < 1
-      ) {
-        zoneContext.zones.push(
-          new Zone(
-            network.Nodes.filter(
-              (e) => e.Id === event.target._private.data.id
-            )[0],
-            graph.current,
-            iwanthue(nodes.current.length)[event.target._private.data.id]
-          )
-        );
+    graph.current.on("click", "node", function (event) {      
+      const z = new Zone(network.Nodes.filter(
+        (e) => e.Id === event.target._private.data.id
+      )[0], graph.current
+      )
+      
+      dispatch({
+        type: Types.Add,
+        payload: {
+          zone: z 
       }
+      })
+      z.drawZone()
+     
+/*
+
+      zoneContext.setZones((a) => {
+        if (
+          a.filter((e) => e.Ego.Id === event.target._private.data.id).length < 1
+        ) {
+          return [
+            ...a,
+            new Zone(
+              network.Nodes.filter(
+                (e) => e.Id === event.target._private.data.id
+              )[0]
+            ),
+          ];
+        } else {
+          return a;
+        }
+      });*/
     });
 
     return () => {
       if (graph.current) {
+        graph.current.off('click mouseout mousein')
         graph.current.destroy();
       }
       nodes.current = [];
@@ -300,65 +430,6 @@ export const Graph: React.FunctionComponent<{
 
   return (
     <div>
-      <Stack align="center" isInline={true} spacing="10" justify="center">
-        <Button
-          onClick={() => {
-
-            zoneContext.zones.forEach((z) => {
-              z.clearPath();
-            });
-            zoneContext.zones = [];
-            network.Nodes.forEach((n) => {
-              if (n.isProminent() === 0 || n.isProminent() === 1) {
-                zoneContext.zones.push(
-                  new Zone(
-                    n,
-                    graph.current,
-                    iwanthue(nodes.current.length)[n.Id - 1],
-                    alpha.current
-                  )
-                );
-              }
-            });
-          }}
-        >
-          {
-            !isGeneratingZones.current ? "Prominent zones" : <Spinner/>
-          }
-        </Button>
-
-        <Button
-          onClick={() => {
-            zoneContext.zones.forEach((z) => {
-              z.clearPath();
-            });
-            zoneContext.zones = [];
-          }}
-        >
-          Clear zones
-        </Button>
-        <Slider
-          color="pink"
-          defaultValue={50}
-          width={250}
-          onChange={(val) => {
-            alpha.current = Number.parseInt(
-              (255 * (val / 100)).toString()
-            ).toString(16);
-
-            zoneContext.zones.forEach((z) => {
-              if (alpha.current) {
-                z.Alpha = alpha.current;
-                z.updatePath();
-              }
-            });
-          }}
-        >
-          <SliderTrack />
-          <SliderFilledTrack />
-          <SliderThumb />
-        </Slider>
-      </Stack>
       <div className="graph" ref={container}></div>
     </div>
   );

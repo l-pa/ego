@@ -1,65 +1,80 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
 import { Network } from "./objects/Network";
 import { Node } from "./objects/Node";
 import { Matrix } from "./objects/Matrix";
-import { Zone } from "./objects/Zone";
-import { ZoneContext } from "./context/ZoneContext";
+import { AppProvider, AppContext } from "./context/ZoneContext";
+import { GraphContext, GraphProvider } from "./context/GraphContext";
 
-import { ThemeProvider, CSSReset, Stack, Button } from "@chakra-ui/core";
+import { ThemeProvider, CSSReset, Stack } from "@chakra-ui/core";
 import { Graph } from "./components/Cytoscape";
+import { UI } from "./components/UI";
+import { getTokenSourceMapRange } from "typescript";
 
 function App() {
-  let network = new Network([], []);
+  const [graph, setGraph] = useState<Network>();
 
-  const [graph, setGraph] = useState<Network>(new Network([], []));
-
-  // const [zones, setZones] = useState<Zone[]>([]);
-  const zones = useRef<Zone[]>([]);
+  console.log("app rerender");
 
   return (
-    <ThemeProvider>
-      <CSSReset />
-      <ZoneContext.Provider value={{ zones: zones.current }}>
-        <div className="App">
-          <Stack paddingTop="3vh" display="flex" direction="row" justifyContent="flex-end">
+    <AppProvider>
+      <GraphProvider>
+        <ThemeProvider>
+          <CSSReset />
+          <div className="App">
             <Stack
-              position="absolute"
-              width="20vw"
-              direction="column"
+              paddingTop="1vh"
+              display="flex"
+              direction="row"
+              justifyContent="center"
             >
-            {zones.current.map((component, i) => <div key={i}>{component.Ego.Id}</div>)}    
+              <Stack
+                position="absolute"
+                width="20vw"
+                direction="column"
+                zIndex={1}
+              ></Stack>
+              <Stack>
+                <Stack align="center" direction="row" justify="center"></Stack>
 
-            </Stack>
-            <Stack>
-              <Stack align="center" direction="row" justify="center">
-              </Stack>
+                <Stack display="inline">
+                  <Stack
+                    align="center"
+                    isInline={true}
+                    spacing="10"
+                    justify="center"
+                  >
+                    {graph && <UI network={graph} />}
+                  </Stack>
+                  {!graph && (
+                    <CSVReader
+                      onFileLoaded={(data, fileInfo) => {
+                        console.log(fileInfo);
 
-              <Stack display="inline">
-                <CSVReader
-                  onFileLoaded={(data, fileInfo) => {
-                    network = new Network([], []);
-                    console.log(fileInfo);
-                    for (let i = 0; i < data.length; i++) {
-                      const element = data[i];
-                      network.addEdge(
-                        new Node(element[0]),
-                        new Node(element[1]),
-                        Number.parseFloat(element[2])
-                      );
-                    }
-                    new Matrix(network).calculateNodesDependency();
-                    setGraph(network);
-                  }}
-                />
-                <Graph network={graph} />
+                        let network = new Network([], []);
+
+                        for (let i = 0; i < data.length; i++) {
+                          const element = data[i];
+                          network.addEdge(
+                            new Node(element[0]),
+                            new Node(element[1]),
+                            Number.parseFloat(element[2])
+                          );
+                        }
+                        new Matrix(network).calculateNodesDependency();
+                        setGraph(network);
+                      }}
+                    />
+                  )}
+                  {graph && <Graph network={graph} />}
+                </Stack>
               </Stack>
             </Stack>
-          </Stack>
-        </div>
-      </ZoneContext.Provider>
-    </ThemeProvider>
+          </div>
+        </ThemeProvider>
+      </GraphProvider>
+    </AppProvider>
   );
 }
 

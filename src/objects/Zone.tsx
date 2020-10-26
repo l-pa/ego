@@ -2,9 +2,7 @@ import { Node } from "./Node";
 import cytoscape, {
   Collection,
   CollectionReturnValue,
-  Core,
   NodeSingular,
-  Singular,
 } from "cytoscape";
 import { Vector } from "./Vector";
 
@@ -13,9 +11,17 @@ export class Zone {
   public innerZoneNodes: Node[];
   public outerZoneNodes: Node[][];
 
-  private cy?: cytoscape.Core;
-  private color: string = "#fffff";
+  private cy?: cytoscape.Core | any;
+  private color: string = "#" + (((1 << 24) * Math.random()) | 0).toString(16);
   private alpha: string = "80";
+  private isDrawn: boolean = false;
+
+  private isZoneShown: boolean = true;
+  private areShownNodes: boolean = false;
+
+  private automove : any
+  private enableAutomove : boolean = false
+
 
   private layer: any;
   private canvas: any;
@@ -26,14 +32,10 @@ export class Zone {
 
   private hull: NodeSingular[] = [];
 
-  private d = 10;
+  private label: string = "";
 
-  constructor(ego: Node, cy?: any, color?: string, alpha?: string) {
+  constructor(ego: Node, cy?: any, alpha?: string) {
     this.Ego = ego;
-
-    if (color) {
-      this.color = color;
-    }
 
     if (alpha) {
       this.alpha = alpha;
@@ -84,7 +86,7 @@ export class Zone {
         );
       });
 
-      let allCollection = cy.collection();
+      let allCollection: cytoscape.Collection = cy.collection();
       allCollection = allCollection.union(this.insideCollection);
       allCollection = allCollection.union(this.outsideCollection);
 
@@ -94,6 +96,117 @@ export class Zone {
 
   public set Alpha(alpha: string) {
     this.alpha = alpha;
+
+    if (this.isZoneShown) {
+      this.updatePath();
+    }
+  }
+
+  public get IsDrawn() {
+    return this.isDrawn;
+  }
+
+  public get InsideCollection() {
+    return this.insideCollection;
+  }
+
+  public get OutsideCollection() {
+    return this.outsideCollection;
+  }
+
+  
+  public get Label() {
+    return this.label;
+  }
+
+  public set Label(label: string) {
+    this.label = label;
+    this.updatePath();
+  }
+
+  public set EnableAutomove(enable: boolean) {
+      if (enable) {
+        this.automove.enable()
+      } else{
+        this.automove.disable()
+      }
+  }
+
+  public get AreShownNodes() {
+    return this.areShownNodes;
+  }
+
+  public get IsZoneShown() {
+    return this.isZoneShown;
+  }
+
+  public set AreShownNodes(show: boolean) {
+    this.areShownNodes = show;
+  }
+
+  public set IsZoneShown(show: boolean) {
+    this.isZoneShown = show;
+
+    if (this.isZoneShown) {
+      this.drawZone();
+    } else {
+      this.clearPath();
+    }
+  }
+
+  public set Cy(
+    cy: cytoscape.Core | any
+  ) {
+    this.cy = cy;
+
+    this.layer = cy.cyCanvas({ zIndex: -1 });
+    this.canvas = this.layer.getCanvas();
+    this.ctx = this.canvas.getContext("2d");
+
+    this.insideCollection = cy.collection();
+    this.outsideCollection = cy.collection();
+
+    //   let insideCollectionEdges = cy.collection();
+    //   let outsideCollectionEdges = cy.collection();
+
+    this.innerZoneNodes.forEach((node) => {
+      this.insideCollection = this.insideCollection.union(
+        cy.nodes(`[id ='${node.Id.toString()}']`)[0]
+      );
+      /*        insideCollectionEdges = insideCollectionEdges.union(
+        cy.edges(`[source ='${node.Id.toString()}']`)
+      );
+
+      insideCollectionEdges = insideCollectionEdges.union(
+        cy.edges(`[target ='${node.Id.toString()}']`)
+      );
+      */
+    });
+
+    this.outerZoneNodes[0].forEach((node) => {
+      this.outsideCollection = this.outsideCollection.union(
+        cy.nodes(`[id ='${node.Id.toString()}']`)[0]
+      );
+    });
+
+    this.outerZoneNodes[1].forEach((node) => {
+      this.outsideCollection = this.outsideCollection.union(
+        cy.nodes(`[id ='${node.Id.toString()}']`)[0]
+      );
+    });
+
+    let allCollection = cy.collection();
+    allCollection = allCollection.union(this.insideCollection);
+    allCollection = allCollection.union(this.outsideCollection);
+  }
+
+  public set Color(color: string) {
+    this.color = color;
+    this.updatePath();
+  }
+
+  public get Color() {
+    return this.color;
   }
 
   public get Alpha() {
@@ -104,9 +217,21 @@ export class Zone {
     this.calc(this.insideCollection.union(this.outsideCollection));
   }
 
+  public applyLayout(layout : string, params: object) {    
+    this.insideCollection.union(this.outsideCollection).layout({ name: layout, ...params }).start()
+  }
+
   public clearPath() {
-    this.cy?.off("render cyCanvas.resize");
-    this.layer.clear(this.ctx);
+    if (this.isDrawn) {
+      this.isDrawn = false;
+      this.cy?.off("render cyCanvas.resize");
+      this.layer.clear(this.ctx);
+      
+      this.cy.automove('destroy');
+
+    } else {
+      console.log("Nothing to clear");
+    }
   }
 
   private subtract([x1, y1]: any, [x2, y2]: any) {
@@ -118,12 +243,39 @@ export class Zone {
   }
 
   public drawZone() {
-    if (this.cy) {
-      this.cy.on("render cyCanvas.resize", (evt) => {
-        this.calc(this.insideCollection.union(this.outsideCollection));
-      });
+    if (!this.isDrawn) {
+      this.isDrawn = true;
+      
+      if (this.cy) {
+        
+        this.insideCollection
+          .union(this.outsideCollection)
+          .makeLayout({ name: "cose-bilkent" })
+          .start();
+
+
+        this.automove = this.cy.automove({
+          nodesMatching: this.insideCollection.subtract(this.insideCollection[0]).union(this.outsideCollection),
+
+          reposition: "drag",
+          
+					dragWith: this.insideCollection[0]
+        });
+
+        this.automove.disable()
+
+
+        this.cy.on("render cyCanvas.resize", (evt : cytoscape.EventObject) => {
+          this.calc(this.insideCollection.union(this.outsideCollection));
+        });
+        this.updatePath();
+      } else {
+        throw new Error(
+          "Add cytoscape instance to initialize BubbleSets plugin"
+        );
+      }
     } else {
-      throw new Error("Add cytoscape instance to initialize BubbleSets plugin");
+      console.log("Already drawn");
     }
   }
 
@@ -176,8 +328,8 @@ export class Zone {
       }
 
       index += 1;
-      if (index == allCollection.length) {
-        if (nextVertex == leftMost) {
+      if (index === allCollection.length) {
+        if (nextVertex === leftMost) {
           isRunning = false;
         } else {
           this.hull.push(nextVertex);
@@ -188,17 +340,6 @@ export class Zone {
       }
     }
     this.ctx.fillStyle = this.color + this.alpha;
-    /*
-    // Draw fixed elements
-    this.ctx.fillRect(0, 0, 100, 100); // Top left corner
-  
-    this.layer.setTransform(this.ctx);
-  
-    // Draw model elements
-   insideCollection.forEach((node) => {
-      let pos = node.position();
-      this.ctx.fillRect(pos.x, pos.y, 20, 20); // At node position
-    });*/
 
     this.ctx.save();
 
@@ -226,11 +367,7 @@ export class Zone {
         y
       );
 
-      this.ctx.lineTo(
-        x + v1[0] * 1.25 + v2[0] * 1.25,
-        y + v1[1] * 1.25 + v2[1] * 1.25
-      );
-      // this.ctx.quadraticCurveTo( x, y+50,x,y );
+      this.ctx.quadraticCurveTo(x + 100 * v1[0], y + 100 * v1[1], x, y);
     }
 
     this.ctx.closePath();
@@ -242,8 +379,11 @@ export class Zone {
 
     this.ctx.font = "24px Helvetica";
     this.ctx.fillStyle = "black";
-    this.ctx.fillText("This text follows the model", topNode[0].position().x - 10, topNode[0].position().y - 25);
-
+    this.ctx.fillText(
+      this.label,
+      topNode[0].position().x - 10,
+      topNode[0].position().y - 25
+    );
   }
 
   private innerZone(node: Node) {
