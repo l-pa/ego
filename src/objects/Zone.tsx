@@ -12,16 +12,19 @@ export class Zone {
   public outerZoneNodes: Node[][];
 
   private cy?: cytoscape.Core | any;
-  private color: string = "#" + (((1 << 24) * Math.random()) | 0).toString(16);
+  private color: string = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+
   private alpha: string = "80";
   private isDrawn: boolean = false;
 
   private isZoneShown: boolean = true;
   private areShownNodes: boolean = false;
 
-  private automove : any
-  private enableAutomove : boolean = false
+  private zIndex: number = -1;
 
+
+  private automove: any;
+  private enableAutomove: boolean = false;
 
   private layer: any;
   private canvas: any;
@@ -50,7 +53,7 @@ export class Zone {
     if (cy) {
       this.cy = cy;
 
-      this.layer = cy.cyCanvas({ zIndex: -1 });
+      this.layer = cy.cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
 
@@ -95,10 +98,21 @@ export class Zone {
   }
 
   public set Alpha(alpha: string) {
-    this.alpha = alpha;
+    this.alpha = alpha.padStart(2, '0');
 
     if (this.isZoneShown) {
       this.updatePath();
+    }
+  }
+
+  public set Zindex(index: number) {
+    this.zIndex = index
+    this.clearPath()
+    if (this.isZoneShown) {
+      this.layer = this.cy.cyCanvas({ zIndex: this.zIndex });
+      this.canvas = this.layer.getCanvas();
+      this.ctx = this.canvas.getContext("2d");
+      this.drawZone();
     }
   }
 
@@ -114,7 +128,6 @@ export class Zone {
     return this.outsideCollection;
   }
 
-  
   public get Label() {
     return this.label;
   }
@@ -125,11 +138,11 @@ export class Zone {
   }
 
   public set EnableAutomove(enable: boolean) {
-      if (enable) {
-        this.automove.enable()
-      } else{
-        this.automove.disable()
-      }
+    if (enable) {
+      this.automove.enable();
+    } else {
+      this.automove.disable();
+    }
   }
 
   public get AreShownNodes() {
@@ -154,12 +167,10 @@ export class Zone {
     }
   }
 
-  public set Cy(
-    cy: cytoscape.Core | any
-  ) {
+  public set Cy(cy: cytoscape.Core | any) {
     this.cy = cy;
 
-    this.layer = cy.cyCanvas({ zIndex: -1 });
+    this.layer = cy.cyCanvas({ zIndex: this.zIndex });
     this.canvas = this.layer.getCanvas();
     this.ctx = this.canvas.getContext("2d");
 
@@ -217,8 +228,11 @@ export class Zone {
     this.calc(this.insideCollection.union(this.outsideCollection));
   }
 
-  public applyLayout(layout : string, params: object) {    
-    this.insideCollection.union(this.outsideCollection).layout({ name: layout, ...params }).start()
+  public applyLayout(layout: string, params: object) {
+    this.insideCollection
+      .union(this.outsideCollection)
+      .layout({ name: layout, ...params })
+      .start();
   }
 
   public clearPath() {
@@ -226,9 +240,8 @@ export class Zone {
       this.isDrawn = false;
       this.cy?.off("render cyCanvas.resize");
       this.layer.clear(this.ctx);
-      
-      this.cy.automove('destroy');
 
+      this.cy.automove("destroy");
     } else {
       console.log("Nothing to clear");
     }
@@ -245,27 +258,21 @@ export class Zone {
   public drawZone() {
     if (!this.isDrawn) {
       this.isDrawn = true;
-      
+
       if (this.cy) {
-        
-        this.insideCollection
-          .union(this.outsideCollection)
-          .makeLayout({ name: "cose-bilkent" })
-          .start();
-
-
         this.automove = this.cy.automove({
-          nodesMatching: this.insideCollection.subtract(this.insideCollection[0]).union(this.outsideCollection),
+          nodesMatching: this.insideCollection
+            .subtract(this.insideCollection[0])
+            .union(this.outsideCollection),
 
           reposition: "drag",
-          
-					dragWith: this.insideCollection[0]
+
+          dragWith: this.insideCollection[0],
         });
 
-        this.automove.disable()
+        this.automove.disable();
 
-
-        this.cy.on("render cyCanvas.resize", (evt : cytoscape.EventObject) => {
+        this.cy.on("render cyCanvas.resize", (evt: cytoscape.EventObject) => {
           this.calc(this.insideCollection.union(this.outsideCollection));
         });
         this.updatePath();

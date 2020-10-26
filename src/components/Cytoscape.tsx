@@ -16,8 +16,6 @@ const fcose = require("cytoscape-fcose");
 const automove = require("cytoscape-automove");
 
 
-
-
 const iwanthue = require("iwanthue");
 
 const cycanvas = require("cytoscape-canvas");

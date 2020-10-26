@@ -127,15 +127,18 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
         <AccordionItem defaultIsOpen={false}>
           <AccordionHeader>
             <Box flex="1" textAlign="left">
-              <Text fontSize="md">Modify</Text>
+              <Text fontSize="md"></Text>
             </Box>
             <AccordionIcon />
           </AccordionHeader>
           <AccordionPanel pb={4}>
-
-            <Input onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              zone.Label = e.target.value
-            }} style={{color:"black"}} placeholder="Label" />
+            <Input
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                zone.Label = e.target.value;
+              }}
+              style={{ color: "black" }}
+              placeholder="Label"
+            />
 
             <Slider
               color="pink"
@@ -168,32 +171,26 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
               >
                 Delete
               </Button>
+            </ButtonGroup>
+            <Stack
+              mt={5}
+              display="flex"
+              justifyContent="center"
+              align={"center"}
+              isInline={true}
+            >
+              <Checkbox defaultIsChecked={false} onChange={(e) => {}}>
+                Nodes
+              </Checkbox>
 
-              <Button
-                variantColor="white"
-                variant="outline"
-                onClick={() => {
-                  zoneContext.dispatch({
-                    type: Types.Layout,
-                    payload: {
-                      zone: zone,
-                      layout:"cola",
-                      params: {flow: { axis: 'y', minSeparation: 30 }, nodeSpacing: function( node:cytoscape.ElementDefinition ){ return 10; }, randomize: true, boundingBox: zone.InsideCollection.union(zone.OutsideCollection).boundingBox({})}
-                    },
-                  });
+              <Checkbox
+                defaultIsChecked={true}
+                onChange={(e) => {
+                  zone.IsZoneShown = e.target.checked;
                 }}
               >
-                Layout
-              </Button>
-            </ButtonGroup>
-            <Stack mt={5} display="flex" justifyContent="center" align={"center"} isInline={true}>
-
-            <Checkbox defaultIsChecked={false} onChange={(e) => {
-            }}>Nodes</Checkbox>
-
-            <Checkbox defaultIsChecked={true} onChange={(e) => {
-              zone.IsZoneShown = e.target.checked
-            }}>Zone</Checkbox>
+                Zone
+              </Checkbox>
             </Stack>
           </AccordionPanel>
         </AccordionItem>
