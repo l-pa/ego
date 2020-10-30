@@ -27,7 +27,7 @@ export class Matrix {
    * @returns Dependency matrix.
    *
    */
-  public calculateDependecy(): number[][] {
+  public dependencyMatrix(): number[][] {
     this.network.Edges.forEach((edge) => {
       this.AdjencyMatrix[Number.parseInt(edge.NodeA.Id.toString())][
         Number.parseInt(edge.NodeB.Id.toString())
@@ -79,7 +79,7 @@ export class Matrix {
     return DependencyMatrix;
   }
 
-  public calculateNodesDependency() {
+  public nodesDependency() {
     const minNodeId = Math.min.apply(
       Math,
       this.network.Nodes.map(function (o) {
@@ -87,7 +87,7 @@ export class Matrix {
       })
     );
 
-    const dependencyMatrix = this.calculateDependecy();
+    const dependencyMatrix = this.dependencyMatrix();
 
     for (let i = minNodeId; i <= this.network.Nodes.length; i++) {
       const node = dependencyMatrix[i];

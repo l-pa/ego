@@ -62,7 +62,8 @@ function App() {
                             Number.parseFloat(element[2])
                           );
                         }
-                        new Matrix(network).calculateNodesDependency();
+                        
+                        new Matrix(network).nodesDependency();
                         setGraph(network);
                       }}
                     />

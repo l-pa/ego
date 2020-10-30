@@ -17,7 +17,6 @@ export class Network {
   /**
    * Adds a node to the network.
    *
-   *
    * @param node - Node to be added to the network.
    *
    */

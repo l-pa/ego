@@ -12,7 +12,11 @@ export class Zone {
   public outerZoneNodes: Node[][];
 
   private cy?: cytoscape.Core | any;
-  private color: string = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+  private color: string =
+    "#" +
+    Math.floor(Math.random() * 16777215)
+      .toString(16)
+      .padStart(6, "0");
 
   private alpha: string = "80";
   private isDrawn: boolean = false;
@@ -21,7 +25,6 @@ export class Zone {
   private areShownNodes: boolean = false;
 
   private zIndex: number = -1;
-
 
   private automove: any;
   private enableAutomove: boolean = false;
@@ -37,7 +40,7 @@ export class Zone {
 
   private label: string = "";
 
-  constructor(ego: Node, cy?: any, alpha?: string) {
+  constructor(ego: Node, cy?: any, alpha?: string, automove?: boolean) {
     this.Ego = ego;
 
     if (alpha) {
@@ -94,11 +97,14 @@ export class Zone {
       allCollection = allCollection.union(this.outsideCollection);
 
       this.drawZone();
+      if (automove) {
+        this.EnableAutomove = automove;
+      }
     }
   }
 
   public set Alpha(alpha: string) {
-    this.alpha = alpha.padStart(2, '0');
+    this.alpha = alpha.padStart(2, "0");
 
     if (this.isZoneShown) {
       this.updatePath();
@@ -106,8 +112,8 @@ export class Zone {
   }
 
   public set Zindex(index: number) {
-    this.zIndex = index
-    this.clearPath()
+    this.zIndex = index;
+    this.clearPath();
     if (this.isZoneShown) {
       this.layer = this.cy.cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
@@ -400,11 +406,25 @@ export class Zone {
         this.innerZone(node);
       }
     });
+    node.TwDep.forEach((node) => {
+      if (!this.innerZoneNodes.includes(node)) {
+        this.innerZone(node);
+      }
+    });
+    
   }
 
   private outerZone(nodes: Node[]) {
     nodes.forEach((node) => {
       node.OwDep.forEach((node) => {
+        if (
+          !this.innerZoneNodes.includes(node) &&
+          !this.outerZoneNodes[0].includes(node)
+        ) {
+          this.outerZoneNodes[0].push(node);
+        }
+      });
+      node.TwDep.forEach((node) => {
         if (
           !this.innerZoneNodes.includes(node) &&
           !this.outerZoneNodes[0].includes(node)

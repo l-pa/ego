@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect } from "react";
+import React, { useCallback, useContext, useEffect, useRef } from "react";
 import { Zone } from "../objects/Zone";
 import {
   Stack,
@@ -22,6 +22,8 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
 }) => {
   const zonesContext = useContext(AppContext);
   const graphContext = useContext(GraphContext);
+
+  const automoveRef = useRef(false);
 
   useEffect(() => {
     console.log(zonesContext.state.zones);
@@ -72,7 +74,12 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
 
             network.Nodes.forEach((n) => {
               if (n.isProminent() === 0) {
-                const z = new Zone(n, graphContext.graphState.graph);
+                const z = new Zone(
+                  n,
+                  graphContext.graphState.graph,
+                  undefined,
+                  automoveRef.current
+                );
 
                 zonesContext.dispatch({
                   type: Types.Add,
@@ -91,7 +98,12 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
 
             network.Nodes.forEach((n) => {
               if (n.isProminent() === 1) {
-                const z = new Zone(n, graphContext.graphState.graph);
+                const z = new Zone(
+                  n,
+                  graphContext.graphState.graph,
+                  undefined,
+                  automoveRef.current
+                );
 
                 zonesContext.dispatch({
                   type: Types.Add,
@@ -130,6 +142,7 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
         <Checkbox
           defaultIsChecked={false}
           onChange={(e) => {
+            automoveRef.current = e.target.checked;
             zonesContext.state.zones.forEach((z) => {
               z.EnableAutomove = e.target.checked;
             });
