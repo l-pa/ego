@@ -16,8 +16,8 @@ export enum Types {
   Delete = "DELETE",
   Clear = "CLEAR",
   Layout = "LAYOUT",
-  SortByInnerNodes = "SORTBYINNER",
-  SortByOuterNodes = "SORTBYINNER",
+  Multiego = "MULTIEGO",
+  Duplicates = "DUPLICATES",
 }
 
 type ZonePayload = {
@@ -33,8 +33,12 @@ type ZonePayload = {
     params: object;
     layout: string;
   };
-  [Types.SortByInnerNodes]: {};
-  [Types.SortByOuterNodes]: {};
+  [Types.Multiego]: {
+    show: boolean;
+  };
+  [Types.Duplicates]: {
+    show: boolean;
+  };
 };
 
 type GraphPayload = {
@@ -57,21 +61,21 @@ export const zoneReducer = (zones: Zone[], action: ZoneActions) => {
     case Types.Delete:
       action.payload.zone.clearPath();
       return [...zones.filter((z) => z.Ego !== action.payload.zone.Ego)];
-    case Types.SortByInnerNodes:
-      return [
-        ...zones.sort((a, b) =>
-          a.innerZoneNodes.length < b.innerZoneNodes.length ? 1 : -1
-        ),
-      ];
-    case Types.SortByOuterNodes:
-      return [
-        ...zones.sort((a, b) =>
-          a.outerZoneNodes[0].length + a.outerZoneNodes[1].length <
-          b.outerZoneNodes[0].length + b.outerZoneNodes[1].length
-            ? 1
-            : -1
-        ),
-      ];
+    case Types.Multiego:
+      if (action.payload.show) {
+        zones.forEach((z) => {
+          if (z.Ego.TwDep) {
+            z.Ego.TwDep.forEach((e) => {
+              console.log(zones.filter((z) => z.Ego === e)[0]);
+            });
+          }
+        });
+      } else {
+      }
+      return zones;
+    case Types.Duplicates:
+      zones.forEach((z) => {});
+      return zones;
 
     case Types.Clear:
       zones.forEach((z) => {

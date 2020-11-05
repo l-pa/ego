@@ -26,7 +26,6 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
   const automoveRef = useRef(false);
 
   useEffect(() => {
-    console.log(zonesContext.state.zones);
     
   }, [zonesContext.state.zones])
 
@@ -39,30 +38,6 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
         right={0}
         top={0}
       >
-        <Select placeholder="Sort by" onChange={(e) => {
-          switch (e.target.selectedIndex) {
-            case 1:
-              zonesContext.dispatch({
-                type: Types.SortByInnerNodes,
-                payload: {}
-              })
-              break;
-          
-            case 2:
-              zonesContext.dispatch({
-                type: Types.SortByOuterNodes,
-                payload: {}
-              })
-              break;
-            
-
-            default:
-              break;
-          }          
-        }}>
-          <option value="innerSort">Inner nodes</option>
-          <option value="outerSort">Outer nodes</option>
-        </Select>
         {zonesContext.state.zones.map((item, i) => (
           <ZoneItem key={i} zone={item}></ZoneItem>
         ))}
@@ -70,8 +45,6 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
       <Stack isInline={true}>
         <Button
           onClick={() => {
-
-
             network.Nodes.forEach((n) => {
               if (n.isProminent() === 0) {
                 const z = new Zone(
@@ -94,8 +67,6 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
 
         <Button
           onClick={() => {
-
-
             network.Nodes.forEach((n) => {
               if (n.isProminent() === 1) {
                 const z = new Zone(
@@ -154,10 +125,30 @@ export const UI: React.FunctionComponent<{ network: Network }> = ({
         <Checkbox
           defaultIsChecked={false}
           onChange={(e) => {
-            if(e.target.checked){            
-            zonesContext.state.zones.forEach((z) => {
-              z.Zindex = 1;
-            });
+              zonesContext.dispatch({type: Types.Multiego, payload: {
+                show: e.target.checked
+              }})
+          }}
+        >
+          Mutli-ego
+        </Checkbox>
+
+        <Checkbox
+          defaultIsChecked={false}
+          onChange={(e) => {
+            zonesContext.dispatch({type:Types.Duplicates, payload: {show:e.target.checked}})
+          }}
+        >
+          Remove duplicates
+        </Checkbox>
+
+        <Checkbox
+          defaultIsChecked={false}
+          onChange={(e) => {
+            if (e.target.checked) {
+              zonesContext.state.zones.forEach((z) => {
+                z.Zindex = 1;
+              });
             } else {
               zonesContext.state.zones.forEach((z) => {
                 z.Zindex = -1;
