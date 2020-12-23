@@ -1,7 +1,7 @@
-import { Network } from "./Network";
-import { Node } from "./Node";
+import type Network from "./Network";
+import type Node from "./Node";
 
-export class Matrix {
+export default class Matrix {
   private network: Network;
 
   private AdjencyMatrix: number[][];
@@ -91,14 +91,17 @@ export class Matrix {
 
     for (let i = minNodeId; i <= this.network.Nodes.length; i++) {
       const node = dependencyMatrix[i];
+
+      const twdep = [];
+      const twindep = [];
+      const owdep = [];
+      const owindep = [];
+
       for (let j = minNodeId; j <= node.length; j++) {
         const dependency = node[j];
-
         if (j !== i) {
           if (dependency === 1 && dependencyMatrix[j][i] === 0) {
-            this.network.Nodes.filter(
-              (n) => Number.parseInt(n.Id.toString()) === i
-            )[0].OwDep.push(
+            owdep.push(
               this.network.Nodes.filter(
                 (n) => Number.parseInt(n.Id.toString()) === j
               )[0]
@@ -106,9 +109,7 @@ export class Matrix {
           }
 
           if (dependency === 0 && dependencyMatrix[j][i] === 1) {
-            this.network.Nodes.filter(
-              (n) => Number.parseInt(n.Id.toString()) === i
-            )[0].OwInDep.push(
+            owindep.push(
               this.network.Nodes.filter(
                 (n) => Number.parseInt(n.Id.toString()) === j
               )[0]
@@ -116,9 +117,7 @@ export class Matrix {
           }
 
           if (dependency === 1 && dependencyMatrix[j][i] === 1) {
-            this.network.Nodes.filter(
-              (n) => Number.parseInt(n.Id.toString()) === i
-            )[0].TwDep.push(
+            twdep.push(
               this.network.Nodes.filter(
                 (n) => Number.parseInt(n.Id.toString()) === j
               )[0]
@@ -126,9 +125,7 @@ export class Matrix {
           }
 
           if (dependency === 0 && dependencyMatrix[j][i] === 0) {
-            this.network.Nodes.filter(
-              (n) => Number.parseInt(n.Id.toString()) === i
-            )[0].TwInDep.push(
+            twindep.push(
               this.network.Nodes.filter(
                 (n) => Number.parseInt(n.Id.toString()) === j
               )[0]
@@ -136,6 +133,22 @@ export class Matrix {
           }
         }
       }
+
+      this.network.Nodes.filter(
+        (n) => Number.parseInt(n.Id.toString()) === i
+      )[0].OwDep = owdep;
+
+      this.network.Nodes.filter(
+        (n) => Number.parseInt(n.Id.toString()) === i
+      )[0].OwInDep = owindep;
+
+      this.network.Nodes.filter(
+        (n) => Number.parseInt(n.Id.toString()) === i
+      )[0].TwDep = twdep;
+
+      this.network.Nodes.filter(
+        (n) => Number.parseInt(n.Id.toString()) === i
+      )[0].TwInDep = twindep;
     }
   }
 

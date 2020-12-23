@@ -1,82 +1,66 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useContext } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
-import { Network } from "./objects/Network";
-import { Node } from "./objects/Node";
-import { Matrix } from "./objects/Matrix";
-import { AppProvider, AppContext } from "./context/ZoneContext";
-import { GraphContext, GraphProvider } from "./context/GraphContext";
-
-import { ThemeProvider, CSSReset, Stack } from "@chakra-ui/core";
-import { Graph } from "./components/Cytoscape";
-import { UI } from "./components/UI";
-import { getTokenSourceMapRange } from "typescript";
+import Matrix from "./objects/DependencyMatrix";
+import { Graph } from "./Graph";
+import Node from "./objects/Node";
+import Network from "./objects/Network";
+import { Context, networkStore } from ".";
+import { autorun, reaction } from "mobx";
+import { observer } from "mobx-react-lite";
+import { UI } from "./UI";
+import { ZoneItem } from "./ZoneItem";
+import { ChakraProvider } from "@chakra-ui/react";
 
 function App() {
-  const [graph, setGraph] = useState<Network>();
+  const context = useContext(Context);
 
-  console.log("app rerender");
-
-  return (
-    <AppProvider>
-      <GraphProvider>
-        <ThemeProvider>
-          <CSSReset />
-          <div className="App">
-            <Stack
-              paddingTop="1vh"
-              display="flex"
-              direction="row"
-              justifyContent="center"
-            >
-              <Stack
-                position="absolute"
-                width="20vw"
-                direction="column"
-                zIndex={1}
-              ></Stack>
-              <Stack>
-                <Stack align="center" direction="row" justify="center"></Stack>
-
-                <Stack display="inline">
-                  <Stack
-                    align="center"
-                    isInline={true}
-                    spacing="10"
-                    justify="center"
-                  >
-                    {graph && <UI network={graph} />}
-                  </Stack>
-                  {!graph && (
-                    <CSVReader
-                      onFileLoaded={(data, fileInfo) => {
-                        console.log(fileInfo);
-
-                        let network = new Network([], []);
-
-                        for (let i = 0; i < data.length; i++) {
-                          const element = data[i];
-                          network.addEdge(
-                            new Node(element[0]),
-                            new Node(element[1]),
-                            Number.parseFloat(element[2])
-                          );
-                        }
-                        
-                        new Matrix(network).nodesDependency();
-                        setGraph(network);
-                      }}
-                    />
-                  )}
-                  {graph && <Graph network={graph} />}
-                </Stack>
-              </Stack>
-            </Stack>
-          </div>
-        </ThemeProvider>
-      </GraphProvider>
-    </AppProvider>
+  reaction(
+    () => context.network.Network,
+    (Network) => {
+      console.log(Network);
+    }
   );
+
+  const App = observer(() => {
+    return (
+      <div className="App">
+        {!context.network.Network && (
+          <CSVReader
+            onFileLoaded={(data, fileInfo) => {
+              const network = new Network([], []);
+              console.log(fileInfo);
+              for (let i = 0; i < data.length; i++) {
+                const element = data[i];
+                network.addEdge(
+                  new Node(element[0]),
+                  new Node(element[1]),
+                  Number.parseFloat(element[2])
+                );
+              }
+              new Matrix(network).nodesDependency();
+              context.network.Network = network;
+            }}
+          />
+        )}
+        {context.network.Network && (
+          <div>
+            <UI />
+            <Graph />
+            {context.zones.Zones.map((z, i,   a) => {
+              <ZoneItem zone={z} key={i}></ZoneItem>;;;
+            })}
+          </div>
+        )}
+      </div>
+    );
+  });
+
+  return(
+    <ChakraProvider>
+      <App />;
+    </ChakraProvider>
+  ) 
 }
 
 export default App;

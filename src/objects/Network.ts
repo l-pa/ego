@@ -1,7 +1,8 @@
-import { Node } from "./Node";
-import { Edge } from "./Edge";
+import type Node from "./Node";
+import Edge from "./Edge";
+import { cy } from "../Graph";
 
-export class Network {
+export default class Network {
   public Nodes: Node[];
   public Edges: Edge[];
   public Directed: boolean = false;
@@ -24,6 +25,20 @@ export class Network {
     if (!this.Nodes.some((e) => e.Id === node.Id)) {
       this.Nodes.push(node);
     }
+  }
+
+  public getNode(nodeId: number): cytoscape.NodeCollection {
+    return cy.nodes("#" + nodeId.toString());
+  }
+
+  public getEdge(source: number, target: number): cytoscape.EdgeCollection {
+    return cy.edges(
+      `[source = "${source.toString()}"][target = "${target.toString()}"]`
+    );
+  }
+
+  public getEdges(source: number): cytoscape.EdgeCollection {
+    return cy.edges(`[source = "${source.toString()}"]`);
   }
 
   /**
