@@ -1,5 +1,4 @@
-import { createContext } from "react";
-import { observable, computed, makeObservable, makeAutoObservable } from "mobx";
+import { makeAutoObservable } from "mobx";
 import Zone from "../objects/Zone";
 import { networkStore, settingsStore } from "..";
 import { cy } from "../Graph";
@@ -18,10 +17,11 @@ export class ZoneStore {
    * AddZone
    */
   public AddZone(zone: Zone) {
-    this.zones.push(zone);
-
-    this.ColorNodesInZones();
+    if (this.zones.filter((z) => z.Ego.Id === zone.Ego.Id).length === 0) {
+      this.zones.push(zone);
+    }
     this.Duplicates();
+    this.ColorNodesInZones();
   }
 
   /**
@@ -50,7 +50,10 @@ export class ZoneStore {
    * RemoveZone
    */
   public RemoveZone(z: Zone) {
-    throw new Error("Implement");
+    z.clearPath();
+    this.zones = this.zones.filter((zone) => zone.Ego.Id !== z.Ego.Id);
+    this.Duplicates();
+    this.ColorNodesInZones();
   }
 
   /**

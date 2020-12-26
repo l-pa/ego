@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from "react";
+import React from "react";
 import Zone from "./objects/Zone";
 import {
   Stack,
@@ -8,23 +8,19 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
-  Badge,
   ButtonGroup,
   Button,
-  AccordionPanel,
-  AccordionIcon,
   Accordion,
   AccordionItem,
-  Icon,
-  Text,
   Tooltip,
   Checkbox,
   Input,
 } from "@chakra-ui/react";
+import { zoneStore } from ".";
 
 export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
   return (
-    <Box bg={zone.Color} w="100%" p={4} color="white">
+    <Box zIndex={1} bg={zone.Color} p={4} color="white">
       {zone.Ego.isProminent() === 0 ? (
         <Heading color={"red.400"} textAlign={"center"}>
           {zone.Ego.Id}
@@ -118,8 +114,7 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
         </Box>
       </Box>
       <Accordion allowToggle>
-        <AccordionItem defaultIsOpen={false}>
-          <AccordionPanel pb={4}>
+        <AccordionItem>
             <Input
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 zone.Label = e.target.value;
@@ -144,7 +139,9 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
             </Slider>
 
             <ButtonGroup>
-              <Button variantColor="white" variant="outline" onClick={() => {}}>
+              <Button colorScheme="white" variant="outline" onClick={() => {
+                zoneStore.RemoveZone(zone)
+              }}>
                 Delete
               </Button>
             </ButtonGroup>
@@ -168,7 +165,6 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
                 Zone
               </Checkbox>
             </Stack>
-          </AccordionPanel>
         </AccordionItem>
       </Accordion>
     </Box>

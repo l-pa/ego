@@ -1,4 +1,4 @@
-import { observable, computed, makeObservable, makeAutoObservable } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { zoneStore } from "..";
 
 export class SettingsStore {
@@ -6,7 +6,7 @@ export class SettingsStore {
     makeAutoObservable(this);
   }
   private automove: boolean = false;
-  private quadraticCurves: boolean = false;
+  private quadraticCurves: boolean = true;
   private zIndex: number = -1;
 
   public get Automove(): boolean {
@@ -37,7 +37,7 @@ export class SettingsStore {
     this.zIndex = v;
   }
 
-  private duplicates: string = "none";
+  private duplicates: string = "all";
 
   public get Duplicates(): string {
     return this.duplicates;
@@ -45,5 +45,6 @@ export class SettingsStore {
 
   public set Duplicates(v: string) {
     this.duplicates = v;
+    zoneStore.Duplicates();
   }
 }

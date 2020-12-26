@@ -5,7 +5,6 @@ import cytoscape, {
   NodeSingular,
 } from "cytoscape";
 import { cy } from "../Graph";
-import { reaction } from "mobx";
 import { settingsStore } from "..";
 
 export default class Zone {
@@ -28,9 +27,6 @@ export default class Zone {
   private zIndex: number = -1;
 
   private automove: any;
-  private enableAutomove: boolean = false;
-
-  private quadraticCurves: boolean = false;
 
   private layer: any = (cy as any).cyCanvas({ zIndex: this.zIndex });
   private canvas: any = this.layer.getCanvas();
@@ -90,13 +86,6 @@ export default class Zone {
   public set Alpha(alpha: string) {
     this.alpha = alpha.padStart(2, "0");
 
-    if (this.isZoneShown) {
-      this.updatePath();
-    }
-  }
-
-  public set QuadraticCurves(b: boolean) {
-    this.quadraticCurves = b;
     if (this.isZoneShown) {
       this.updatePath();
     }
@@ -178,7 +167,9 @@ export default class Zone {
   }
 
   public updatePath() {
-    this.calc(this.insideCollection.union(this.outsideCollection));
+    if (this.isDrawn) {
+      this.calc(this.insideCollection.union(this.outsideCollection));
+    }
   }
 
   public applyLayout(layout: string) {
@@ -195,8 +186,8 @@ export default class Zone {
       this.isDrawn = false;
       //  this.cy?.off("render cyCanvas.resize");
       this.layer.clear(this.ctx);
-      this.canvas.remove();
-
+     // this.canvas.remove();
+      
       // this.cy.automove("destroy");
     } else {
       console.log("Nothing to clear");
@@ -214,7 +205,10 @@ export default class Zone {
   public drawZone() {
     if (!this.isDrawn) {
       this.isDrawn = true;
-
+      // this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
+      // this.canvas = this.layer.getCanvas();
+      // this.ctx = this.canvas.getContext("2d");
+    
       this.automove = (cy as any).automove({
         nodesMatching: this.insideCollection
           .subtract(this.insideCollection[0])
@@ -227,12 +221,12 @@ export default class Zone {
 
       this.automove.disable();
 
-      if (this.enableAutomove) {
+      if (settingsStore.Automove) {
         this.automove.enable();
       }
       this.updatePath();
     } else {
-      this.updatePath();
+      //this.updatePath();
     }
   }
 
@@ -246,7 +240,6 @@ export default class Zone {
     let leftMost;
     let currentVertex;
     let index;
-    let nextIndex = -1;
     let nextVertex;
 
     leftMost = nodes[0];
@@ -278,7 +271,6 @@ export default class Zone {
 
       if (cross < 0) {
         nextVertex = checking;
-        nextIndex = index;
       }
 
       index += 1;
@@ -320,7 +312,6 @@ export default class Zone {
 
       this.ctx.save();
 
-      let fpos;
       for (let i = 0; i < this.hull.length; i++) {
         let element = this.hull[i];
 
@@ -371,9 +362,6 @@ export default class Zone {
         let y = element.position().y;
 
         if (i === 0) {
-          fpos = [x + l * res[0], y + l * res[1]];
-        }
-        if (i === 0) {
           this.ctx.beginPath();
           this.ctx.moveTo(x + l * res[0], y + l * res[1]);
         }
@@ -386,7 +374,7 @@ export default class Zone {
         element.data("hullY", y + l * res[1]);
         element.data("hullL", l);
       }
-      if (this.quadraticCurves) {
+      if (settingsStore.QuadraticCurves) {
         for (let i = 0; i < this.hull.length - 1; i++) {
           const element = this.hull[i];
           const element2 = this.hull[i + 1];

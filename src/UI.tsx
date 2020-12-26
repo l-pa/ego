@@ -1,36 +1,15 @@
-import React, { useCallback, useContext, useEffect, useRef } from "react";
+import React, { useContext } from "react";
 import Zone from "./objects/Zone";
-import {
-  Stack,
-  Heading,
-  Button,
-  Slider,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderTrack,
-  Checkbox,
-  Select,
-} from "@chakra-ui/react";
-import Network from "./objects/Network";
+import { Stack, Button, Checkbox, Select } from "@chakra-ui/react";
 import { ZoneItem } from "./ZoneItem";
-import { networkStore, settingsStore, zoneStore } from ".";
+import { Context, networkStore, settingsStore, zoneStore } from ".";
+import { observer } from "mobx-react-lite";
 
-export const UI: React.FunctionComponent<{}> = ({}) => {
-  const automoveRef = useRef(false);
+export const UI: React.FunctionComponent = () => {
+  const context = useContext(Context);
 
   return (
     <Stack zIndex={1} mt={5}>
-      <Stack
-        overflowY={"scroll"}
-        height={"100vh"}
-        position={"absolute"}
-        right={0}
-        top={0}
-      >
-        {zoneStore.Zones.map((item, i) => (
-          <ZoneItem key={i} zone={item}></ZoneItem>
-        ))}
-      </Stack>
       <Stack isInline={true}>
         <Button
           onClick={() => {
@@ -74,6 +53,17 @@ export const UI: React.FunctionComponent<{}> = ({}) => {
           Layout
         </Button>
 
+        <Select
+          width={100}
+          onChange={(e) => {
+            settingsStore.Duplicates = e.target.value;
+          }}
+        >
+          <option value="all">All</option>
+          <option value="me">Mutli-ego</option>
+          <option value="de">Duplicates</option>
+        </Select>
+
         <Checkbox
           defaultIsChecked={false}
           onChange={(e) => {
@@ -81,24 +71,6 @@ export const UI: React.FunctionComponent<{}> = ({}) => {
           }}
         >
           Move zone
-        </Checkbox>
-
-        <Checkbox
-          defaultIsChecked={false}
-          onChange={(e) => {
-            settingsStore.Duplicates = "me";
-          }}
-        >
-          Mutli-ego
-        </Checkbox>
-
-        <Checkbox
-          defaultIsChecked={false}
-          onChange={(e) => {
-            settingsStore.Duplicates = "de";
-          }}
-        >
-          Remove duplicates
         </Checkbox>
 
         <Checkbox

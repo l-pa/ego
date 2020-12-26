@@ -1,5 +1,5 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
-import React, { useRef, useEffect, useContext, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import "./style.css";
 
 import Zone from "./objects/Zone";
@@ -13,7 +13,7 @@ cytoscape.use(cycanvas);
 
 export let cy: cytoscape.Core;
 
-export const Graph: React.FunctionComponent<{}> = ({}) => {
+export const Graph: React.FunctionComponent = () => {
   const container = useRef<HTMLDivElement>(null);
   const nodes = useRef<ElementDefinition[]>([]);
   const edges = useRef<ElementDefinition[]>([]);
@@ -356,8 +356,6 @@ export const Graph: React.FunctionComponent<{}> = ({}) => {
     });
 
     cy.on("render cyCanvas.resize", (evt: cytoscape.EventObject) => {
-      console.log("render");
-
       zoneStore.Zones.forEach((z) => {
         z.updatePath();
       });
@@ -369,11 +367,7 @@ export const Graph: React.FunctionComponent<{}> = ({}) => {
 
       networkStore.Network = undefined;
     };
-  }, [networkStore.Network]);
+  }, []);
 
-  return (
-    <div>
-      <div className="graph" ref={container}></div>
-    </div>
-  );
+  return <div className="graph" ref={container}></div>;
 };
