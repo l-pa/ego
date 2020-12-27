@@ -9,6 +9,8 @@ export class SettingsStore {
   private quadraticCurves: boolean = true;
   private zIndex: number = -1;
 
+  private selectedOption: string = "basicZones";
+
   public get Automove(): boolean {
     return this.automove;
   }
@@ -21,12 +23,23 @@ export class SettingsStore {
     });
   }
 
+  public get SelectedOption(): string {
+    return this.selectedOption;
+  }
+
+  public set SelectedOption(v: string) {
+    this.selectedOption = v;
+  }
+
   public get QuadraticCurves(): boolean {
     return this.quadraticCurves;
   }
 
   public set QuadraticCurves(v: boolean) {
     this.quadraticCurves = v;
+    zoneStore.Zones.forEach((z) => {
+      z.updatePath();
+    });
   }
 
   public get ZIndex(): number {

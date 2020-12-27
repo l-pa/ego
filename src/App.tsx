@@ -8,9 +8,8 @@ import Network from "./objects/Network";
 import { Context } from ".";
 import { reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { UI } from "./UI";
 import { ZoneItem } from "./ZoneItem";
-import { Box, ChakraProvider, Flex, Stack } from "@chakra-ui/react";
+import { Box, ChakraProvider, Divider, Flex, Stack } from "@chakra-ui/react";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";
 
@@ -47,13 +46,14 @@ function App() {
         )}
         {context.network.Network && (
           <div>
-            <UI />
             <Stack>
               <Flex>
                 <LeftPanel />
+                <Divider height={"100vh"} orientation="vertical" />
                 <Box flex={1}>
-                    <Graph />
+                  <Graph />
                 </Box>
+                <Divider height={"100vh"} orientation="vertical" />
                 <RightPanel />
               </Flex>
             </Stack>

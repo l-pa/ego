@@ -6,6 +6,7 @@ import cytoscape, {
 } from "cytoscape";
 import { cy } from "../Graph";
 import { settingsStore } from "..";
+import { CrossCalc, Subtract } from "./Vector";
 
 export default class Zone {
   public Ego: Node;
@@ -186,20 +187,12 @@ export default class Zone {
       this.isDrawn = false;
       //  this.cy?.off("render cyCanvas.resize");
       this.layer.clear(this.ctx);
-     // this.canvas.remove();
-      
+      // this.canvas.remove();
+
       // this.cy.automove("destroy");
     } else {
       console.log("Nothing to clear");
     }
-  }
-
-  private subtract([x1, y1]: any, [x2, y2]: any) {
-    return [-x2 + x1, -y2 + y1];
-  }
-
-  private crossCalc([x1, y1]: any, [x2, y2]: any) {
-    return x1 * y2 - y1 * x2;
   }
 
   public drawZone() {
@@ -208,7 +201,7 @@ export default class Zone {
       // this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       // this.canvas = this.layer.getCanvas();
       // this.ctx = this.canvas.getContext("2d");
-    
+
       this.automove = (cy as any).automove({
         nodesMatching: this.insideCollection
           .subtract(this.insideCollection[0])
@@ -258,16 +251,16 @@ export default class Zone {
 
     while (isRunning) {
       const checking = nodes[index];
-      const a = this.subtract(
+      const a = Subtract(
         [nextVertex.position().x, nextVertex.position().y],
         [currentVertex.position().x, currentVertex.position().y]
       );
-      const b = this.subtract(
+      const b = Subtract(
         [checking.position().x, checking.position().y],
         [currentVertex.position().x, currentVertex.position().y]
       );
 
-      const cross = this.crossCalc(a, b);
+      const cross = CrossCalc(a, b);
 
       if (cross < 0) {
         nextVertex = checking;
@@ -341,17 +334,17 @@ export default class Zone {
 
         const lb1 = Math.sqrt((-dy2) ** 2 + dx2 ** 2);
 
-        a[0] = a[0] / la1;
-        a[1] = a[1] / la1;
+        a[0] /= la1;
+        a[1] /= la1;
 
-        b[0] = b[0] / lb1;
-        b[1] = b[1] / lb1;
+        b[0] /= lb1;
+        b[1] /= lb1;
 
         const res = [a[0] + b[0], a[1] + b[1]];
         const resl = Math.sqrt(res[0] ** 2 + res[1] ** 2);
 
-        res[0] = res[0] / resl;
-        res[1] = res[1] / resl;
+        res[0] /= resl;
+        res[1] /= resl;
 
         let l = 100 / Math.sqrt(1 + (a[0] * b[0] + a[1] * b[1]));
 
@@ -411,6 +404,15 @@ export default class Zone {
         );
       } else {
         for (let i = 0; i < this.hull.length; i++) {
+          this.ctx.font = "24px Helvetica";
+          this.ctx.fillStyle = "";
+          this.ctx.fillText(
+            `${this.hull[i].data("hullX")} ${this.hull[i].data("hullY")}`,
+            this.hull[i].data("hullX"),
+            this.hull[i].data("hullY")
+          );
+          this.ctx.fillStyle = this.color + this.alpha;
+
           this.ctx.lineTo(
             this.hull[i].data("hullX"),
             this.hull[i].data("hullY")

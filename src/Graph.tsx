@@ -1,6 +1,8 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
 import React, { useRef, useEffect } from "react";
 import "./style.css";
+// @ts-ignore
+import cola from "cytoscape-cola";
 
 import Zone from "./objects/Zone";
 import { networkStore, zoneStore } from ".";
@@ -10,6 +12,7 @@ const cycanvas = require("cytoscape-canvas");
 
 cytoscape.use(automove);
 cytoscape.use(cycanvas);
+cytoscape.use(cola);
 
 export let cy: cytoscape.Core;
 
