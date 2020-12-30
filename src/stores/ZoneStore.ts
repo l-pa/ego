@@ -52,15 +52,8 @@ export class ZoneStore {
    * RemoveZone
    */
   public RemoveZone(z: Zone) {
-    z.clearPath();
     this.zones = this.zones.filter((zone) => zone.Ego.Id !== z.Ego.Id);
-    
-    let nodesInZonesExceptZ : Collection = cy.collection()
-    zoneStore.Zones.filter(zone => zone.Ego.Id !== z.Ego.Id).forEach(element => {
-      nodesInZonesExceptZ = nodesInZonesExceptZ.union(element.AllCollection)
-    });
-
-    z.AllCollection.difference(nodesInZonesExceptZ).addClass("hide")
+    z.clearPath();
     this.Duplicates();
     this.ColorNodesInZones();
   }
@@ -133,6 +126,7 @@ export class ZoneStore {
       let nodes: cytoscape.Collection = cy.collection();
 
       this.zones.forEach((z) => {
+        if (z.isDrawn)
         nodes = nodes.union(z.InsideCollection.union(z.OutsideCollection));
       });
 
@@ -279,19 +273,20 @@ export class ZoneStore {
       this.ColorAllNodes();
       this.ColorAllEdges();
     } else {
-      this.NodesInZones()
-        .not(".hide")
-        ?.forEach((n) => {
-          n.classes(
-            networkStore.Network?.Nodes.filter(
-              (node) =>
-                node.Id ===
-                ((n as { [key: string]: any })["_private"]["data"][
-                  "id"
-                ] as number)
-            )[0].classes
-          );
-        });
+      zoneStore.Zones.forEach(element => {
+        if (element.IsDrawn) {
+          element.AllCollection.not(".hide")?.forEach((n) => {
+            n.classes(
+              networkStore.Network?.Nodes.filter(
+                (node) =>
+                  node.Id ===
+                  ((n as { [key: string]: any })["_private"]["data"][
+                    "id"
+                  ] as number)
+              )[0].classes)
+              })
+        }
+      });
       this.zones.forEach((z) => {
         this.EdgeColors(z);
       });

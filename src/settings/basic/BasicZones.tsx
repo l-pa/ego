@@ -7,6 +7,10 @@ import {
   Select,
   Spacer,
   Divider,
+  Slider,
+  SliderTrack,
+  SliderThumb,
+  SliderFilledTrack,
 } from "@chakra-ui/react";
 import { ZoneItem } from "../../ZoneItem";
 import { Context, networkStore, settingsStore, zoneStore } from "../../.";
@@ -91,6 +95,21 @@ export const BasicZones: React.FunctionComponent = () => {
       </Checkbox>
 
       <Divider></Divider>
+
+      <Slider
+        aria-label="slider-ex-1"
+        defaultValue={networkStore.Network?.Nodes.length}
+        min={0}
+        max={networkStore.Network?.Nodes.length}
+        onChange={(e) => {
+          settingsStore.MinNodesZoneShow = e;
+        }}
+      >
+        <SliderTrack>
+          <SliderFilledTrack />
+        </SliderTrack>
+        <SliderThumb />
+      </Slider>
       <Zones />
     </Stack>
   );

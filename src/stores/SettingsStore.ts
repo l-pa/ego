@@ -1,6 +1,6 @@
 import { Collection } from "cytoscape";
 import { makeAutoObservable } from "mobx";
-import { zoneStore } from "..";
+import { networkStore, zoneStore } from "..";
 import { cy } from "../Graph";
 
 export class SettingsStore {
@@ -11,6 +11,8 @@ export class SettingsStore {
   private hideOutsideZones: boolean = true;
 
   private zIndex: number = -1;
+
+  private minNodesZoneShow: number = 1;
 
   private selectedOption: string = "basicZones";
 
@@ -61,6 +63,24 @@ export class SettingsStore {
 
   public set ZIndex(v: number) {
     this.zIndex = v;
+  }
+
+  public get MinNodesZoneShow(): number {
+    return this.minNodesZoneShow;
+  }
+
+  public set MinNodesZoneShow(v: number) {
+    this.minNodesZoneShow = v;
+
+    zoneStore.Zones.forEach((element) => {
+      if (element.AllCollection.length <= this.minNodesZoneShow) {
+        element.drawZone();
+      } else {
+        element.clearPath();
+      }
+      zoneStore.ColorNodesInZones();;
+      
+    });
   }
 
   private duplicates: string = "all";

@@ -6,7 +6,7 @@ import cytoscape, {
   NodeSingular,
 } from "cytoscape";
 import { cy } from "../Graph";
-import { settingsStore } from "..";
+import { settingsStore, zoneStore } from "..";
 import {
   CrossCalc,
   Subtract,
@@ -201,6 +201,19 @@ export default class Zone {
   }
 
   public clearPath() {
+    if (settingsStore.HideOutsideZones) {
+      let nodesInZonesExceptZ: Collection = cy.collection();
+      zoneStore.Zones.filter((zone) => zone.Ego.Id !== this.Ego.Id).forEach(
+        (element) => {
+          nodesInZonesExceptZ = nodesInZonesExceptZ.union(
+            element.AllCollection
+          );
+        }
+      );
+
+      this.AllCollection.difference(nodesInZonesExceptZ).addClass("hide");
+    }
+    
     if (this.isDrawn) {
       this.isDrawn = false;
       //  this.cy?.off("render cyCanvas.resize");
@@ -214,6 +227,9 @@ export default class Zone {
   }
 
   public drawZone() {
+    if (settingsStore.HideOutsideZones) {
+      this.AllCollection.removeClass("hide");
+    }
     if (!this.isDrawn) {
       this.isDrawn = true;
       // this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
