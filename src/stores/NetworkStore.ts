@@ -6,6 +6,8 @@ export class NetworkStore {
     makeAutoObservable(this);
   }
   private network: Network | undefined = undefined;
+  private loaded: boolean = false;
+
 
   public get Network(): Network | undefined {
     return this.network;
@@ -14,4 +16,14 @@ export class NetworkStore {
   public set Network(v: Network | undefined) {
     this.network = v;
   }
+  
+  public get Loaded() : boolean {
+    return this.loaded
+  }
+
+  public set Loaded(v : boolean) {
+    this.loaded = v;
+  }
+  
+  
 }

@@ -1,7 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import Zone from "../objects/Zone";
-import { networkStore, settingsStore } from "..";
+import { networkStore, settingsStore, zoneStore } from "..";
 import { cy } from "../Graph";
+import { Collection } from "cytoscape";
 
 export class ZoneStore {
   constructor() {
@@ -20,6 +21,7 @@ export class ZoneStore {
     if (this.zones.filter((z) => z.Ego.Id === zone.Ego.Id).length === 0) {
       this.zones.push(zone);
     }
+    zone.AllCollection.removeClass("hide");
     this.Duplicates();
     this.ColorNodesInZones();
   }
@@ -52,6 +54,13 @@ export class ZoneStore {
   public RemoveZone(z: Zone) {
     z.clearPath();
     this.zones = this.zones.filter((zone) => zone.Ego.Id !== z.Ego.Id);
+    
+    let nodesInZonesExceptZ : Collection = cy.collection()
+    zoneStore.Zones.filter(zone => zone.Ego.Id !== z.Ego.Id).forEach(element => {
+      nodesInZonesExceptZ = nodesInZonesExceptZ.union(element.AllCollection)
+    });
+
+    z.AllCollection.difference(nodesInZonesExceptZ).addClass("hide")
     this.Duplicates();
     this.ColorNodesInZones();
   }
@@ -110,21 +119,10 @@ export class ZoneStore {
     let nodesInZones = cy.collection();
     this.zones.forEach((zone) => {
       nodesInZones = nodesInZones.union(
-        zone.insideCollection.union(zone.outsideCollection)
+        zone.InsideCollection.union(zone.OutsideCollection)
       );
     });
     return nodesInZones;
-  }
-
-  /**
-   * NodesInZone
-   */
-  public NodesInZone(zone: Zone) {
-    let nodesInZone = cy.collection();
-    nodesInZone = nodesInZone.union(
-      zone.InsideCollection.union(zone.OutsideCollection)
-    );
-    return nodesInZone;
   }
 
   /**
@@ -206,8 +204,8 @@ export class ZoneStore {
         });
       });
     } else {
-      this.NodesInZone(z).forEach((x, i) => {
-        this.NodesInZone(z).forEach((y, j) => {
+      z.AllCollection.forEach((x, i) => {
+        z.AllCollection.forEach((y, j) => {
           networkStore.Network?.getEdge(
             (x as { [key: string]: any })["_private"]["data"]["id"] as number,
             (y as { [key: string]: any })["_private"]["data"]["id"] as number
@@ -227,6 +225,7 @@ export class ZoneStore {
             ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
               "data"
             ]["nodeType"];
+
             if (
               source === "stronglyProminent" &&
               target === "stronglyProminent"
@@ -273,24 +272,26 @@ export class ZoneStore {
    * ColorNodesInZones
    */
   public ColorNodesInZones() {
-    cy.nodes().classes("");
-    cy.edges().classes("");
+    cy.nodes().not(".hide").classes("");
+    cy.edges().not(".hide").classes("");
 
     if (this.zones.length === 0) {
       this.ColorAllNodes();
       this.ColorAllEdges();
     } else {
-      this.NodesInZones()?.forEach((n) => {
-        n.classes(
-          networkStore.Network?.Nodes.filter(
-            (node) =>
-              node.Id ===
-              ((n as { [key: string]: any })["_private"]["data"][
-                "id"
-              ] as number)
-          )[0].classes
-        );
-      });
+      this.NodesInZones()
+        .not(".hide")
+        ?.forEach((n) => {
+          n.classes(
+            networkStore.Network?.Nodes.filter(
+              (node) =>
+                node.Id ===
+                ((n as { [key: string]: any })["_private"]["data"][
+                  "id"
+                ] as number)
+            )[0].classes
+          );
+        });
       this.zones.forEach((z) => {
         this.EdgeColors(z);
       });
@@ -301,7 +302,7 @@ export class ZoneStore {
    * ColorAllNodes
    */
   private ColorAllNodes() {
-    cy.nodes().classes("");
+    cy.nodes().not(".hide").classes("");
     cy.nodes().forEach((n) => {
       n.classes(
         networkStore.Network?.Nodes.filter(
@@ -369,21 +370,22 @@ export class ZoneStore {
    * ColorNodesInZone
    */
   public ColorNodesInZone(z: Zone) {
-    cy.nodes().classes("");
-    cy.edges().classes("");
+    cy.nodes().not(".hide").classes("");
+    cy.edges().not(".hide").classes("");
 
-    z.InsideCollection.forEach((n) => {
+    z.InsideCollection.not(".hide").forEach((n) => {
       n.classes("weaklyProminent");
     });
 
-    z.InsideCollection[0].classes("stronglyProminent");
+    z.InsideCollection[0].addClass("stronglyProminent");
+
     if (networkStore.Network) {
       z.outerZoneNodes[0].forEach((n) => {
-        networkStore.Network?.getNode(n.Id).classes("liaisons");
+        networkStore.Network?.getNode(n.Id).not(".hide").classes("liaisons");
       });
 
       z.outerZoneNodes[1].forEach((n) => {
-        networkStore.Network?.getNode(n.Id).classes("coliaisons");
+        networkStore.Network?.getNode(n.Id).not(".hide").classes("coliaisons");
       });
       this.EdgeColors(z, true);
     }

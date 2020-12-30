@@ -1,12 +1,15 @@
+import { Collection } from "cytoscape";
 import { makeAutoObservable } from "mobx";
 import { zoneStore } from "..";
+import { cy } from "../Graph";
 
 export class SettingsStore {
   constructor() {
     makeAutoObservable(this);
   }
   private automove: boolean = false;
-  private quadraticCurves: boolean = true;
+  private hideOutsideZones: boolean = true;
+
   private zIndex: number = -1;
 
   private selectedOption: string = "basicZones";
@@ -31,15 +34,25 @@ export class SettingsStore {
     this.selectedOption = v;
   }
 
-  public get QuadraticCurves(): boolean {
-    return this.quadraticCurves;
+  public get HideOutsideZones(): boolean {
+    return this.hideOutsideZones;
   }
 
-  public set QuadraticCurves(v: boolean) {
-    this.quadraticCurves = v;
-    zoneStore.Zones.forEach((z) => {
-      z.updatePath();
-    });
+  public set HideOutsideZones(v: boolean) {
+    this.hideOutsideZones = v;
+    if (this.hideOutsideZones) {
+      let nodesInZones: Collection = cy.collection();
+
+      zoneStore.Zones.forEach((zone) => {
+        nodesInZones = nodesInZones.union(zone.AllCollection);
+      });
+
+      const nodesOutside = cy.nodes().difference(nodesInZones);
+
+      nodesOutside.addClass("hide");
+    } else {
+      cy.nodes().removeClass("hide");
+    }
   }
 
   public get ZIndex(): number {

@@ -15,6 +15,13 @@ import { observer } from "mobx-react-lite";
 export const BasicZones: React.FunctionComponent = () => {
   const context = useContext(Context);
 
+  const Zones = observer(() => (
+    <div>
+      {zoneStore.Zones.map((z, i) => {
+        return <ZoneItem zone={z} key={i}></ZoneItem>;
+      })}
+    </div>
+  ));
   return (
     <Stack>
       <Button
@@ -83,14 +90,8 @@ export const BasicZones: React.FunctionComponent = () => {
         Z-index
       </Checkbox>
 
-      <Checkbox
-        defaultIsChecked={settingsStore.QuadraticCurves}
-        onChange={(e) => {
-          settingsStore.QuadraticCurves = e.target.checked;
-        }}
-      >
-        Quadratic curves
-      </Checkbox>
+      <Divider></Divider>
+      <Zones />
     </Stack>
   );
 };

@@ -13,15 +13,6 @@ import { BasicLayout } from "./settings/basic/BasicLayout";
 
 export const RightPanel: React.FunctionComponent = () => {
 
-  const context = useContext(Context);
-
-  const Zones = observer(() => (
-    <div>
-      {zoneStore.Zones.map((z, i) => {
-        return <ZoneItem zone={z} key={i}></ZoneItem>;
-      })}
-    </div>
-  ));
 
   const Settings = observer(() => (
     <Stack zIndex={1} mt={5}>

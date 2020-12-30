@@ -206,7 +206,12 @@ export const Graph: React.FunctionComponent = () => {
             "text-halign": "center",
           },
         },
-
+        {
+          selector: ".hide",
+          style: {
+            display: "none",
+          },
+        },
         {
           selector: ".weaklyProminent",
           style: {
