@@ -11,6 +11,8 @@ import {
   SliderTrack,
   SliderThumb,
   SliderFilledTrack,
+  Heading,
+  Text,
 } from "@chakra-ui/react";
 import { ZoneItem } from "../../ZoneItem";
 import { Context, networkStore, settingsStore, zoneStore } from "../../.";
@@ -26,8 +28,37 @@ export const BasicZones: React.FunctionComponent = () => {
       })}
     </div>
   ));
+
+  const NodesWithLessThanSlider = observer(() => {
+    return (
+      <div>
+        <Text fontSize="md">
+          Hide zones with less than {settingsStore.MinNodesZoneShow} nodes
+        </Text>
+
+        <Slider
+          aria-label="slider-ex-1"
+          defaultValue={networkStore.Network?.Nodes.length}
+          min={0}
+          max={networkStore.Network?.Nodes.length}
+          onChange={(e) => {
+            settingsStore.MinNodesZoneShow = e;
+          }}
+        >
+          <SliderTrack>
+            <SliderFilledTrack />
+          </SliderTrack>
+          <SliderThumb />
+        </Slider>
+      </div>
+    );
+  });
   return (
     <Stack>
+      <Heading as="h4" size="md" pb={5}>
+        Add zones
+      </Heading>
+
       <Button
         onClick={() => {
           networkStore.Network?.Nodes.forEach((n) => {
@@ -53,6 +84,9 @@ export const BasicZones: React.FunctionComponent = () => {
       >
         Weakly prominent
       </Button>
+      <Heading as="h4" size="md" pb={5} pt={5}>
+        Remove zones
+      </Heading>
       <Button
         colorScheme={"red"}
         onClick={() => {
@@ -61,6 +95,9 @@ export const BasicZones: React.FunctionComponent = () => {
       >
         Clear zones
       </Button>
+      <Heading as="h4" size="md" pb={5} pt={5}>
+        Duplicates
+      </Heading>
       <Select
         isFullWidth={true}
         onChange={(e) => {
@@ -72,6 +109,9 @@ export const BasicZones: React.FunctionComponent = () => {
         <option value="de">Duplicates</option>
       </Select>
 
+      <Heading as="h4" size="md" pb={5} pt={5}>
+        Options
+      </Heading>
       <Checkbox
         defaultIsChecked={settingsStore.Automove}
         onChange={(e) => {
@@ -95,21 +135,11 @@ export const BasicZones: React.FunctionComponent = () => {
       </Checkbox>
 
       <Divider></Divider>
-
-      <Slider
-        aria-label="slider-ex-1"
-        defaultValue={networkStore.Network?.Nodes.length}
-        min={0}
-        max={networkStore.Network?.Nodes.length}
-        onChange={(e) => {
-          settingsStore.MinNodesZoneShow = e;
-        }}
-      >
-        <SliderTrack>
-          <SliderFilledTrack />
-        </SliderTrack>
-        <SliderThumb />
-      </Slider>
+      <NodesWithLessThanSlider      />
+      
+      <Heading as="h4" size="md" pb={5} pt={5}>
+        Zones
+      </Heading>
       <Zones />
     </Stack>
   );

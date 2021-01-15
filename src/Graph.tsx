@@ -42,14 +42,14 @@ export const Graph: React.FunctionComponent = () => {
       });
     });
 
-    networkStore.Network?.Edges.forEach((edge, i) => {
-      edges.current.push({
-        data: {
-          source: edge.NodeA.Id,
-          target: edge.NodeB.Id,
-        },
-      });
-    });
+    // networkStore.Network?.Edges.forEach((edge, i) => {
+    //   edges.current.push({
+    //     data: {
+    //       source: edge.NodeA.Id,
+    //       target: edge.NodeB.Id,
+    //     },
+    //   });
+    // });
 
     networkStore.Network?.Nodes.forEach((node) => {
       node.OwDep.forEach((owdep) => {
@@ -92,105 +92,105 @@ export const Graph: React.FunctionComponent = () => {
         });
       });
 
-      edges.current.forEach((e) => {
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === 1 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === 1
-        ) {
-          e.classes = e.classes + " wptowp";
-        }
+      // edges.current.forEach((e) => {
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === 1 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === 1
+      //   ) {
+      //     e.classes = e.classes + " wptowp";
+      //   }
 
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === 0 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === 0
-        ) {
-          e.classes = e.classes + " sptosp";
-        }
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === 0 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === 0
+      //   ) {
+      //     e.classes = e.classes + " sptosp";
+      //   }
 
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === -1 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === -1
-        ) {
-          e.classes = e.classes + " nptonp";
-        }
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === 0 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === 1
-        ) {
-          e.classes = e.classes + " sptowp";
-        }
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === -1 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === -1
+      //   ) {
+      //     e.classes = e.classes + " nptonp";
+      //   }
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === 0 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === 1
+      //   ) {
+      //     e.classes = e.classes + " sptowp";
+      //   }
 
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === 1 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === 0
-        ) {
-          e.classes = e.classes + " sptowp";
-        }
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === 1 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === 0
+      //   ) {
+      //     e.classes = e.classes + " sptowp";
+      //   }
 
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === -1 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === 1
-        ) {
-          e.classes = e.classes + " wptonp";
-        }
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === -1 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === 1
+      //   ) {
+      //     e.classes = e.classes + " wptonp";
+      //   }
 
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === 1 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === -1
-        ) {
-          e.classes = e.classes + " wptonp";
-        }
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === 1 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === -1
+      //   ) {
+      //     e.classes = e.classes + " wptonp";
+      //   }
 
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === -1 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === 0
-        ) {
-          e.classes = e.classes + " sptonp";
-        }
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === -1 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === 0
+      //   ) {
+      //     e.classes = e.classes + " sptonp";
+      //   }
 
-        if (
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.source
-          )[0].isProminent() === 0 &&
-          networkStore.Network?.Nodes.filter(
-            (n) => n.Id === e.data.target
-          )[0].isProminent() === -1
-        ) {
-          e.classes = e.classes + " sptonp";
-        }
-      });
+      //   if (
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.source
+      //     )[0].isProminent() === 0 &&
+      //     networkStore.Network?.Nodes.filter(
+      //       (n) => n.Id === e.data.target
+      //     )[0].isProminent() === -1
+      //   ) {
+      //     e.classes = e.classes + " sptonp";
+      //   }
+      // });
     });
 
     cy = cytoscape({

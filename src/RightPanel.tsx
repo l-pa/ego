@@ -9,6 +9,7 @@ import { BasicEdges } from "./settings/basic/BasicEdges";
 import { BasicNodes } from "./settings/basic/BasicNodes";
 import { ZonesIntersect } from "./settings/zones/ZonesIntersect";
 import { BasicLayout } from "./settings/basic/BasicLayout";
+import { ZonesMax } from "./settings/zones/ZonesMax";
 
 
 export const RightPanel: React.FunctionComponent = () => {
@@ -26,6 +27,8 @@ export const RightPanel: React.FunctionComponent = () => {
             return <BasicEdges />;
           case "basicLayout":
             return <BasicLayout />;
+          case "zonesMax":
+            return <ZonesMax />;
           case "zonesIntersect":
             return <ZonesIntersect />;
           default:
