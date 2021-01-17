@@ -40,6 +40,7 @@ function App() {
                 );
               }
               new Matrix(network).nodesDependency();
+              network.Edges.forEach((e) => e.UpdateClasses());
               context.network.Network = network;
             }}
           />

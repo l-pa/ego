@@ -38,7 +38,7 @@ export const BasicZones: React.FunctionComponent = () => {
 
         <Slider
           aria-label="slider-ex-1"
-          defaultValue={networkStore.Network?.Nodes.length}
+          defaultValue={settingsStore.MinNodesZoneShow}
           min={0}
           max={networkStore.Network?.Nodes.length}
           onChange={(e) => {
@@ -99,6 +99,7 @@ export const BasicZones: React.FunctionComponent = () => {
         Duplicates
       </Heading>
       <Select
+        defaultValue={settingsStore.Duplicates}
         isFullWidth={true}
         onChange={(e) => {
           settingsStore.Duplicates = e.target.value;
@@ -135,8 +136,8 @@ export const BasicZones: React.FunctionComponent = () => {
       </Checkbox>
 
       <Divider></Divider>
-      <NodesWithLessThanSlider      />
-      
+      <NodesWithLessThanSlider />
+
       <Heading as="h4" size="md" pb={5} pt={5}>
         Zones
       </Heading>

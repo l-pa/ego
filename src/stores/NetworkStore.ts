@@ -1,4 +1,5 @@
 import { makeAutoObservable } from "mobx";
+import { settingsStore } from "..";
 import Network from "../objects/Network";
 
 export class NetworkStore {
@@ -15,6 +16,7 @@ export class NetworkStore {
 
   public set Network(v: Network | undefined) {
     this.network = v;
+    if (v) settingsStore.MinNodesZoneShow = v.Nodes.length;
   }
   
   public get Loaded() : boolean {
@@ -24,6 +26,4 @@ export class NetworkStore {
   public set Loaded(v : boolean) {
     this.loaded = v;
   }
-  
-  
 }

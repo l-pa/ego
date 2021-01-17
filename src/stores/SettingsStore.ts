@@ -1,14 +1,14 @@
 import { Collection } from "cytoscape";
 import { makeAutoObservable } from "mobx";
 import { networkStore, zoneStore } from "..";
-import { cy } from "../Graph";
+import { cy } from "../objects/graph/Cytoscape";
 
 export class SettingsStore {
   constructor() {
     makeAutoObservable(this);
   }
   private automove: boolean = false;
-  private hideOutsideZones: boolean = true;
+  private hideOutsideZones: boolean = false;
 
   private zIndex: number = -1;
 
@@ -42,19 +42,7 @@ export class SettingsStore {
 
   public set HideOutsideZones(v: boolean) {
     this.hideOutsideZones = v;
-    if (this.hideOutsideZones) {
-      let nodesInZones: Collection = cy.collection();
-
-      zoneStore.Zones.forEach((zone) => {
-        nodesInZones = nodesInZones.union(zone.AllCollection);
-      });
-
-      const nodesOutside = cy.nodes().difference(nodesInZones);
-
-      nodesOutside.addClass("hide");
-    } else {
-      cy.nodes().removeClass("hide");
-    }
+    zoneStore.HideNodesOutsideZones();
   }
 
   public get ZIndex(): number {
@@ -78,8 +66,8 @@ export class SettingsStore {
       } else {
         element.clearPath();
       }
-      zoneStore.ColorNodesInZones();;
-      
+      zoneStore.ColorNodesInZones();
+      zoneStore.HideNodesOutsideZones();;
     });
   }
 

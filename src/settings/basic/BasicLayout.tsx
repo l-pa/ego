@@ -1,6 +1,6 @@
 import { Button, Divider, Heading, Select, Spacer } from "@chakra-ui/react";
 import React, { useRef } from "react";
-import { cy } from "../../Graph";
+import { cy } from "../../objects/graph/Cytoscape";
 
 export function BasicLayout() {
   const layoutRef = useRef<HTMLSelectElement>(null);
@@ -31,6 +31,17 @@ export function BasicLayout() {
         }}
       >
         Apply
+      </Button>
+
+      <Divider></Divider>
+      <Button
+        mt={5}
+        isFullWidth={true}
+        onClick={() => {
+          cy.fit();
+        }}
+      >
+        Reset view
       </Button>
     </div>
   );

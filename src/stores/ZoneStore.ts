@@ -1,8 +1,9 @@
 import { makeAutoObservable } from "mobx";
 import Zone from "../objects/Zone";
 import { networkStore, settingsStore, zoneStore } from "..";
-import { cy } from "../Graph";
-import { Collection } from "cytoscape";
+import { cy } from "../objects/graph/Cytoscape";
+import { Collection, EdgeSingular, ElementDefinition } from "cytoscape";
+import { difference } from "color-blend";
 
 export class ZoneStore {
   constructor() {
@@ -118,6 +119,39 @@ export class ZoneStore {
     return nodesInZones;
   }
 
+  private EdgeColorCalc(e: EdgeSingular) {
+    const a = networkStore.Network?.getNode(e.data("source")).style(
+      "background-color"
+    );
+
+    const arrA = a.substring(4, a.length - 1)
+    .replace(/ /g, "")
+    .split(",")
+
+    const b = networkStore.Network?.getNode(e.data("target")).style(
+      "background-color"
+    );
+
+    const arrB = b.substring(4, b.length - 1)
+    .replace(/ /g, "")
+    .split(",")
+
+    arrA[0] = Number.parseFloat(arrA[0])
+    arrA[1] = Number.parseFloat(arrA[1])
+    arrA[2] = Number.parseFloat(arrA[2])
+
+    arrB[0] = Number.parseFloat(arrB[0])
+    arrB[1] = Number.parseFloat(arrB[1])
+    arrB[2] = Number.parseFloat(arrB[2])
+      
+    const color = difference({ r: arrA[0], g: arrA[1], b: arrA[2], a: 1 }, { r: arrB[1], g: arrB[2], b: arrB[3], a: 1 });
+    
+    e.style(
+      "line-color",
+      `rgb(${color.r},${color.g},${color.b})`
+    );
+  }
+
   /**
    * EdgeColors
    */
@@ -127,7 +161,7 @@ export class ZoneStore {
 
       this.zones.forEach((z) => {
         if (z.isDrawn)
-        nodes = nodes.union(z.InsideCollection.union(z.OutsideCollection));
+          nodes = nodes.union(z.InsideCollection.union(z.OutsideCollection));
       });
 
       nodes.forEach((x, i) => {
@@ -136,64 +170,7 @@ export class ZoneStore {
             (x as { [key: string]: any })["_private"]["data"]["id"] as number,
             (y as { [key: string]: any })["_private"]["data"]["id"] as number
           ).forEach((e) => {
-            const source = (networkStore.Network?.getNode(
-              (e as { [key: string]: any })["_private"]["data"][
-                "source"
-              ] as number
-            ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
-              "data"
-            ]["nodeType"];
-
-            const target = (networkStore.Network?.getNode(
-              (e as { [key: string]: any })["_private"]["data"][
-                "target"
-              ] as number
-            ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
-              "data"
-            ]["nodeType"];
-
-            if (
-              source === "stronglyProminent" &&
-              target === "stronglyProminent"
-            ) {
-              e.classes("sptosp");
-              return;
-            }
-
-            if (source === "weaklyProminent" && target === "weaklyProminent") {
-              e.classes("wptowp");
-              return;
-            }
-
-            if (source === "nonProminent" && target === "nonProminent") {
-              e.classes("nptonp");
-              return;
-            }
-
-            if (
-              (source === "stronglyProminent" &&
-                target === "weaklyProminent") ||
-              (source === "weaklyProminent" && target === "stronglyProminent")
-            ) {
-              e.classes("sptowp");
-              return;
-            }
-
-            if (
-              (source === "stronglyProminent" && target === "nonProminent") ||
-              (source === "nonProminent" && target === "stronglyProminent")
-            ) {
-              e.classes("sptonp");
-              return;
-            }
-
-            if (
-              (source === "weaklyProminent" && target === "nonProminent") ||
-              (source === "nonProminent" && target === "weaklyProminent")
-            ) {
-              e.classes("wptonp");
-              return;
-            }
+            this.EdgeColorCalc(e);
           });
         });
       });
@@ -204,58 +181,7 @@ export class ZoneStore {
             (x as { [key: string]: any })["_private"]["data"]["id"] as number,
             (y as { [key: string]: any })["_private"]["data"]["id"] as number
           ).forEach((e) => {
-            const source = (networkStore.Network?.getNode(
-              (e as { [key: string]: any })["_private"]["data"][
-                "source"
-              ] as number
-            ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
-              "data"
-            ]["nodeType"];
-
-            const target = (networkStore.Network?.getNode(
-              (e as { [key: string]: any })["_private"]["data"][
-                "target"
-              ] as number
-            ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
-              "data"
-            ]["nodeType"];
-
-            if (
-              source === "stronglyProminent" &&
-              target === "stronglyProminent"
-            ) {
-              e.classes("sptosp");
-            }
-
-            if (source === "weaklyProminent" && target === "weaklyProminent") {
-              e.classes("wptowp");
-            }
-
-            if (source === "nonProminent" && target === "nonProminent") {
-              e.classes("nptonp");
-            }
-
-            if (
-              (source === "stronglyProminent" &&
-                target === "weaklyProminent") ||
-              (source === "weaklyProminent" && target === "stronglyProminent")
-            ) {
-              e.classes("sptowp");
-            }
-
-            if (
-              (source === "stronglyProminent" && target === "nonProminent") ||
-              (source === "nonProminent" && target === "stronglyProminent")
-            ) {
-              e.classes("sptonp");
-            }
-
-            if (
-              (source === "weaklyProminent" && target === "nonProminent") ||
-              (source === "nonProminent" && target === "weaklyProminent")
-            ) {
-              e.classes("wptonp");
-            }
+            this.EdgeColorCalc(e);
           });
         });
       });
@@ -273,7 +199,7 @@ export class ZoneStore {
       this.ColorAllNodes();
       this.ColorAllEdges();
     } else {
-      zoneStore.Zones.forEach(element => {
+      zoneStore.Zones.forEach((element) => {
         if (element.IsDrawn) {
           element.AllCollection.not(".hide")?.forEach((n) => {
             n.classes(
@@ -283,8 +209,9 @@ export class ZoneStore {
                   ((n as { [key: string]: any })["_private"]["data"][
                     "id"
                   ] as number)
-              )[0].classes)
-              })
+              )[0].classes
+            );
+          });
         }
       });
       this.zones.forEach((z) => {
@@ -314,50 +241,8 @@ export class ZoneStore {
    */
   private ColorAllEdges() {
     cy.edges().forEach((e) => {
-      const source = (networkStore.Network?.getNode(
-        (e as { [key: string]: any })["_private"]["data"]["source"] as number
-      ) as { [key: string]: any })["_private"]["eles"][0]["_private"]["data"][
-        "nodeType"
-      ];
-
-      const target = (networkStore.Network?.getNode(
-        (e as { [key: string]: any })["_private"]["data"]["target"] as number
-      ) as { [key: string]: any })["_private"]["eles"][0]["_private"]["data"][
-        "nodeType"
-      ];
-
-      if (source === "stronglyProminent" && target === "stronglyProminent") {
-        e.classes("sptosp");
-      }
-
-      if (source === "weaklyProminent" && target === "weaklyProminent") {
-        e.classes("wptowp");
-      }
-
-      if (source === "nonProminent" && target === "nonProminent") {
-        e.classes("nptonp");
-      }
-
-      if (
-        (source === "stronglyProminent" && target === "weaklyProminent") ||
-        (source === "weaklyProminent" && target === "stronglyProminent")
-      ) {
-        e.classes("sptowp");
-      }
-
-      if (
-        (source === "stronglyProminent" && target === "nonProminent") ||
-        (source === "nonProminent" && target === "stronglyProminent")
-      ) {
-        e.classes("sptonp");
-      }
-
-      if (
-        (source === "weaklyProminent" && target === "nonProminent") ||
-        (source === "nonProminent" && target === "weaklyProminent")
-      ) {
-        e.classes("wptonp");
-      }
+      //console.log(event.target.style("background-color"));
+      this.EdgeColorCalc(e);
     });
   }
 
@@ -383,6 +268,25 @@ export class ZoneStore {
         networkStore.Network?.getNode(n.Id).not(".hide").classes("coliaisons");
       });
       this.EdgeColors(z, true);
+    }
+  }
+
+  /**
+   * HideNodesOutsideZones
+   */
+  public HideNodesOutsideZones() {
+    if (settingsStore.HideOutsideZones) {
+      let nodesInZones: Collection = cy.collection();
+
+      zoneStore.Zones.forEach((zone) => {
+        if (zone.IsDrawn) nodesInZones = nodesInZones.union(zone.AllCollection);
+      });
+
+      const nodesOutside = cy.nodes().difference(nodesInZones);
+
+      nodesOutside.addClass("hide");
+    } else {
+      cy.nodes().removeClass("hide");
     }
   }
 }

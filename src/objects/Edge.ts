@@ -18,6 +18,7 @@ export default class Edge implements ElementDefinition {
     this.data = {
       source: this.NodeA.Id.toString(),
       target: this.NodeB.Id.toString(),
+      edgeType: ""
     };
 
     if (weight) {
@@ -25,65 +26,44 @@ export default class Edge implements ElementDefinition {
     }
   }
 
-  public plainObject() {
+  public PlainObject(): ElementDefinition {
     return Object.assign({}, this);
   }
 
-  // public updateClasses() {
-  //   this.classes = "";
-  //   if (this.NodeA.OwDep.filter((n) => n.Id === this.NodeB.Id)) {
-  //     this.classes = "owdep";
-  //   }
+  public UpdateClasses() {
+    const source = this.NodeA.isProminent();
+    const target = this.NodeB.isProminent();
 
-  //   if (this.NodeA.OwInDep.filter((n) => n.Id === this.NodeB.Id)) {
-  //     this.classes = "owindep";
-  //   }
+    if (source === 0 && target === 0) {
+      // this.classes = "sptosp";
+      this.data.edgeType = "sptosp"
+    }
 
-  //   if (this.NodeA.TwDep.filter((n) => n.Id === this.NodeB.Id)) {
-  //     this.classes = "twdep";
-  //   }
+    if (source === 1 && target === 1) {
+      // this.classes = "wptowp";
+      this.data.edgeType = "wptowp"
+    }
 
-  //   if (this.NodeA.TwInDep.filter((n) => n.Id === this.NodeB.Id)) {
-  //     this.classes = "twindep";
-  //   }
+    if (source === -1 && target === -1) {
+      // this.classes = "nptonp";
+      this.data.edgeType = "nptonp"
+    }
 
-  //   if (this.NodeA.isProminent() === 1) {
-  //     if (this.NodeB.isProminent() === 1) {
-  //       this.classes += " wptowp";
-  //     }
-  //     if (this.NodeB.isProminent() === 0) {
-  //       this.classes += " sptowp";
-  //     }
+    if ((source === 0 && target === 1) || (source === 1 && target === 0)) {
+      // this.classes = "sptowp";
+      this.data.edgeType = "sptowp"
 
-  //     if (this.NodeB.isProminent() === -1) {
-  //       this.classes += " wptonp";
-  //     }
-  //   }
+    }
 
-  //   if (this.NodeA.isProminent() === 0) {
-  //     if (this.NodeB.isProminent() === 1) {
-  //       this.classes += " sptowp";
-  //     }
-  //     if (this.NodeB.isProminent() === 0) {
-  //       this.classes += " sptosp";
-  //     }
+    if ((source === 0 && target === -1) || (source === -1 && target === 0)) {
+      // this.classes = "sptonp";
+      this.data.edgeType = "sptonp"
 
-  //     if (this.NodeB.isProminent() === -1) {
-  //       this.classes += " wptonp";
-  //     }
-  //   }
+    }
 
-  //   if (this.NodeA.isProminent() === -1) {
-  //     if (this.NodeB.isProminent() === 1) {
-  //       this.classes += " wptonp";
-  //     }
-  //     if (this.NodeB.isProminent() === 0) {
-  //       this.classes += " sptonp";
-  //     }
-
-  //     if (this.NodeB.isProminent() === -1) {
-  //       this.classes += " nptonp";
-  //     }
-  //   }
-  // }
+    if ((source === 1 && target === -1) || (source === -1 && target === 1)) {
+      // this.classes = "wptonp";
+      this.data.edgeType = "wptonp"
+    }
+  }
 }

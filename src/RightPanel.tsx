@@ -40,10 +40,9 @@ export const RightPanel: React.FunctionComponent = () => {
 
 
   return (
-    <Stack overflowY={"scroll"} height={"90vh"} width={"15vw"} p={5}>
+    <Stack overflowY={"scroll"} height={"100vh"} width={"25vw"} p={5}>
       <Box>
         <Settings />
-        {/* <Zones /> */}
       </Box>
     </Stack>
   );

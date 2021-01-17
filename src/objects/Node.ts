@@ -88,7 +88,7 @@ export default class Node implements ElementDefinition {
     this.classes = type;
   }
 
-  public plainObject() {
+  public PlainObject(): ElementDefinition {
     return Object.assign({}, this);
   }
 

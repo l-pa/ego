@@ -5,7 +5,7 @@ import cytoscape, {
   CytoscapeOptions,
   NodeSingular,
 } from "cytoscape";
-import { cy } from "../Graph";
+
 import { settingsStore, zoneStore } from "..";
 import {
   CrossCalc,
@@ -17,6 +17,8 @@ import {
   vecSum,
   vecUnit,
 } from "./Vector";
+import { cy } from "./graph/Cytoscape";
+import { Fade } from "@chakra-ui/react";
 
 export default class Zone {
   public Ego: Node;
@@ -39,16 +41,13 @@ export default class Zone {
 
   private automove: any;
 
-  private layer: any = (cy as any).cyCanvas({ zIndex: this.zIndex });
-  private canvas: any = this.layer.getCanvas();
-  private ctx: any = this.canvas.getContext("2d");
+  private layer: any =undefined;
+  private canvas: any = undefined;
+  private ctx: any =undefined;
 
   private insideCollection: Collection = cytoscape().collection();
   private outsideCollection: Collection = cytoscape().collection();
-  private allCollection: Collection = cytoscape().collection();
 
-
-  private hull: NodeSingular[] = [];
 
   private label: string = "";
 
@@ -63,7 +62,6 @@ export default class Zone {
 
     this.insideCollection = cy.collection();
     this.outsideCollection = cy.collection();
-    this.allCollection = cy.collection();
 
 
     //   let insideCollectionEdges = cy.collection();
@@ -210,17 +208,16 @@ export default class Zone {
           );
         }
       );
+      this.AllCollection.classes();
 
       this.AllCollection.difference(nodesInZonesExceptZ).addClass("hide");
     }
     
     if (this.isDrawn) {
       this.isDrawn = false;
-      //  this.cy?.off("render cyCanvas.resize");
       this.layer.clear(this.ctx);
-      // this.canvas.remove();
-
-      // this.cy.automove("destroy");
+      this.canvas.remove()
+      this.automove.destroy()
     } else {
       console.log("Nothing to clear");
     }
@@ -230,90 +227,41 @@ export default class Zone {
     if (settingsStore.HideOutsideZones) {
       this.AllCollection.removeClass("hide");
     }
-    if (!this.isDrawn) {
-      this.isDrawn = true;
-      // this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
-      // this.canvas = this.layer.getCanvas();
-      // this.ctx = this.canvas.getContext("2d");
 
+    
+    if (!this.isDrawn) {
+      if (this.AllCollection.length > settingsStore.MinNodesZoneShow) {
+        return
+      }
+
+      
+        // >/
+              
+        this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
+        this.canvas = this.layer.getCanvas();
+        this.ctx = this.canvas.getContext("2d");
+      
+      
       this.automove = (cy as any).automove({
         nodesMatching: this.insideCollection
-          .subtract(this.insideCollection[0])
-          .union(this.outsideCollection),
-
+        .subtract(this.insideCollection[0])
+        .union(this.outsideCollection),
+        
         reposition: "drag",
-
+        
         dragWith: this.insideCollection[0],
       });
-
+      
       this.automove.disable();
-
+      
       if (settingsStore.Automove) {
         this.automove.enable();
       }
+      this.isDrawn = true;
       this.updatePath();
     } else {
       //this.updatePath();
     }
-  }
-
-  private convexHull(nodes: CollectionReturnValue): NodeSingular[] {
-    nodes = nodes.sort((a: NodeSingular, b: NodeSingular) => {
-      return a.position().x - b.position().x;
-    });
-
-    let hull = [];
-
-    let leftMost;
-    let currentVertex;
-    let index;
-    let nextVertex;
-
-    leftMost = nodes[0];
-
-    currentVertex = leftMost;
-    hull.push(currentVertex);
-
-    nextVertex = nodes[1];
-    index = 2;
-
-    if (nodes.length < 3) {
-      index = 1;
-    }
-
-    let isRunning = true;
-
-    while (isRunning) {
-      const checking = nodes[index];
-      const a = Subtract(
-        [nextVertex.position().x, nextVertex.position().y],
-        [currentVertex.position().x, currentVertex.position().y]
-      );
-      const b = Subtract(
-        [checking.position().x, checking.position().y],
-        [currentVertex.position().x, currentVertex.position().y]
-      );
-
-      const cross = CrossCalc(a, b);
-
-      if (cross < 0) {
-        nextVertex = checking;
-      }
-
-      index += 1;
-      if (index === nodes.length) {
-        if (nextVertex === leftMost) {
-          isRunning = false;
-        } else {
-          hull.push(nextVertex);
-          currentVertex = nextVertex;
-          index = 0;
-          nextVertex = leftMost;
-        }
-      }
-    }
-
-    return hull;
   }
 
   private collectionPoints(hull :  cytoscape.SingularElementReturnValue[] | cytoscape.CollectionReturnValue) {
@@ -526,40 +474,7 @@ export default class Zone {
         x.push(element.p[1])
       });
       this.ctx.curve(x, 0.5, 25, true);                 // add cardinal spline to path
-      // this.ctx.stroke();                      // stroke path
-      
-      /*
-      for (let i = 0; i < a.length; i++) {
-        let element = a[i];
 
-        let x1 = element.p[0];
-        let y1 = element.p[1];
-
-        let x1v = element.v[0];
-        let y1v = element.v[1];
-
-
-        if (i === 0) {
-          continue
-        }
-
-        // const xc = (x + l * res[0] + points[i +  1].x) / 2;
-        // const yc = (points[i].y + points[i + 1].y) / 2;
-        // this.ctx.quadraticCurveTo(x + l * res[0], y + l * res[1], xc, yc);
-
-        // this.ctx.font = "24px Helvetica";
-        // this.ctx.fillStyle = "";
-        // this.ctx.fillText(
-        //   `${this.hull[i].data("hullX")} ${this.hull[i].data("hullY")}`,
-        //   this.hull[i].data("hullX"),
-        //   this.hull[i].data("hullY")
-        //   );
-        console.log(i, element);
-        
-       //this.ctx.quadraticCurveTo(x1, y1 , x1, y1);
-      //this.ctx.lineTo(x1, y1);
-      }
-      */
       this.ctx.closePath();
       this.ctx.fill();
     } else {
