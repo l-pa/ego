@@ -2,11 +2,23 @@ import type Node from "./Node";
 import cytoscape, {
   Collection,
   CollectionReturnValue,
+  CytoscapeOptions,
   NodeSingular,
 } from "cytoscape";
-import { cy } from "../Graph";
-import { reaction } from "mobx";
-import { settingsStore } from "..";
+
+import { settingsStore, zoneStore } from "..";
+import {
+  CrossCalc,
+  Subtract,
+  unitNormal,
+  vecFrom,
+  vecScale,
+  vecScaleTo,
+  vecSum,
+  vecUnit,
+} from "./Vector";
+import { cy } from "./graph/Cytoscape";
+import { Fade } from "@chakra-ui/react";
 
 export default class Zone {
   public Ego: Node;
@@ -28,18 +40,14 @@ export default class Zone {
   private zIndex: number = -1;
 
   private automove: any;
-  private enableAutomove: boolean = false;
 
-  private quadraticCurves: boolean = false;
+  private layer: any =undefined;
+  private canvas: any = undefined;
+  private ctx: any =undefined;
 
-  private layer: any = (cy as any).cyCanvas({ zIndex: this.zIndex });
-  private canvas: any = this.layer.getCanvas();
-  private ctx: any = this.canvas.getContext("2d");
+  private insideCollection: Collection = cytoscape().collection();
+  private outsideCollection: Collection = cytoscape().collection();
 
-  public insideCollection: Collection = cytoscape().collection();
-  public outsideCollection: Collection = cytoscape().collection();
-
-  private hull: NodeSingular[] = [];
 
   private label: string = "";
 
@@ -54,6 +62,7 @@ export default class Zone {
 
     this.insideCollection = cy.collection();
     this.outsideCollection = cy.collection();
+
 
     //   let insideCollectionEdges = cy.collection();
     //   let outsideCollectionEdges = cy.collection();
@@ -95,13 +104,6 @@ export default class Zone {
     }
   }
 
-  public set QuadraticCurves(b: boolean) {
-    this.quadraticCurves = b;
-    if (this.isZoneShown) {
-      this.updatePath();
-    }
-  }
-
   public set Zindex(index: number) {
     this.zIndex = index;
     this.clearPath();
@@ -123,6 +125,10 @@ export default class Zone {
 
   public get OutsideCollection() {
     return this.outsideCollection;
+  }
+
+  public get AllCollection() {
+    return this.outsideCollection.union(this.insideCollection);
   }
 
   public get Label() {
@@ -178,7 +184,9 @@ export default class Zone {
   }
 
   public updatePath() {
-    this.calc(this.insideCollection.union(this.outsideCollection));
+    if (this.isDrawn) {
+      this.calc(this.insideCollection.union(this.outsideCollection));
+    }
   }
 
   public applyLayout(layout: string) {
@@ -191,52 +199,84 @@ export default class Zone {
   }
 
   public clearPath() {
+    if (settingsStore.HideOutsideZones) {
+      let nodesInZonesExceptZ: Collection = cy.collection();
+      zoneStore.Zones.filter((zone) => zone.Ego.Id !== this.Ego.Id).forEach(
+        (element) => {
+          nodesInZonesExceptZ = nodesInZonesExceptZ.union(
+            element.AllCollection
+          );
+        }
+      );
+      this.AllCollection.classes();
+
+      this.AllCollection.difference(nodesInZonesExceptZ).addClass("hide");
+    }
+    
     if (this.isDrawn) {
       this.isDrawn = false;
-      //  this.cy?.off("render cyCanvas.resize");
       this.layer.clear(this.ctx);
-      this.canvas.remove();
-
-      // this.cy.automove("destroy");
+      this.canvas.remove()
+      this.automove.destroy()
     } else {
       console.log("Nothing to clear");
     }
   }
 
-  private subtract([x1, y1]: any, [x2, y2]: any) {
-    return [-x2 + x1, -y2 + y1];
-  }
-
-  private crossCalc([x1, y1]: any, [x2, y2]: any) {
-    return x1 * y2 - y1 * x2;
-  }
-
   public drawZone() {
-    if (!this.isDrawn) {
-      this.isDrawn = true;
+    if (settingsStore.HideOutsideZones) {
+      this.AllCollection.removeClass("hide");
+    }
 
+    
+    if (!this.isDrawn) {
+      if (this.AllCollection.length > settingsStore.MinNodesZoneShow) {
+        return
+      }
+
+      
+        // >/
+              
+        this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
+        this.canvas = this.layer.getCanvas();
+        this.ctx = this.canvas.getContext("2d");
+      
+      
       this.automove = (cy as any).automove({
         nodesMatching: this.insideCollection
-          .subtract(this.insideCollection[0])
-          .union(this.outsideCollection),
-
+        .subtract(this.insideCollection[0])
+        .union(this.outsideCollection),
+        
         reposition: "drag",
-
+        
         dragWith: this.insideCollection[0],
       });
-
+      
       this.automove.disable();
-
-      if (this.enableAutomove) {
+      
+      if (settingsStore.Automove) {
         this.automove.enable();
       }
+      this.isDrawn = true;
       this.updatePath();
     } else {
-      this.updatePath();
+      //this.updatePath();
     }
   }
 
-  private convexHull(nodes: CollectionReturnValue): NodeSingular[] {
+  private collectionPoints(hull :  cytoscape.SingularElementReturnValue[] | cytoscape.CollectionReturnValue) {
+    const a: Array<[number, number]> = [];
+
+    hull.forEach((element:cytoscape.NodeSingular) => {
+      a.push([element.position().x, element.position().y]);
+    });
+
+    return a
+  }
+
+  private convexHullPoints(
+    nodes: CollectionReturnValue
+  ): Array<[number, number]> {
     nodes = nodes.sort((a: NodeSingular, b: NodeSingular) => {
       return a.position().x - b.position().x;
     });
@@ -246,7 +286,6 @@ export default class Zone {
     let leftMost;
     let currentVertex;
     let index;
-    let nextIndex = -1;
     let nextVertex;
 
     leftMost = nodes[0];
@@ -265,20 +304,19 @@ export default class Zone {
 
     while (isRunning) {
       const checking = nodes[index];
-      const a = this.subtract(
+      const a = Subtract(
         [nextVertex.position().x, nextVertex.position().y],
         [currentVertex.position().x, currentVertex.position().y]
       );
-      const b = this.subtract(
+      const b = Subtract(
         [checking.position().x, checking.position().y],
         [currentVertex.position().x, currentVertex.position().y]
       );
 
-      const cross = this.crossCalc(a, b);
+      const cross = CrossCalc(a, b);
 
       if (cross < 0) {
         nextVertex = checking;
-        nextIndex = index;
       }
 
       index += 1;
@@ -294,7 +332,125 @@ export default class Zone {
       }
     }
 
-    return hull;
+
+    return this.collectionPoints(hull);
+  }
+
+  private hullPadding = 60;
+
+  private line(
+    a: {
+      p: [number, number];
+      v: [number, number];
+    }[]
+  ) {
+    return a;
+  }
+
+/*
+    Modified 
+
+    
+    MIT License
+
+    Copyright © 2017 Steve Hollasch
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.imitations under the License.
+*/
+
+  private smoothHull(polyPoints: Array<[number, number]>) {
+    // Returns the SVG path data string representing the polygon, expanded and smoothed.
+
+    var pointCount = polyPoints.length;
+
+    // Handle special cases
+    // if (!polyPoints || pointCount < 1) return undefined;
+     if (pointCount === 1) this.smoothHull1(polyPoints);
+     if (pointCount === 2) this.smoothHull2(polyPoints);
+
+    var hullPoints = polyPoints.map(function (point, index) {
+      var pNext = polyPoints[(index + 1) % pointCount];
+      return {
+        p: point,
+        v: vecUnit(vecFrom(point, pNext)),
+      };
+    });
+
+    // Compute the expanded hull points, and the nearest prior control point for each.
+    for (var i = 0; i < hullPoints.length; ++i) {
+      var priorIndex = i > 0 ? i - 1 : pointCount - 1;
+      var extensionVec = vecUnit(
+        vecSum(hullPoints[priorIndex].v, vecScale(hullPoints[i].v, -1))
+      );
+      hullPoints[i].p = vecSum(
+        hullPoints[i].p,
+        vecScale(extensionVec, this.hullPadding)
+      );
+    }
+
+    return this.line(hullPoints);
+  }
+
+  private smoothHull1(polyPoints: Array<[number, number]>) {
+    // Returns the path for a circular hull around a single point.
+
+    this.ctx.beginPath();
+    this.ctx.ellipse(polyPoints[0][0], polyPoints[0][1], this.hullPadding, this.hullPadding, Math.PI / 4, 0, 2 * Math.PI);
+    this.ctx.closePath();
+    this.ctx.fill();
+/*
+    console.log(
+      "M " +
+        p1 +
+        " A " +
+        [this.hullPadding, this.hullPadding, "0,0,0", p2].join(",") +
+        " A " +
+        [this.hullPadding, this.hullPadding, "0,0,0", p1].join(",")
+    );
+    */
+  }
+
+  private smoothHull2(polyPoints: Array<[number, number]>) {
+    // Returns the path for a rounded hull around two points.
+
+    var v = vecFrom(polyPoints[0], polyPoints[1]);
+    var extensionVec = vecScaleTo(v, this.hullPadding);
+
+    var extension0 = vecSum(polyPoints[0], vecScale(extensionVec, -1));
+    var extension1 = vecSum(polyPoints[1], extensionVec);
+
+    var tangentHalfLength = 1.2 * this.hullPadding;
+    var controlDelta = vecScaleTo(unitNormal(v, undefined), tangentHalfLength);
+    var invControlDelta = vecScale(controlDelta, -1);
+
+    var control0 = vecSum(extension0, invControlDelta);
+    var control1 = vecSum(extension1, invControlDelta);
+    var control3 = vecSum(extension0, controlDelta);
+    var control4 = vecSum(extension1, controlDelta);
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(extension0[0], extension0[1]);
+    this.ctx.bezierCurveTo(control0[0], control0[1], control1[0], control1[1], extension1[0], extension1[1])
+    this.ctx.bezierCurveTo(control4[0], control4[1], control3[0], control3[1], extension0[0], extension0[1])
+
+    this.ctx.closePath();
+    this.ctx.fill();
   }
 
   private calc(allCollection: CollectionReturnValue) {
@@ -303,146 +459,26 @@ export default class Zone {
     this.layer.setTransform(this.ctx);
     this.ctx.fillStyle = this.color + this.alpha;
 
-    if (allCollection.length < 2) {
-      this.ctx.beginPath();
-      this.ctx.arc(
-        allCollection[0].position().x,
-        allCollection[0].position().y,
-        33,
-        0,
-        2 * Math.PI
-      );
-      this.ctx.fill();
-    } else {
-      this.hull = this.convexHull(allCollection);
-
-      //  this.hull = this.convexHull(newHull)
-
+    let a;
+    if (allCollection.length > 2) {
+      a = this.smoothHull(this.convexHullPoints(allCollection));
+      // a.push(a[a.length - 1]);
       this.ctx.save();
+      this.ctx.beginPath();
+      this.ctx.moveTo(a[0].p[0], a[0].p[1]);
+      
+      const x:Array<number> = []
 
-      let fpos;
-      for (let i = 0; i < this.hull.length; i++) {
-        let element = this.hull[i];
+      a.forEach(element => {
+        x.push(element.p[0])
+        x.push(element.p[1])
+      });
+      this.ctx.curve(x, 0.5, 25, true);                 // add cardinal spline to path
 
-        let curr = i;
-        let ln = i - 1;
-        let rn = i + 1;
-
-        if (i === 0) {
-          ln = this.hull.length - 1;
-        }
-
-        if (i === this.hull.length - 1) {
-          rn = 0;
-        }
-
-        let dx1 = this.hull[rn].position().x - this.hull[curr].position().x;
-        let dy1 = this.hull[rn].position().y - this.hull[curr].position().y;
-
-        let dx2 = this.hull[ln].position().x - this.hull[curr].position().x;
-        let dy2 = this.hull[ln].position().y - this.hull[curr].position().y;
-
-        const a = [dy1, -dx1];
-
-        const b = [-dy2, dx2];
-
-        const la1 = Math.sqrt((-dy1) ** 2 + dx1 ** 2);
-
-        const lb1 = Math.sqrt((-dy2) ** 2 + dx2 ** 2);
-
-        a[0] = a[0] / la1;
-        a[1] = a[1] / la1;
-
-        b[0] = b[0] / lb1;
-        b[1] = b[1] / lb1;
-
-        const res = [a[0] + b[0], a[1] + b[1]];
-        const resl = Math.sqrt(res[0] ** 2 + res[1] ** 2);
-
-        res[0] = res[0] / resl;
-        res[1] = res[1] / resl;
-
-        let l = 100 / Math.sqrt(1 + (a[0] * b[0] + a[1] * b[1]));
-
-        if (l > 300) l = 300;
-        if (l < 100) l = 100;
-
-        let x = element.position().x;
-        let y = element.position().y;
-
-        if (i === 0) {
-          fpos = [x + l * res[0], y + l * res[1]];
-        }
-        if (i === 0) {
-          this.ctx.beginPath();
-          this.ctx.moveTo(x + l * res[0], y + l * res[1]);
-        }
-
-        // const xc = (x + l * res[0] + points[i +  1].x) / 2;
-        // const yc = (points[i].y + points[i + 1].y) / 2;
-        // this.ctx.quadraticCurveTo(x + l * res[0], y + l * res[1], xc, yc);
-
-        element.data("hullX", x + l * res[0]);
-        element.data("hullY", y + l * res[1]);
-        element.data("hullL", l);
-      }
-      if (this.quadraticCurves) {
-        for (let i = 0; i < this.hull.length - 1; i++) {
-          const element = this.hull[i];
-          const element2 = this.hull[i + 1];
-
-          //   this.ctx.lineTo(element.data('hullX'), element.data('hullY'));
-
-          const xc = (element.data("hullX") + element2.data("hullX")) / 2;
-          const yc = (element.data("hullY") + element2.data("hullY")) / 2;
-
-          this.ctx.quadraticCurveTo(
-            element.data("hullX"),
-            element.data("hullY"),
-            xc,
-            yc
-          );
-        }
-
-        this.ctx.quadraticCurveTo(
-          this.hull[this.hull.length - 1].data("hullX"),
-          this.hull[this.hull.length - 1].data("hullY"),
-          (this.hull[0].data("hullX") +
-            this.hull[this.hull.length - 1].data("hullX")) /
-            2,
-          (this.hull[0].data("hullY") +
-            this.hull[this.hull.length - 1].data("hullY")) /
-            2
-        );
-
-        this.ctx.quadraticCurveTo(
-          this.hull[0].data("hullX"),
-          this.hull[0].data("hullY"),
-          (this.hull[1].data("hullX") + this.hull[0].data("hullX")) / 2,
-          (this.hull[1].data("hullY") + this.hull[0].data("hullY")) / 2
-        );
-      } else {
-        for (let i = 0; i < this.hull.length; i++) {
-          this.ctx.lineTo(
-            this.hull[i].data("hullX"),
-            this.hull[i].data("hullY")
-          );
-        }
-      }
       this.ctx.closePath();
       this.ctx.fill();
-
-      let topNode = allCollection.sort((a: NodeSingular, b: NodeSingular) => {
-        return a.position().y - b.position().y;
-      });
-
-      this.ctx.font = "24px Helvetica";
-      this.ctx.fillStyle = "black";
-      this.ctx.fillText(
-        this.label,
-        topNode[0].position().x - 10,
-        topNode[0].position().y - 75
-      );
+    } else {
+      a = this.smoothHull(this.collectionPoints(allCollection));
     }
   }
 

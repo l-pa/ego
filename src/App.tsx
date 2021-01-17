@@ -1,16 +1,17 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
 import Matrix from "./objects/DependencyMatrix";
 import { Graph } from "./Graph";
 import Node from "./objects/Node";
 import Network from "./objects/Network";
-import { Context, networkStore } from ".";
-import { autorun, reaction } from "mobx";
+import { Context } from ".";
+import { reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { UI } from "./UI";
 import { ZoneItem } from "./ZoneItem";
-import { ChakraProvider } from "@chakra-ui/react";
+import { Box, ChakraProvider, Divider, Flex, Stack } from "@chakra-ui/react";
+import { LeftPanel } from "./LeftPanel";
+import { RightPanel } from "./RightPanel";
 
 function App() {
   const context = useContext(Context);
@@ -39,28 +40,35 @@ function App() {
                 );
               }
               new Matrix(network).nodesDependency();
+              network.Edges.forEach((e) => e.UpdateClasses());
               context.network.Network = network;
             }}
           />
         )}
         {context.network.Network && (
           <div>
-            <UI />
-            <Graph />
-            {context.zones.Zones.map((z, i,   a) => {
-              <ZoneItem zone={z} key={i}></ZoneItem>;;;
-            })}
+            <Stack>
+              <Flex>
+                <LeftPanel />
+                <Divider height={"100vh"} orientation="vertical" />
+                <Box flex={1}>
+                  <Graph />
+                </Box>
+                <Divider height={"100vh"} orientation="vertical" />
+                <RightPanel />
+              </Flex>
+            </Stack>
           </div>
         )}
       </div>
     );
   });
 
-  return(
+  return (
     <ChakraProvider>
-      <App />;
+      <App />
     </ChakraProvider>
-  ) 
+  );
 }
 
 export default App;

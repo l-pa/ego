@@ -1,8 +1,9 @@
-import { createContext } from "react";
-import { observable, computed, makeObservable, makeAutoObservable } from "mobx";
+import { makeAutoObservable } from "mobx";
 import Zone from "../objects/Zone";
-import { networkStore, settingsStore } from "..";
-import { cy } from "../Graph";
+import { networkStore, settingsStore, zoneStore } from "..";
+import { cy } from "../objects/graph/Cytoscape";
+import { Collection, EdgeSingular, ElementDefinition } from "cytoscape";
+import { difference } from "color-blend";
 
 export class ZoneStore {
   constructor() {
@@ -18,10 +19,12 @@ export class ZoneStore {
    * AddZone
    */
   public AddZone(zone: Zone) {
-    this.zones.push(zone);
-
-    this.ColorNodesInZones();
+    if (this.zones.filter((z) => z.Ego.Id === zone.Ego.Id).length === 0) {
+      this.zones.push(zone);
+    }
+    zone.AllCollection.removeClass("hide");
     this.Duplicates();
+    this.ColorNodesInZones();
   }
 
   /**
@@ -50,7 +53,10 @@ export class ZoneStore {
    * RemoveZone
    */
   public RemoveZone(z: Zone) {
-    throw new Error("Implement");
+    this.zones = this.zones.filter((zone) => zone.Ego.Id !== z.Ego.Id);
+    z.clearPath();
+    this.Duplicates();
+    this.ColorNodesInZones();
   }
 
   /**
@@ -107,21 +113,43 @@ export class ZoneStore {
     let nodesInZones = cy.collection();
     this.zones.forEach((zone) => {
       nodesInZones = nodesInZones.union(
-        zone.insideCollection.union(zone.outsideCollection)
+        zone.InsideCollection.union(zone.OutsideCollection)
       );
     });
     return nodesInZones;
   }
 
-  /**
-   * NodesInZone
-   */
-  public NodesInZone(zone: Zone) {
-    let nodesInZone = cy.collection();
-    nodesInZone = nodesInZone.union(
-      zone.InsideCollection.union(zone.OutsideCollection)
+  private EdgeColorCalc(e: EdgeSingular) {
+    const a = networkStore.Network?.getNode(e.data("source")).style(
+      "background-color"
     );
-    return nodesInZone;
+
+    const arrA = a.substring(4, a.length - 1)
+    .replace(/ /g, "")
+    .split(",")
+
+    const b = networkStore.Network?.getNode(e.data("target")).style(
+      "background-color"
+    );
+
+    const arrB = b.substring(4, b.length - 1)
+    .replace(/ /g, "")
+    .split(",")
+
+    arrA[0] = Number.parseFloat(arrA[0])
+    arrA[1] = Number.parseFloat(arrA[1])
+    arrA[2] = Number.parseFloat(arrA[2])
+
+    arrB[0] = Number.parseFloat(arrB[0])
+    arrB[1] = Number.parseFloat(arrB[1])
+    arrB[2] = Number.parseFloat(arrB[2])
+      
+    const color = difference({ r: arrA[0], g: arrA[1], b: arrA[2], a: 1 }, { r: arrB[1], g: arrB[2], b: arrB[3], a: 1 });
+    
+    e.style(
+      "line-color",
+      `rgb(${color.r},${color.g},${color.b})`
+    );
   }
 
   /**
@@ -132,7 +160,8 @@ export class ZoneStore {
       let nodes: cytoscape.Collection = cy.collection();
 
       this.zones.forEach((z) => {
-        nodes = nodes.union(z.InsideCollection.union(z.OutsideCollection));
+        if (z.isDrawn)
+          nodes = nodes.union(z.InsideCollection.union(z.OutsideCollection));
       });
 
       nodes.forEach((x, i) => {
@@ -141,125 +170,18 @@ export class ZoneStore {
             (x as { [key: string]: any })["_private"]["data"]["id"] as number,
             (y as { [key: string]: any })["_private"]["data"]["id"] as number
           ).forEach((e) => {
-            const source = (networkStore.Network?.getNode(
-              (e as { [key: string]: any })["_private"]["data"][
-                "source"
-              ] as number
-            ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
-              "data"
-            ]["nodeType"];
-
-            const target = (networkStore.Network?.getNode(
-              (e as { [key: string]: any })["_private"]["data"][
-                "target"
-              ] as number
-            ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
-              "data"
-            ]["nodeType"];
-
-            if (
-              source === "stronglyProminent" &&
-              target === "stronglyProminent"
-            ) {
-              e.classes("sptosp");
-              return;
-            }
-
-            if (source === "weaklyProminent" && target === "weaklyProminent") {
-              e.classes("wptowp");
-              return;
-            }
-
-            if (source === "nonProminent" && target === "nonProminent") {
-              e.classes("nptonp");
-              return;
-            }
-
-            if (
-              (source === "stronglyProminent" &&
-                target === "weaklyProminent") ||
-              (source === "weaklyProminent" && target === "stronglyProminent")
-            ) {
-              e.classes("sptowp");
-              return;
-            }
-
-            if (
-              (source === "stronglyProminent" && target === "nonProminent") ||
-              (source === "nonProminent" && target === "stronglyProminent")
-            ) {
-              e.classes("sptonp");
-              return;
-            }
-
-            if (
-              (source === "weaklyProminent" && target === "nonProminent") ||
-              (source === "nonProminent" && target === "weaklyProminent")
-            ) {
-              e.classes("wptonp");
-              return;
-            }
+            this.EdgeColorCalc(e);
           });
         });
       });
     } else {
-      this.NodesInZone(z).forEach((x, i) => {
-        this.NodesInZone(z).forEach((y, j) => {
+      z.AllCollection.forEach((x, i) => {
+        z.AllCollection.forEach((y, j) => {
           networkStore.Network?.getEdge(
             (x as { [key: string]: any })["_private"]["data"]["id"] as number,
             (y as { [key: string]: any })["_private"]["data"]["id"] as number
           ).forEach((e) => {
-            const source = (networkStore.Network?.getNode(
-              (e as { [key: string]: any })["_private"]["data"][
-                "source"
-              ] as number
-            ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
-              "data"
-            ]["nodeType"];
-
-            const target = (networkStore.Network?.getNode(
-              (e as { [key: string]: any })["_private"]["data"][
-                "target"
-              ] as number
-            ) as { [key: string]: any })["_private"]["eles"][0]["_private"][
-              "data"
-            ]["nodeType"];
-            if (
-              source === "stronglyProminent" &&
-              target === "stronglyProminent"
-            ) {
-              e.classes("sptosp");
-            }
-
-            if (source === "weaklyProminent" && target === "weaklyProminent") {
-              e.classes("wptowp");
-            }
-
-            if (source === "nonProminent" && target === "nonProminent") {
-              e.classes("nptonp");
-            }
-
-            if (
-              (source === "stronglyProminent" &&
-                target === "weaklyProminent") ||
-              (source === "weaklyProminent" && target === "stronglyProminent")
-            ) {
-              e.classes("sptowp");
-            }
-
-            if (
-              (source === "stronglyProminent" && target === "nonProminent") ||
-              (source === "nonProminent" && target === "stronglyProminent")
-            ) {
-              e.classes("sptonp");
-            }
-
-            if (
-              (source === "weaklyProminent" && target === "nonProminent") ||
-              (source === "nonProminent" && target === "weaklyProminent")
-            ) {
-              e.classes("wptonp");
-            }
+            this.EdgeColorCalc(e);
           });
         });
       });
@@ -270,23 +192,27 @@ export class ZoneStore {
    * ColorNodesInZones
    */
   public ColorNodesInZones() {
-    cy.nodes().classes("");
-    cy.edges().classes("");
+    cy.nodes().not(".hide").classes("");
+    cy.edges().not(".hide").classes("");
 
     if (this.zones.length === 0) {
       this.ColorAllNodes();
       this.ColorAllEdges();
     } else {
-      this.NodesInZones()?.forEach((n) => {
-        n.classes(
-          networkStore.Network?.Nodes.filter(
-            (node) =>
-              node.Id ===
-              ((n as { [key: string]: any })["_private"]["data"][
-                "id"
-              ] as number)
-          )[0].classes
-        );
+      zoneStore.Zones.forEach((element) => {
+        if (element.IsDrawn) {
+          element.AllCollection.not(".hide")?.forEach((n) => {
+            n.classes(
+              networkStore.Network?.Nodes.filter(
+                (node) =>
+                  node.Id ===
+                  ((n as { [key: string]: any })["_private"]["data"][
+                    "id"
+                  ] as number)
+              )[0].classes
+            );
+          });
+        }
       });
       this.zones.forEach((z) => {
         this.EdgeColors(z);
@@ -298,7 +224,7 @@ export class ZoneStore {
    * ColorAllNodes
    */
   private ColorAllNodes() {
-    cy.nodes().classes("");
+    cy.nodes().not(".hide").classes("");
     cy.nodes().forEach((n) => {
       n.classes(
         networkStore.Network?.Nodes.filter(
@@ -315,50 +241,8 @@ export class ZoneStore {
    */
   private ColorAllEdges() {
     cy.edges().forEach((e) => {
-      const source = (networkStore.Network?.getNode(
-        (e as { [key: string]: any })["_private"]["data"]["source"] as number
-      ) as { [key: string]: any })["_private"]["eles"][0]["_private"]["data"][
-        "nodeType"
-      ];
-
-      const target = (networkStore.Network?.getNode(
-        (e as { [key: string]: any })["_private"]["data"]["target"] as number
-      ) as { [key: string]: any })["_private"]["eles"][0]["_private"]["data"][
-        "nodeType"
-      ];
-
-      if (source === "stronglyProminent" && target === "stronglyProminent") {
-        e.classes("sptosp");
-      }
-
-      if (source === "weaklyProminent" && target === "weaklyProminent") {
-        e.classes("wptowp");
-      }
-
-      if (source === "nonProminent" && target === "nonProminent") {
-        e.classes("nptonp");
-      }
-
-      if (
-        (source === "stronglyProminent" && target === "weaklyProminent") ||
-        (source === "weaklyProminent" && target === "stronglyProminent")
-      ) {
-        e.classes("sptowp");
-      }
-
-      if (
-        (source === "stronglyProminent" && target === "nonProminent") ||
-        (source === "nonProminent" && target === "stronglyProminent")
-      ) {
-        e.classes("sptonp");
-      }
-
-      if (
-        (source === "weaklyProminent" && target === "nonProminent") ||
-        (source === "nonProminent" && target === "weaklyProminent")
-      ) {
-        e.classes("wptonp");
-      }
+      //console.log(event.target.style("background-color"));
+      this.EdgeColorCalc(e);
     });
   }
 
@@ -366,23 +250,43 @@ export class ZoneStore {
    * ColorNodesInZone
    */
   public ColorNodesInZone(z: Zone) {
-    cy.nodes().classes("");
-    cy.edges().classes("");
+    cy.nodes().not(".hide").classes("");
+    cy.edges().not(".hide").classes("");
 
-    z.InsideCollection.forEach((n) => {
+    z.InsideCollection.not(".hide").forEach((n) => {
       n.classes("weaklyProminent");
     });
 
-    z.InsideCollection[0].classes("stronglyProminent");
+    z.InsideCollection[0].addClass("stronglyProminent");
+
     if (networkStore.Network) {
       z.outerZoneNodes[0].forEach((n) => {
-        networkStore.Network?.getNode(n.Id).classes("liaisons");
+        networkStore.Network?.getNode(n.Id).not(".hide").classes("liaisons");
       });
 
       z.outerZoneNodes[1].forEach((n) => {
-        networkStore.Network?.getNode(n.Id).classes("coliaisons");
+        networkStore.Network?.getNode(n.Id).not(".hide").classes("coliaisons");
       });
       this.EdgeColors(z, true);
+    }
+  }
+
+  /**
+   * HideNodesOutsideZones
+   */
+  public HideNodesOutsideZones() {
+    if (settingsStore.HideOutsideZones) {
+      let nodesInZones: Collection = cy.collection();
+
+      zoneStore.Zones.forEach((zone) => {
+        if (zone.IsDrawn) nodesInZones = nodesInZones.union(zone.AllCollection);
+      });
+
+      const nodesOutside = cy.nodes().difference(nodesInZones);
+
+      nodesOutside.addClass("hide");
+    } else {
+      cy.nodes().removeClass("hide");
     }
   }
 }
