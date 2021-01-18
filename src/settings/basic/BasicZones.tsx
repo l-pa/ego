@@ -1,11 +1,10 @@
-import React, { useContext } from "react";
+import React from "react";
 import Zone from "../../objects/Zone";
 import {
   Stack,
   Button,
   Checkbox,
   Select,
-  Spacer,
   Divider,
   Slider,
   SliderTrack,
@@ -15,12 +14,10 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { ZoneItem } from "../../ZoneItem";
-import { Context, networkStore, settingsStore, zoneStore } from "../../.";
+import { networkStore, settingsStore, zoneStore } from "../../.";
 import { observer } from "mobx-react-lite";
 
 export const BasicZones: React.FunctionComponent = () => {
-  const context = useContext(Context);
-
   const Zones = observer(() => (
     <div>
       {zoneStore.Zones.map((z, i) => {

@@ -1,21 +1,12 @@
 import {
   Button,
   Heading,
-  ListItem,
   Stack,
-  UnorderedList,
 } from "@chakra-ui/react";
-import react, { useState, useRef, useEffect, createRef } from "react";
-import { Flex, Spacer, Box } from "@chakra-ui/react";
 import React from "react";
 import { settingsStore } from ".";
 
 export const LeftPanel: React.FunctionComponent = () => {
-  const [activeOption, setActiveOption] = useState();
-
-  useEffect(() => {
-    console.log(activeOption);
-  }, [activeOption]);
 
   return (
     <Stack p={5} w={"10em"}>

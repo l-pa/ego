@@ -2,7 +2,6 @@ import type Node from "./Node";
 import cytoscape, {
   Collection,
   CollectionReturnValue,
-  CytoscapeOptions,
   NodeSingular,
 } from "cytoscape";
 
@@ -18,7 +17,6 @@ import {
   vecUnit,
 } from "./Vector";
 import { cy } from "./graph/Cytoscape";
-import { Fade } from "@chakra-ui/react";
 
 export default class Zone {
   public Ego: Node;
@@ -41,13 +39,12 @@ export default class Zone {
 
   private automove: any;
 
-  private layer: any =undefined;
+  private layer: any = undefined;
   private canvas: any = undefined;
-  private ctx: any =undefined;
+  private ctx: any = undefined;
 
   private insideCollection: Collection = cytoscape().collection();
   private outsideCollection: Collection = cytoscape().collection();
-
 
   private label: string = "";
 
@@ -62,7 +59,6 @@ export default class Zone {
 
     this.insideCollection = cy.collection();
     this.outsideCollection = cy.collection();
-
 
     //   let insideCollectionEdges = cy.collection();
     //   let outsideCollectionEdges = cy.collection();
@@ -137,7 +133,7 @@ export default class Zone {
 
   public set Label(label: string) {
     this.label = label;
-    this.updatePath();
+    // this.updatePath();
   }
 
   public set EnableAutomove(enable: boolean) {
@@ -212,12 +208,12 @@ export default class Zone {
 
       this.AllCollection.difference(nodesInZonesExceptZ).addClass("hide");
     }
-    
+
     if (this.isDrawn) {
       this.isDrawn = false;
       this.layer.clear(this.ctx);
-      this.canvas.remove()
-      this.automove.destroy()
+      this.canvas.remove();
+      this.automove.destroy();
     } else {
       console.log("Nothing to clear");
     }
@@ -228,32 +224,29 @@ export default class Zone {
       this.AllCollection.removeClass("hide");
     }
 
-    
     if (!this.isDrawn) {
       if (this.AllCollection.length > settingsStore.MinNodesZoneShow) {
-        return
+        return;
       }
 
-      
-        // >/
-              
-        this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
-        this.canvas = this.layer.getCanvas();
-        this.ctx = this.canvas.getContext("2d");
-      
-      
+      // >/
+
+      this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
+      this.canvas = this.layer.getCanvas();
+      this.ctx = this.canvas.getContext("2d");
+
       this.automove = (cy as any).automove({
         nodesMatching: this.insideCollection
-        .subtract(this.insideCollection[0])
-        .union(this.outsideCollection),
-        
+          .subtract(this.insideCollection[0])
+          .union(this.outsideCollection),
+
         reposition: "drag",
-        
+
         dragWith: this.insideCollection[0],
       });
-      
+
       this.automove.disable();
-      
+
       if (settingsStore.Automove) {
         this.automove.enable();
       }
@@ -264,14 +257,18 @@ export default class Zone {
     }
   }
 
-  private collectionPoints(hull :  cytoscape.SingularElementReturnValue[] | cytoscape.CollectionReturnValue) {
+  private collectionPoints(
+    hull:
+      | cytoscape.SingularElementReturnValue[]
+      | cytoscape.CollectionReturnValue
+  ) {
     const a: Array<[number, number]> = [];
 
-    hull.forEach((element:cytoscape.NodeSingular) => {
+    hull.forEach((element: cytoscape.NodeSingular) => {
       a.push([element.position().x, element.position().y]);
     });
 
-    return a
+    return a;
   }
 
   private convexHullPoints(
@@ -332,7 +329,6 @@ export default class Zone {
       }
     }
 
-
     return this.collectionPoints(hull);
   }
 
@@ -347,7 +343,7 @@ export default class Zone {
     return a;
   }
 
-/*
+  /*
     Modified 
 
     
@@ -381,8 +377,8 @@ export default class Zone {
 
     // Handle special cases
     // if (!polyPoints || pointCount < 1) return undefined;
-     if (pointCount === 1) this.smoothHull1(polyPoints);
-     if (pointCount === 2) this.smoothHull2(polyPoints);
+    if (pointCount === 1) this.smoothHull1(polyPoints);
+    if (pointCount === 2) this.smoothHull2(polyPoints);
 
     var hullPoints = polyPoints.map(function (point, index) {
       var pNext = polyPoints[(index + 1) % pointCount];
@@ -411,10 +407,18 @@ export default class Zone {
     // Returns the path for a circular hull around a single point.
 
     this.ctx.beginPath();
-    this.ctx.ellipse(polyPoints[0][0], polyPoints[0][1], this.hullPadding, this.hullPadding, Math.PI / 4, 0, 2 * Math.PI);
+    this.ctx.ellipse(
+      polyPoints[0][0],
+      polyPoints[0][1],
+      this.hullPadding,
+      this.hullPadding,
+      Math.PI / 4,
+      0,
+      2 * Math.PI
+    );
     this.ctx.closePath();
     this.ctx.fill();
-/*
+    /*
     console.log(
       "M " +
         p1 +
@@ -446,8 +450,22 @@ export default class Zone {
 
     this.ctx.beginPath();
     this.ctx.moveTo(extension0[0], extension0[1]);
-    this.ctx.bezierCurveTo(control0[0], control0[1], control1[0], control1[1], extension1[0], extension1[1])
-    this.ctx.bezierCurveTo(control4[0], control4[1], control3[0], control3[1], extension0[0], extension0[1])
+    this.ctx.bezierCurveTo(
+      control0[0],
+      control0[1],
+      control1[0],
+      control1[1],
+      extension1[0],
+      extension1[1]
+    );
+    this.ctx.bezierCurveTo(
+      control4[0],
+      control4[1],
+      control3[0],
+      control3[1],
+      extension0[0],
+      extension0[1]
+    );
 
     this.ctx.closePath();
     this.ctx.fill();
@@ -466,14 +484,14 @@ export default class Zone {
       this.ctx.save();
       this.ctx.beginPath();
       this.ctx.moveTo(a[0].p[0], a[0].p[1]);
-      
-      const x:Array<number> = []
 
-      a.forEach(element => {
-        x.push(element.p[0])
-        x.push(element.p[1])
+      const x: Array<number> = [];
+
+      a.forEach((element) => {
+        x.push(element.p[0]);
+        x.push(element.p[1]);
       });
-      this.ctx.curve(x, 0.5, 25, true);                 // add cardinal spline to path
+      this.ctx.curve(x, 0.5, 25, true); // add cardinal spline to path
 
       this.ctx.closePath();
       this.ctx.fill();

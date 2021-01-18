@@ -1,7 +1,5 @@
-import { Collection } from "cytoscape";
 import { makeAutoObservable } from "mobx";
-import { networkStore, zoneStore } from "..";
-import { cy } from "../objects/graph/Cytoscape";
+import { zoneStore } from "..";
 
 export class SettingsStore {
   constructor() {
@@ -15,6 +13,9 @@ export class SettingsStore {
   private minNodesZoneShow: number = 1;
 
   private selectedOption: string = "basicZones";
+
+  private selectedEdgeBlend: string = "normal";
+
 
   public get Automove(): boolean {
     return this.automove;
@@ -34,6 +35,14 @@ export class SettingsStore {
 
   public set SelectedOption(v: string) {
     this.selectedOption = v;
+  }
+
+  public get SelectedEdgeBlendMode(): string {
+    return this.selectedEdgeBlend;
+  }
+
+  public set SelectedEdgeBlendMode(v: string) {
+    this.selectedEdgeBlend = v;
   }
 
   public get HideOutsideZones(): boolean {
@@ -66,9 +75,11 @@ export class SettingsStore {
       } else {
         element.clearPath();
       }
-      zoneStore.ColorNodesInZones();
-      zoneStore.HideNodesOutsideZones();;
     });
+    if (zoneStore.Zones.length > 0) {
+      zoneStore.ColorNodesInZones();
+      zoneStore.HideNodesOutsideZones()
+    }
   }
 
   private duplicates: string = "all";

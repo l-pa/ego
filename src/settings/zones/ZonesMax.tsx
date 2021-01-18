@@ -1,7 +1,7 @@
-import { Button, Heading, Select, Stack, Text } from "@chakra-ui/react";
-import { autorun, observe } from "mobx";
+import { Heading, Stack } from "@chakra-ui/react";
+import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { zoneStore } from "../..";
 import { ZoneItem } from "../../ZoneItem";
 

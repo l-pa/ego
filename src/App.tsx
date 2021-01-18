@@ -8,7 +8,6 @@ import Network from "./objects/Network";
 import { Context } from ".";
 import { reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { ZoneItem } from "./ZoneItem";
 import { Box, ChakraProvider, Divider, Flex, Stack } from "@chakra-ui/react";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";
@@ -27,23 +26,25 @@ function App() {
     return (
       <div className="App">
         {!context.network.Network && (
-          <CSVReader
-            onFileLoaded={(data, fileInfo) => {
-              const network = new Network([], []);
-              console.log(fileInfo);
-              for (let i = 0; i < data.length; i++) {
-                const element = data[i];
-                network.addEdge(
-                  new Node(element[0]),
-                  new Node(element[1]),
-                  Number.parseFloat(element[2])
-                );
-              }
-              new Matrix(network).nodesDependency();
-              network.Edges.forEach((e) => e.UpdateClasses());
-              context.network.Network = network;
-            }}
-          />
+          <div className="LandingPage">
+            <CSVReader
+              onFileLoaded={(data, fileInfo) => {
+                const network = new Network([], []);
+                console.log(fileInfo);
+                for (let i = 0; i < data.length; i++) {
+                  const element = data[i];
+                  network.addEdge(
+                    new Node(element[0]),
+                    new Node(element[1]),
+                    Number.parseFloat(element[2])
+                  );
+                }
+                new Matrix(network).nodesDependency();
+                network.Edges.forEach((e) => e.UpdateClasses());
+                context.network.Network = network;
+              }}
+            />
+          </div>
         )}
         {context.network.Network && (
           <div>

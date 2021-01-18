@@ -27,7 +27,7 @@ export default class Network {
     }
   }
 
-  public getNode(nodeId: number): cytoscape.NodeCollection {
+  public getNode(nodeId: number | string): cytoscape.NodeCollection {
     return cy.nodes("#" + nodeId.toString());
   }
 

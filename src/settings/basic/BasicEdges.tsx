@@ -1,5 +1,6 @@
 import {
   Heading,
+  Select,
   Slider,
   SliderFilledTrack,
   SliderThumb,
@@ -7,6 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import React from "react";
+import { settingsStore, zoneStore } from "../..";
 
 export function BasicEdges() {
   return (
@@ -34,6 +36,31 @@ export function BasicEdges() {
       <Text mt={5} fontSize="md">
         Style
       </Text>
+
+      <Select
+        onChange={(e) => {
+          settingsStore.SelectedEdgeBlendMode = e.target.value;
+          zoneStore.ColorAllEdges();
+        }}
+        defaultValue={settingsStore.SelectedEdgeBlendMode}
+      >
+        <option value="normal">normal</option>
+        <option value="multiply">multiply</option>
+        <option value="screen">screen</option>
+        <option value="overlau">overlay</option>
+        <option value="darken">darken</option>
+        <option value="lighten">lighten</option>
+        <option value="colorDodge">colorDodge</option>
+        <option value="colorBurn">colorBurn</option>
+        <option value="hardLight">hardLight</option>
+        <option value="softLight">softLight</option>
+        <option value="difference">difference</option>
+        <option value="exclusion">exclusion</option>
+        <option value="hue">hue</option>
+        <option value="saturation">saturation</option>
+        <option value="color">color</option>
+        <option value="luminosity">luminosity</option>
+      </Select>
     </div>
   );
 }

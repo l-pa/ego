@@ -1,4 +1,4 @@
-import { Button, Divider, Heading, Select, Spacer } from "@chakra-ui/react";
+import { Button, Divider, Heading, Select } from "@chakra-ui/react";
 import React, { useRef } from "react";
 import { cy } from "../../objects/graph/Cytoscape";
 

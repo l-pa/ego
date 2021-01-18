@@ -1,8 +1,7 @@
-import cytoscape, { ElementDefinition } from "cytoscape";
+import cytoscape from "cytoscape";
 // @ts-ignore
 import cola from "cytoscape-cola";
-import { networkStore, settingsStore, zoneStore } from "../..";
-import type Network from "../Network";
+import { networkStore, zoneStore } from "../..";
 import Zone from "../Zone";
 
 export let cy: cytoscape.Core;
@@ -180,8 +179,6 @@ export default class Cytoscape {
             )[0]
           );
           zoneStore.AddZone(z);
-          z.drawZone();
-          zoneStore.HideNodesOutsideZones();
         }
       });
 

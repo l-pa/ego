@@ -1,10 +1,8 @@
-import cytoscape, { ElementDefinition } from "cytoscape";
 import React, { useRef, useEffect } from "react";
 import "./style.css";
 
-import Zone from "./objects/Zone";
 
-import { networkStore, zoneStore } from ".";
+import { networkStore } from ".";
 import Cytoscape, { cy } from "./objects/graph/Cytoscape";
 
 

@@ -1,9 +1,8 @@
-import { Button, Select, Stack, Text } from "@chakra-ui/react";
-import React, { useState } from "react";
+import { Select, Stack } from "@chakra-ui/react";
+import React from "react";
 import { zoneStore } from "../..";
 
 export function ZonesIntersect() {
-  const [z, setZ] = useState([]);
   return (
     <Stack>
       <Select placeholder="None" onChange={(e) => {}}>
