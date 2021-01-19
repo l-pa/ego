@@ -2,7 +2,7 @@ import cytoscape from "cytoscape";
 // @ts-ignore
 import cola from "cytoscape-cola";
 import { networkStore, zoneStore } from "../..";
-import Zone from "../Zone";
+import EgoZone from "../EgoZone";
 
 export let cy: cytoscape.Core;
 
@@ -154,10 +154,10 @@ export default class Cytoscape {
         ],
       });
 
-      let z: Zone | undefined = undefined;
+      let z: EgoZone | undefined = undefined;
       cy.on("mouseover", "node", (event) => {
         if (networkStore.Network) {
-          z = new Zone(
+          z = new EgoZone(
             networkStore.Network.Nodes.filter(
               (e) => e.Id.toString() === event.target._private.data.id
             )[0]
@@ -173,7 +173,7 @@ export default class Cytoscape {
 
       cy.on("click", "node", function (event) {
         if (networkStore.Network) {
-          const z = new Zone(
+          const z = new EgoZone(
             networkStore.Network.Nodes.filter(
               (e) => e.Id === event.target._private.data.id
             )[0]
@@ -195,7 +195,7 @@ export default class Cytoscape {
 
       cy.on("render cyCanvas.resize", (evt: cytoscape.EventObject) => {
         zoneStore.Zones.forEach((z) => {
-          z.updatePath();
+          z.Update();
         });
       });
 

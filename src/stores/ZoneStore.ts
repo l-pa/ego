@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import Zone from "../objects/Zone";
+import EgoZone from "../objects/EgoZone";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { cy } from "../objects/graph/Cytoscape";
 import { Collection, EdgeSingular } from "cytoscape";
@@ -26,20 +26,20 @@ export class ZoneStore {
   constructor() {
     makeAutoObservable(this);
   }
-  private zones: Zone[] = [];
+  private zones: EgoZone[] = [];
 
-  get Zones(): Zone[] {
+  get Zones(): EgoZone[] {
     return this.zones;
   }
 
   /**
    * AddZone
    */
-  public AddZone(zone: Zone) {
-    if (this.zones.filter((z) => z.Ego.Id === zone.Ego.Id).length === 0) {
+  public AddZone(zone: EgoZone) {
+    if (this.zones.filter((z) => z.Id === zone.Id).length === 0) {
       this.zones.push(zone);
       zone.AllCollection.removeClass("hide");
-      zone.drawZone();
+      zone.DrawZone();
       this.Duplicates();
       this.ColorNodesInZones();
       zoneStore.HideNodesOutsideZones();
@@ -51,7 +51,7 @@ export class ZoneStore {
    */
   public ClearZones() {
     this.zones.forEach((z) => {
-      z.clearPath();
+      z.ClearZone();
     });
 
     // cy.nodes().forEach((n) => {
@@ -71,9 +71,9 @@ export class ZoneStore {
   /**
    * RemoveZone
    */
-  public RemoveZone(z: Zone) {
-    this.zones = this.zones.filter((zone) => zone.Ego.Id !== z.Ego.Id);
-    z.clearPath();
+  public RemoveZone(z: EgoZone) {
+    this.zones = this.zones.filter((zone) => zone.Id !== z.Id);
+    z.ClearZone();
     this.Duplicates();
     this.ColorNodesInZones();
   }
@@ -83,15 +83,15 @@ export class ZoneStore {
    */
   public Duplicates() {
     this.zones.forEach((zone) => {
-      zone.drawZone();
+      zone.DrawZone();
     });
 
     if (settingsStore.Duplicates === "de") {
       for (let i = 0; i < this.zones.length; i++) {
-        const z1: Zone = this.zones[i];
+          const z1: EgoZone = this.zones[i];
 
         for (let j = i + 1; j < this.zones.length; j++) {
-          const z2: Zone = this.zones[j];
+          const z2: EgoZone = this.zones[j];
 
           if (
             z1.InsideCollection.union(z1.OutsideCollection).difference(
@@ -101,7 +101,7 @@ export class ZoneStore {
               z1.InsideCollection.union(z1.OutsideCollection)
             ).length === 0
           ) {
-            z2.clearPath();
+            z2.ClearZone();
           }
         }
       }
@@ -109,16 +109,16 @@ export class ZoneStore {
 
     if (settingsStore.Duplicates === "me") {
       for (let i = 0; i < this.zones.length; i++) {
-        const z1: Zone = this.zones[i];
+        const z1: EgoZone = this.zones[i];
         for (let j = i + 1; j < this.zones.length; j++) {
-          const z2: Zone = this.zones[j];
+          const z2: EgoZone = this.zones[j];
 
           if (
             z1.Ego.TwDep.filter((n) => n.Id === z2.Ego.Id).length === 1 &&
             z1.InsideCollection.subtract(z2.InsideCollection).length === 0 &&
             z2.InsideCollection.subtract(z1.InsideCollection).length === 0
           ) {
-            z2.clearPath();
+            z2.ClearZone();
           }
         }
       }
@@ -276,13 +276,13 @@ export class ZoneStore {
   /**
    * EdgeColors
    */
-  private EdgeColors(z: Zone, hover: boolean = false) {
+  private EdgeColors(z: EgoZone, hover: boolean = false) {
     cy.edges().style("line-color", "");
     if (!hover) {
       let nodes: cytoscape.Collection = cy.collection();
 
       this.zones.forEach((z) => {
-        if (z.isDrawn) nodes = nodes.union(z.AllCollection);
+        if (z.IsDrawn()) nodes = nodes.union(z.AllCollection);
       });
 
       nodes.forEach((x, i) => {
@@ -321,7 +321,7 @@ export class ZoneStore {
       this.ColorAllEdges();
     } else {
       zoneStore.Zones.forEach((element) => {
-        if (element.IsDrawn) {
+        if (element.IsDrawn()) {
           element.AllCollection.not(".hide")?.forEach((n) => {
             n.classes(
               networkStore.Network?.Nodes.filter(
@@ -370,7 +370,7 @@ export class ZoneStore {
   /**
    * ColorNodesInZone
    */
-  public ColorNodesInZone(z: Zone) {
+  public ColorNodesInZone(z: EgoZone) {
     cy.nodes().not(".hide").classes("");
     cy.edges().not(".hide").classes("");
 
@@ -381,11 +381,11 @@ export class ZoneStore {
     z.InsideCollection[0].addClass("stronglyProminent");
 
     if (networkStore.Network) {
-      z.outerZoneNodes[0].forEach((n) => {
+      z.OutsideNodes[0].forEach((n) => {
         networkStore.Network?.getNode(n.Id).not(".hide").classes("liaisons");
       });
 
-      z.outerZoneNodes[1].forEach((n) => {
+      z.OutsideNodes[1].forEach((n) => {
         networkStore.Network?.getNode(n.Id).not(".hide").classes("coliaisons");
       });
       this.EdgeColors(z, true);
@@ -400,7 +400,7 @@ export class ZoneStore {
       let nodesInZones: Collection = cy.collection();
 
       zoneStore.Zones.forEach((zone) => {
-        if (zone.IsDrawn) nodesInZones = nodesInZones.union(zone.AllCollection);
+        if (zone.IsDrawn()) nodesInZones = nodesInZones.union(zone.AllCollection);
       });
 
       const nodesOutside = cy.nodes().difference(nodesInZones);
@@ -414,14 +414,14 @@ export class ZoneStore {
   /**
    * SubzonesOfZone
    */
-  public SubzonesOfZone(zone: Zone) {
-    const subzones: Array<Zone> = [];
+  public SubzonesOfZone(zone: EgoZone) {
+    const subzones: Array<EgoZone> = [];
     console.log(zone.AllCollection.difference(`#${zone.Ego.Id}`));
 
       zone.AllCollection.difference(`#${zone.Ego.Id}`).forEach((node) => {   
         const n = networkStore.Network?.Nodes.filter(n=>n.Id === node.data("id"))[0]
         if (n){
-          const newZone = new Zone(n);
+          const newZone = new EgoZone(n);
           if (newZone.AllCollection.subtract(zone.AllCollection).length === 0) {
             subzones.push(newZone);
           }
@@ -432,13 +432,13 @@ export class ZoneStore {
       console.log(subzones);
   }
 
-  public SuperzoneOfZone(zone: Zone) {
-    const superzones: Array<Zone> = [];
+  public SuperzoneOfZone(zone: EgoZone) {
+    const superzones: Array<EgoZone> = [];
 
       cy.nodes().difference(`#${zone.Ego.Id}`).forEach((node) => {   
         const n = networkStore.Network?.Nodes.filter(n=>n.Id === node.data("id"))[0]
         if (n){
-          const newZone = new Zone(n);
+          const newZone = new EgoZone(n);
           if (zone.AllCollection.subtract(newZone.AllCollection).length === 0) {
             superzones.push(newZone);
           }

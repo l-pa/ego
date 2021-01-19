@@ -71,9 +71,9 @@ export class SettingsStore {
 
     zoneStore.Zones.forEach((element) => {
       if (element.AllCollection.length <= this.minNodesZoneShow) {
-        element.drawZone();
+        element.DrawZone();
       } else {
-        element.clearPath();
+        element.ClearZone();
       }
     });
     if (zoneStore.Zones.length > 0) {

@@ -1,5 +1,5 @@
 import React from "react";
-import Zone from "../../objects/Zone";
+import Zone from "../../objects/EgoZone";
 import {
   Stack,
   Button,

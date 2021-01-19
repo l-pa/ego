@@ -1,5 +1,4 @@
 import React from "react";
-import Zone from "./objects/Zone";
 import {
   Stack,
   Heading,
@@ -18,8 +17,11 @@ import {
   Text
 } from "@chakra-ui/react";
 import { zoneStore } from ".";
+import EgoZone from "./objects/EgoZone";
 
-export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
+export const ZoneItem: React.FunctionComponent<{ zone: EgoZone }> = ({
+  zone,
+}) => {
   return (
     <Box zIndex={1} bg={zone.Color} p={4} color="white">
       {zone.Ego.isProminent() === 0 ? (
@@ -91,81 +93,85 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
           <Tooltip
             zIndex={2}
             aria-label="owdep"
-            label={zone.innerZoneNodes.map((n) => n.Id).toString()}
+            label={zone.InsideNodes.map((n) => n.Id).toString()}
             placement="bottom"
           >
-            <Text>Inner {zone.innerZoneNodes.length}</Text>
+            <Text>Inner {zone.InsideNodes.length}</Text>
           </Tooltip>
           <Tooltip
             zIndex={2}
             aria-label="owindep"
             label={
-              zone.outerZoneNodes[0].map((n) => n.Id).toString() +
+              zone.OutsideNodes[0].map((n) => n.Id).toString() +
               "\n" +
-              zone.outerZoneNodes[1].map((n) => n.Id).toString()
+              zone.OutsideNodes[1].map((n) => n.Id).toString()
             }
             placement="bottom"
           >
             <Text>
               {" "}
               &bull; Outer{" "}
-              {zone.outerZoneNodes[0].length + zone.outerZoneNodes[1].length}
+              {zone.OutsideNodes[0].length + zone.OutsideNodes[1].length}
             </Text>
           </Tooltip>
         </Box>
       </Box>
       <Accordion allowToggle>
         <AccordionItem>
-            <Input
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                zone.Label = e.target.value;
-              }}
-              style={{ color: "black" }}
-              placeholder="Label"
-            />
+          <Input
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              zone.Label = e.target.value;
+            }}
+            style={{ color: "black" }}
+            placeholder="Label"
+          />
 
-            <Slider
-              color="pink"
-              defaultValue={50}
-              onChange={(val) => {
-                let alpha = Number.parseInt(
-                  (255 * (val / 100)).toString()
-                ).toString(16);
-                zone.Alpha = alpha;
+          <Slider
+            color="pink"
+            defaultValue={50}
+            onChange={(val) => {
+              let alpha = Number.parseInt(
+                (255 * (val / 100)).toString()
+              ).toString(16);
+              zone.Alpha = alpha;
+            }}
+          >
+            <SliderTrack />
+            <SliderFilledTrack />
+            <SliderThumb />
+          </Slider>
+
+          <ButtonGroup>
+            <Button
+              colorScheme="white"
+              variant="outline"
+              onClick={() => {
+                zoneStore.RemoveZone(zone);
               }}
             >
-              <SliderTrack />
-              <SliderFilledTrack />
-              <SliderThumb />
-            </Slider>
+              Delete
+            </Button>
+          </ButtonGroup>
+          <Stack
+            mt={5}
+            display="flex"
+            justifyContent="center"
+            align={"center"}
+            isInline={true}
+          >
+            <Checkbox defaultIsChecked={false} onChange={(e) => {}}>
+              Nodes
+            </Checkbox>
 
-            <ButtonGroup>
-              <Button colorScheme="white" variant="outline" onClick={() => {
-                zoneStore.RemoveZone(zone)
-              }}>
-                Delete
-              </Button>
-            </ButtonGroup>
-            <Stack
-              mt={5}
-              display="flex"
-              justifyContent="center"
-              align={"center"}
-              isInline={true}
+            <Checkbox
+              defaultIsChecked={true}
+              onChange={(e) => {
+                zone.IsZoneShown = e.target.checked;
+              }}
             >
-              <Checkbox defaultIsChecked={false} onChange={(e) => {}}>
-                Nodes
-              </Checkbox>
-
-              <Checkbox
-                defaultIsChecked={true}
-                onChange={(e) => {
-                  zone.IsZoneShown = e.target.checked;
-                }}
-              >
-                Zone
-              </Checkbox>
-            </Stack>
+              Zone
+            </Checkbox>
+          </Stack>
         </AccordionItem>
       </Accordion>
     </Box>

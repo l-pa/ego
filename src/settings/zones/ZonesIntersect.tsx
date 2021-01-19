@@ -1,10 +1,10 @@
 import { Checkbox, Stack } from "@chakra-ui/react";
-import { action, autorun, observable, reaction } from "mobx";
+import { action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { zoneStore } from "../..";
 import { cy } from "../../objects/graph/Cytoscape";
-import Zone from "../../objects/Zone";
+import Zone from "../../objects/EgoZone";
 
 export function ZonesIntersect() {
   const zonesToIntersert: Zone[] = observable([]);
