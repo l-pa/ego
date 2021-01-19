@@ -18,7 +18,7 @@ import {
 } from "./Vector";
 import { cy } from "./graph/Cytoscape";
 
-export default class Zone {
+export default class CustomZone {
   public Ego: Node;
   public innerZoneNodes: Node[];
   public outerZoneNodes: Node[][];
@@ -77,7 +77,6 @@ export default class Zone {
         cy.nodes(`[id ='${node.Id.toString()}']`)[0]
       );
     });
-
   }
 
   public set Alpha(alpha: string) {
@@ -406,7 +405,6 @@ export default class Zone {
     );
     this.ctx.closePath();
     this.ctx.fill();
-
   }
 
   private smoothHull2(polyPoints: Array<[number, number]>) {

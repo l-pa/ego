@@ -15,6 +15,7 @@ import {
   Tooltip,
   Checkbox,
   Input,
+  Text
 } from "@chakra-ui/react";
 import { zoneStore } from ".";
 
@@ -49,7 +50,7 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
               label={zone.Ego.OwDep.map((n) => n.Id).toString()}
               placement="bottom"
             >
-              <text>OwDep {zone.Ego.OwDep.length}</text>
+              <Text>OwDep {zone.Ego.OwDep.length}</Text>
             </Tooltip>
             <Tooltip
               zIndex={2}
@@ -57,7 +58,7 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
               label={zone.Ego.OwInDep.map((n) => n.Id).toString()}
               placement="bottom"
             >
-              <text> &bull; OwInDep {zone.Ego.OwInDep.length}</text>
+              <Text> &bull; OwInDep {zone.Ego.OwInDep.length}</Text>
             </Tooltip>
             <Tooltip
               zIndex={2}
@@ -65,7 +66,7 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
               label={zone.Ego.TwDep.map((n) => n.Id).toString()}
               placement="bottom"
             >
-              <text> &bull; TwDep {zone.Ego.TwDep.length}</text>
+              <Text> &bull; TwDep {zone.Ego.TwDep.length}</Text>
             </Tooltip>
             <Tooltip
               zIndex={2}
@@ -73,7 +74,7 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
               label={zone.Ego.TwInDep.map((n) => n.Id).toString()}
               placement="bottom"
             >
-              <text> &bull; TwInDep {zone.Ego.TwInDep.length}</text>
+              <Text> &bull; TwInDep {zone.Ego.TwInDep.length}</Text>
             </Tooltip>
           </Box>
         </Box>
@@ -93,7 +94,7 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
             label={zone.innerZoneNodes.map((n) => n.Id).toString()}
             placement="bottom"
           >
-            <text>Inner {zone.innerZoneNodes.length}</text>
+            <Text>Inner {zone.innerZoneNodes.length}</Text>
           </Tooltip>
           <Tooltip
             zIndex={2}
@@ -105,11 +106,11 @@ export const ZoneItem: React.FunctionComponent<{ zone: Zone }> = ({ zone }) => {
             }
             placement="bottom"
           >
-            <text>
+            <Text>
               {" "}
               &bull; Outer{" "}
               {zone.outerZoneNodes[0].length + zone.outerZoneNodes[1].length}
-            </text>
+            </Text>
           </Tooltip>
         </Box>
       </Box>

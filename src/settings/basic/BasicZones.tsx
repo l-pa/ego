@@ -90,7 +90,7 @@ export const BasicZones: React.FunctionComponent = () => {
           zoneStore.ClearZones();
         }}
       >
-        Clear zones
+        All zones
       </Button>
       <Heading as="h4" size="md" pb={5} pt={5}>
         Duplicates

@@ -8,7 +8,14 @@ import Network from "./objects/Network";
 import { Context } from ".";
 import { reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Box, ChakraProvider, Divider, Flex, Stack } from "@chakra-ui/react";
+import {
+  Box,
+  ChakraProvider,
+  Divider,
+  Flex,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";
 
@@ -26,24 +33,33 @@ function App() {
     return (
       <div className="App">
         {!context.network.Network && (
-          <div className="LandingPage">
-            <CSVReader
-              onFileLoaded={(data, fileInfo) => {
-                const network = new Network([], []);
-                console.log(fileInfo);
-                for (let i = 0; i < data.length; i++) {
-                  const element = data[i];
-                  network.addEdge(
-                    new Node(element[0]),
-                    new Node(element[1]),
-                    Number.parseFloat(element[2])
-                  );
-                }
-                new Matrix(network).nodesDependency();
-                network.Edges.forEach((e) => e.UpdateClasses());
-                context.network.Network = network;
-              }}
-            />
+          <div className="Background">
+            <div className="LandingPage">
+              <Text
+                fontSize="6xl"
+                fontWeight="extrabold"
+                pb={10}
+              >
+                Ego-zones
+              </Text>
+              <CSVReader
+                onFileLoaded={(data, fileInfo) => {
+                  const network = new Network([], []);
+                  console.log(fileInfo);
+                  for (let i = 0; i < data.length; i++) {
+                    const element = data[i];
+                    network.addEdge(
+                      new Node(element[0]),
+                      new Node(element[1]),
+                      Number.parseFloat(element[2])
+                    );
+                  }
+                  new Matrix(network).nodesDependency();
+                  network.Edges.forEach((e) => e.UpdateClasses());
+                  context.network.Network = network;
+                }}
+              />
+            </div>
           </div>
         )}
         {context.network.Network && (

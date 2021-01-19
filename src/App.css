@@ -1,6 +1,14 @@
 .LandingPage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 70vh;
+}
+
+.Background {
+  height: 100vh;
+  opacity: 0.4;
+  background-image: radial-gradient(#555dff 1px, #ffffff 1px);
+  background-size: 20px 20px;
 }

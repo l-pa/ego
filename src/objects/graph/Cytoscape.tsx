@@ -15,7 +15,7 @@ export default class Cytoscape {
           ...networkStore.Network.Nodes.map((e) => e.PlainObject()),
           ...networkStore.Network.Edges.map((e) => e.PlainObject()),
         ],
-        wheelSensitivity: 0.3,
+        //  wheelSensitivity: 0.3,
         style: [
           // the stylesheet for the graph
           {

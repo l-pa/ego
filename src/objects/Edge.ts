@@ -18,7 +18,7 @@ export default class Edge implements ElementDefinition {
     this.data = {
       source: this.NodeA.Id.toString(),
       target: this.NodeB.Id.toString(),
-      edgeType: ""
+      edgeType: "",
     };
 
     if (weight) {
@@ -36,34 +36,33 @@ export default class Edge implements ElementDefinition {
 
     if (source === 0 && target === 0) {
       // this.classes = "sptosp";
-      this.data.edgeType = "sptosp"
+      this.data.edgeType = "sptosp";
     }
 
     if (source === 1 && target === 1) {
       // this.classes = "wptowp";
-      this.data.edgeType = "wptowp"
+      this.data.edgeType = "wptowp";
     }
 
     if (source === -1 && target === -1) {
       // this.classes = "nptonp";
-      this.data.edgeType = "nptonp"
+      this.data.edgeType = "nptonp";
     }
 
     if ((source === 0 && target === 1) || (source === 1 && target === 0)) {
       // this.classes = "sptowp";
-      this.data.edgeType = "sptowp"
-
+      this.data.edgeType = "sptowp";
     }
 
     if ((source === 0 && target === -1) || (source === -1 && target === 0)) {
       // this.classes = "sptonp";
-      this.data.edgeType = "sptonp"
-
+      this.data.edgeType = "sptonp";
     }
 
     if ((source === 1 && target === -1) || (source === -1 && target === 1)) {
       // this.classes = "wptonp";
-      this.data.edgeType = "wptonp"
+      this.data.edgeType = "wptonp";
     }
   }
+
 }
