@@ -3,11 +3,16 @@ import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { zoneStore } from "../..";
+import EgoZone from "../../objects/EgoZone";
 import { ZoneItem } from "../../ZoneItem";
 
 export function ZonesMax() {
   useEffect(() => {
-    return () => {};
+    return () => {
+      zoneStore.Zones.forEach((z) => {
+        z.DrawZone()
+      })
+    };
   });
 
   autorun(() => {
@@ -15,15 +20,21 @@ export function ZonesMax() {
   });
 
   const LargestZone = observer(() => {
-    return (
-      <ZoneItem
-        zone={
-          [...zoneStore.Zones].sort(
-            (a, b) => b.AllCollection.length - a.AllCollection.length
-          )[0]
-        }
-      ></ZoneItem>
-    );
+    if (zoneStore.Zones.length > 0) {
+      let largestZone = [...zoneStore.Zones].filter(
+        (z) => z instanceof EgoZone
+      );
+      const largestEgoZone = largestZone.sort(
+        (a, b) => b.AllCollection().length - a.AllCollection().length
+      )[0] as EgoZone;
+      zoneStore.HideAllZones()
+
+      largestEgoZone.DrawZone()
+      
+      return <ZoneItem zone={largestEgoZone}></ZoneItem>;
+    } else {
+      return <Heading size="sm">Select at least one zone</Heading>;;
+    }
   });
 
   return (
@@ -31,7 +42,7 @@ export function ZonesMax() {
       <Heading as="h4" size="md" pb={5}>
         Max zone
       </Heading>
-      {zoneStore.Zones.length > 0 && <LargestZone />}
+      <LargestZone />
     </Stack>
   );
 }

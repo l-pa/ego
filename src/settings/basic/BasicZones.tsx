@@ -16,12 +16,24 @@ import {
 import { ZoneItem } from "../../ZoneItem";
 import { networkStore, settingsStore, zoneStore } from "../../.";
 import { observer } from "mobx-react-lite";
+import EgoZone from "../../objects/EgoZone";
+import CustomZone from "../../objects/CustomZone";
+import { ZoneItemCustom } from "../../ZoneItemCustom";
 
 export const BasicZones: React.FunctionComponent = () => {
   const Zones = observer(() => (
     <div>
       {zoneStore.Zones.map((z, i) => {
-        return <ZoneItem zone={z} key={i}></ZoneItem>;
+        if (z instanceof EgoZone) return <ZoneItem zone={z} key={i}></ZoneItem>;
+      })}
+    </div>
+  ));
+
+  const CustomZones = observer(() => (
+    <div>
+      {zoneStore.Zones.map((z, i) => {
+        if (z instanceof CustomZone)
+          return <ZoneItemCustom zone={z} key={i}></ZoneItemCustom>;
       })}
     </div>
   ));
@@ -55,12 +67,11 @@ export const BasicZones: React.FunctionComponent = () => {
       <Heading as="h4" size="md" pb={5}>
         Add zones
       </Heading>
-
       <Button
         onClick={() => {
           networkStore.Network?.Nodes.forEach((n) => {
             if (n.isProminent() === 0) {
-              const z = new Zone(n);
+              const z = new EgoZone(n);
               zoneStore.AddZone(z);
             }
           });
@@ -68,12 +79,11 @@ export const BasicZones: React.FunctionComponent = () => {
       >
         Strongly prominent
       </Button>
-
       <Button
         onClick={() => {
           networkStore.Network?.Nodes.forEach((n) => {
             if (n.isProminent() === 1) {
-              const z = new Zone(n);
+              const z = new EgoZone(n);
               zoneStore.AddZone(z);
             }
           });
@@ -106,7 +116,6 @@ export const BasicZones: React.FunctionComponent = () => {
         <option value="me">Mutli-ego</option>
         <option value="de">Duplicates</option>
       </Select>
-
       <Heading as="h4" size="md" pb={5} pt={5}>
         Options
       </Heading>
@@ -118,7 +127,6 @@ export const BasicZones: React.FunctionComponent = () => {
       >
         Move zone
       </Checkbox>
-
       <Checkbox
         defaultIsChecked={true}
         onChange={(e) => {
@@ -131,14 +139,17 @@ export const BasicZones: React.FunctionComponent = () => {
       >
         Z-index
       </Checkbox>
-
       <Divider></Divider>
       <NodesWithLessThanSlider />
-
       <Heading as="h4" size="md" pb={5} pt={5}>
         Zones
       </Heading>
       <Zones />
+      <Divider />
+      <Heading as="h4" size="md" pb={5} pt={5}>
+        Custom zones
+      </Heading>
+      <CustomZones />
     </Stack>
   );
 };

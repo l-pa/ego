@@ -11,17 +11,19 @@ import { observer } from "mobx-react-lite";
 import {
   Box,
   ChakraProvider,
+  createStandaloneToast,
   Divider,
   Flex,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";
 
 function App() {
   const context = useContext(Context);
-
+  const toast = createStandaloneToast();
   reaction(
     () => context.network.Network,
     (Network) => {
@@ -35,14 +37,19 @@ function App() {
         {!context.network.Network && (
           <div className="Background">
             <div className="LandingPage">
-              <Text
-                fontSize="6xl"
-                fontWeight="extrabold"
-                pb={10}
-              >
+              <Text fontSize="6xl" fontWeight="extrabold" pb={10}>
                 Ego-zones
               </Text>
               <CSVReader
+                onError={(err) => {
+                  toast({
+                    title: "Failed to load the network",
+                    description: err.message,
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                  });
+                }}
                 onFileLoaded={(data, fileInfo) => {
                   const network = new Network([], []);
                   console.log(fileInfo);
@@ -57,6 +64,13 @@ function App() {
                   new Matrix(network).nodesDependency();
                   network.Edges.forEach((e) => e.UpdateClasses());
                   context.network.Network = network;
+                  toast({
+                    title: "Network loaded.",
+                    description: `${fileInfo.name} - ${network.Nodes.length} nodes ${network.Edges.length} egdes`,
+                    status: "success",
+                    duration: 2000,
+                    isClosable: true,
+                  });
                 }}
               />
             </div>

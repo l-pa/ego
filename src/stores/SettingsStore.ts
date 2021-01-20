@@ -1,5 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import { zoneStore } from "..";
+import CustomZone from "../objects/CustomZone";
+import EgoZone from "../objects/EgoZone";
 
 export class SettingsStore {
   constructor() {
@@ -25,7 +27,7 @@ export class SettingsStore {
     this.automove = v;
 
     zoneStore.Zones.forEach((z) => {
-      z.EnableAutomove = v;
+      if (z instanceof EgoZone || z instanceof CustomZone) z.EnableAutomove = v;
     });
   }
 
@@ -70,7 +72,7 @@ export class SettingsStore {
     this.minNodesZoneShow = v;
 
     zoneStore.Zones.forEach((element) => {
-      if (element.AllCollection.length <= this.minNodesZoneShow) {
+      if (element.AllCollection().length <= this.minNodesZoneShow) {
         element.DrawZone();
       } else {
         element.ClearZone();

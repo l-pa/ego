@@ -5,6 +5,7 @@ import { settingsStore, zoneStore } from "..";
 
 import { cy } from "./graph/Cytoscape";
 import Zone from "./Zone";
+import CustomZone from "./CustomZone";
 
 export default class EgoZone extends Zone {
   private ego: Node;
@@ -19,8 +20,6 @@ export default class EgoZone extends Zone {
     Math.floor(Math.random() * 16777215)
       .toString(16)
       .padStart(6, "0");
-
-  private alpha: string = "80";
 
   private automove: any = undefined;
 
@@ -56,7 +55,7 @@ export default class EgoZone extends Zone {
       );
     });
 
-    super.Points(super.CollectionPoints(this.AllCollection));
+    super.Points(super.CollectionPoints(this.AllCollection()));
   }
 
   public get InsideCollection() {
@@ -75,7 +74,7 @@ export default class EgoZone extends Zone {
     return this.outerZoneNodes;
   }
 
-  public get AllCollection() {
+  public AllCollection() {
     return this.outsideCollection.union(this.insideCollection);
   }
 
@@ -85,6 +84,7 @@ export default class EgoZone extends Zone {
 
   public set Color(color: string) {
     this.color = color;
+    super.CTXStyle(this.color);
     this.Update();
   }
 
@@ -92,9 +92,6 @@ export default class EgoZone extends Zone {
     return this.color;
   }
 
-  public get Alpha() {
-    return this.alpha;
-  }
 
   public set EnableAutomove(enable: boolean) {
     if (enable) {
@@ -104,13 +101,6 @@ export default class EgoZone extends Zone {
     }
   }
 
-  public set Alpha(alpha: string) {
-    this.alpha = alpha.padStart(2, "0");
-
-    if (super.IsDrawn()) {
-      this.Update();
-    }
-  }
 
   /**
    * ClearZone
@@ -118,16 +108,17 @@ export default class EgoZone extends Zone {
   public ClearZone() {
     if (settingsStore.HideOutsideZones) {
       let nodesInZonesExceptZ: Collection = cy.collection();
-      zoneStore.Zones.filter((zone) => zone.Ego.Id !== this.Ego.Id).forEach(
+      zoneStore.Zones.filter((zone) => zone.GetId() !== this.GetId()).forEach(
         (element) => {
-          nodesInZonesExceptZ = nodesInZonesExceptZ.union(
-            element.AllCollection
-          );
+          if (element instanceof EgoZone || element instanceof CustomZone)
+                nodesInZonesExceptZ = nodesInZonesExceptZ.union(
+                  element.AllCollection()
+                );
         }
       );
-      this.AllCollection.classes();
+    //  this.AllCollection().classes();
 
-      this.AllCollection.difference(nodesInZonesExceptZ).addClass("hide");
+      this.AllCollection().difference(nodesInZonesExceptZ).addClass("hide");
     }
     this.automove.destroy();
     super.ClearZone();
@@ -138,10 +129,10 @@ export default class EgoZone extends Zone {
    */
   public DrawZone() {
     if (settingsStore.HideOutsideZones) {
-      this.AllCollection.removeClass("hide");
+      this.AllCollection().removeClass("hide");
     }
     if (!super.IsDrawn()) {
-      if (this.AllCollection.length > settingsStore.MinNodesZoneShow) {
+      if (this.AllCollection().length > settingsStore.MinNodesZoneShow) {
         return;
       }
 
@@ -160,7 +151,7 @@ export default class EgoZone extends Zone {
       }
 
       super.DrawZone();
-      super.CTXStyle(this.color + this.alpha);
+      super.CTXStyle(this.color);
     }
   }
 
@@ -168,7 +159,7 @@ export default class EgoZone extends Zone {
    * Update
    */
   public Update() {
-    super.Points(super.CollectionPoints(this.AllCollection));
+    super.Points(super.CollectionPoints(this.AllCollection()));
     super.Update();
   }
 

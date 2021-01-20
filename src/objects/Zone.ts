@@ -1,3 +1,4 @@
+import { zoneStore } from "..";
 import { cy } from "./graph/Cytoscape";
 import {
   Subtract,
@@ -25,7 +26,7 @@ export class Point implements IPoint {
   }
 }
 
-export default class Zone {
+export default abstract class Zone {
   private isDrawn: boolean = false;
 
   private isZoneShown: boolean = true;
@@ -39,21 +40,25 @@ export default class Zone {
 
   private label: string = "";
 
+  private ctxStyle: string = "#000000";
+
+  private alpha : string = "80"
+
+
   private points: Array<IPoint> = [];
+  private collection: cytoscape.Collection = cy.collection();
 
   private id: string;
 
-  constructor(id:string){
-    this.id = id
+  constructor(id: string) {
+    this.id = id;
   }
 
-  
-  public Points(v : IPoint[]) {
-      this.points = v;
+  public Points(v: IPoint[]) {
+    this.points = v;
   }
 
-
-  public set Zindex(index: number) {
+  public SetZindex(index: number) {
     this.zIndex = index;
     this.ClearZone();
     if (this.isZoneShown) {
@@ -64,32 +69,54 @@ export default class Zone {
     }
   }
 
+  public GetAlpha(){
+    return this.alpha
+  }
+
+  public SetAlpha(alpha: string) {
+    this.alpha = alpha.padStart(2, "0");
+    if (this.IsDrawn()){
+      this.ctx.fillStyle = this.ctxStyle + this.alpha
+      if (this.IsDrawn()) {
+        this.Update();
+      }
+    }
+  }
+
   public IsDrawn(): boolean {
     return this.isDrawn;
   }
 
-  public get Label() {
+  public GetLabel() {
     return this.label;
   }
 
-  public get Id() {
+  public GetId() {
     return this.id;
   }
 
-  public set Label(label: string) {
+  public SetLabel(label: string) {
     this.label = label;
     // this.updatePath();
   }
 
-  public get AreShownNodes() {
+  public GetAreShownNodes() {
     return this.areShownNodes;
   }
 
-  public set AreShownNodes(show: boolean) {
+  public AllCollection() : cytoscape.Collection {
+    return this.collection;
+  }
+
+  public SetAllCollection(collection:cytoscape.Collection) {
+    this.collection = collection;
+  }
+
+  public SetAreShownNodes(show: boolean) {
     this.areShownNodes = show;
   }
 
-  public set IsZoneShown(show: boolean) {
+  public SetIsZoneShown(show: boolean) {
     this.isZoneShown = show;
 
     if (this.isZoneShown) {
@@ -98,7 +125,6 @@ export default class Zone {
       this.ClearZone();
     }
   }
-
 
   public Update() {
     if (this.isDrawn) {
@@ -120,12 +146,13 @@ export default class Zone {
    * CTX
    */
   public CTX() {
-    return this.ctx
+    return this.ctx;
   }
 
-  public CTXStyle(style:string) {
+  public CTXStyle(style: string) {
     if (this.ctx) {
-      this.ctx.fillStyle = style
+      this.ctxStyle = style
+      this.ctx.fillStyle = style + this.alpha
     }
   }
 
@@ -149,10 +176,11 @@ export default class Zone {
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
-      
-      this.ctx.fillStyle = "#ff00ff80"
+
+      this.ctx.fillStyle = this.ctxStyle;
 
       this.isDrawn = true;
+      zoneStore.ColorNodesInZones()
       this.Update();
     } else {
       //this.updatePath();
@@ -316,14 +344,8 @@ export default class Zone {
 
     while (isRunning) {
       const checking = this.points[index];
-      const a = Subtract(
-        nextVertex,
-        currentVertex
-      );
-      const b = Subtract(
-        checking,
-        currentVertex
-      );
+      const a = Subtract(nextVertex, currentVertex);
+      const b = Subtract(checking, currentVertex);
 
       const cross = CrossCalc(a, b);
 

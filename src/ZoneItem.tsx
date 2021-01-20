@@ -14,26 +14,27 @@ import {
   Tooltip,
   Checkbox,
   Input,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import { zoneStore } from ".";
 import EgoZone from "./objects/EgoZone";
 
-export const ZoneItem: React.FunctionComponent<{ zone: EgoZone }> = ({
-  zone,
-}) => {
+export const ZoneItem: React.FunctionComponent<{
+  zone: EgoZone;
+  addButton?: boolean;
+}> = ({ zone, addButton = false }) => {
   return (
     <Box zIndex={1} bg={zone.Color} p={4} color="white">
       {zone.Ego.isProminent() === 0 ? (
         <Heading color={"red.400"} textAlign={"center"}>
-          {zone.Ego.Id}
+          {zone.GetId()}
         </Heading>
       ) : zone.Ego.isProminent() === 1 ? (
         <Heading color={"yellow.400"} textAlign={"center"}>
-          {zone.Ego.Id}
+          {zone.GetId()}
         </Heading>
       ) : (
-        <Heading textAlign={"center"}>{zone.Ego.Id}</Heading>
+        <Heading textAlign={"center"}>{zone.GetId()}</Heading>
       )}
 
       <Box p="6">
@@ -120,7 +121,7 @@ export const ZoneItem: React.FunctionComponent<{ zone: EgoZone }> = ({
         <AccordionItem>
           <Input
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              zone.Label = e.target.value;
+              zone.SetLabel(e.target.value);
             }}
             style={{ color: "black" }}
             placeholder="Label"
@@ -133,24 +134,37 @@ export const ZoneItem: React.FunctionComponent<{ zone: EgoZone }> = ({
               let alpha = Number.parseInt(
                 (255 * (val / 100)).toString()
               ).toString(16);
-              zone.Alpha = alpha;
+              zone.SetAlpha(alpha);
             }}
           >
             <SliderTrack />
             <SliderFilledTrack />
             <SliderThumb />
           </Slider>
-
           <ButtonGroup>
-            <Button
-              colorScheme="white"
-              variant="outline"
-              onClick={() => {
-                zoneStore.RemoveZone(zone);
-              }}
-            >
-              Delete
-            </Button>
+            {!addButton && (
+              <Button
+                colorScheme="white"
+                variant="outline"
+                onClick={() => {
+                  zoneStore.RemoveZone(zone);
+                }}
+              >
+                Delete
+              </Button>
+            )}
+            {addButton && (
+              <Button
+                colorScheme="white"
+                variant="outline"
+                onClick={() => {
+                  zoneStore.AddZone(zone);
+                  zoneStore.RemoveTmpZone(zone);
+                }}
+              >
+                Add zone
+              </Button>
+            )}
           </ButtonGroup>
           <Stack
             mt={5}
@@ -166,7 +180,7 @@ export const ZoneItem: React.FunctionComponent<{ zone: EgoZone }> = ({
             <Checkbox
               defaultIsChecked={true}
               onChange={(e) => {
-                zone.IsZoneShown = e.target.checked;
+                zone.SetIsZoneShown(e.target.checked);
               }}
             >
               Zone

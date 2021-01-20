@@ -37,6 +37,12 @@ export function BasicEdges() {
         Style
       </Text>
 
+      <Select>
+        <option value="source">Source</option>
+        <option value="target">Target</option>
+        <option value="blend">Blend</option>
+      </Select>
+
       <Select
         onChange={(e) => {
           settingsStore.SelectedEdgeBlendMode = e.target.value;

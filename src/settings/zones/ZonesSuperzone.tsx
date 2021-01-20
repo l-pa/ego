@@ -8,17 +8,19 @@ export function ZonesSuperzone() {
     <Select
       placeholder="None"
       onChange={(e) => {
-        zoneStore.SuperzoneOfZone(
-          zoneStore.Zones.filter(
-            (z) => z.Ego.Id.toString() === e.target.value
-          )[0]
-        );
+        if (e.target.value) {
+          zoneStore.SuperzoneOfZone(
+            zoneStore.Zones.filter(
+              (z) => z.GetId().toString() === e.target.value
+            )[0]
+          );
+        }
       }}
     >
       {zoneStore.Zones.map((z, i) => {
         return (
-          <option key={i} value={z.Ego.Id}>
-            {z.Ego.Id}
+          <option key={i} value={z.GetId()}>
+            {z.GetId()}
           </option>
         );
       })}

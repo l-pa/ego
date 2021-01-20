@@ -197,6 +197,10 @@ export default class Cytoscape {
         zoneStore.Zones.forEach((z) => {
           z.Update();
         });
+
+        zoneStore.TmpZones.forEach((z) => {
+          z.Update();
+        });
       });
 
       const automove = require("cytoscape-automove");
