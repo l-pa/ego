@@ -12,12 +12,12 @@ import {
   Heading,
   Text,
 } from "@chakra-ui/react";
-import { ZoneItem } from "../../ZoneItem";
+import { ZoneItem } from "../../components/ZoneItem";
 import { networkStore, settingsStore, zoneStore } from "../../.";
 import { observer } from "mobx-react-lite";
 import EgoZone from "../../objects/EgoZone";
 import CustomZone from "../../objects/CustomZone";
-import { ZoneItemCustom } from "../../ZoneItemCustom";
+import { ZoneItemCustom } from "../../components/ZoneItemCustom";
 
 export const BasicZones: React.FunctionComponent = () => {
   const Zones = observer(() => (

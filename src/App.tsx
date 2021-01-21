@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
 import Matrix from "./objects/DependencyMatrix";
-import { Graph } from "./Graph";
+import { Graph } from "./components/Graph";
 import Node from "./objects/Node";
 import Network from "./objects/Network";
 import { Context } from ".";
@@ -17,8 +17,8 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { LeftPanel } from "./LeftPanel";
-import { RightPanel } from "./RightPanel";
+import { LeftPanel } from "./components/LeftPanel";
+import { RightPanel } from "./components/RightPanel";
 
 function App() {
   const context = useContext(Context);
@@ -61,7 +61,9 @@ function App() {
                     );
                   }
                   new Matrix(network).nodesDependency();
+                  console.log(network);
                   network.Edges.forEach((e) => e.UpdateClasses());
+
                   context.network.Network = network;
                   toast({
                     title: "Network loaded.",

@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 import { zoneStore } from "../..";
 import EgoZone from "../../objects/EgoZone";
 import Zone from "../../objects/Zone";
-import { ZoneItem } from "../../ZoneItem";
+import { ZoneItem } from "../../components/ZoneItem";
 
 export function ZonesSubzone() {
   useEffect(() => {

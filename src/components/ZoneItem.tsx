@@ -16,8 +16,8 @@ import {
   Input,
   Text,
 } from "@chakra-ui/react";
-import { zoneStore } from ".";
-import EgoZone from "./objects/EgoZone";
+import { zoneStore } from "..";
+import EgoZone from "../objects/EgoZone";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;

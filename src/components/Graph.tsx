@@ -1,10 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import "./style.css";
 
-
-import { networkStore } from ".";
-import Cytoscape, { cy } from "./objects/graph/Cytoscape";
-
+import { networkStore } from "..";
+import Cytoscape, { cy } from "../objects/graph/Cytoscape";
 
 export const Graph: React.FunctionComponent = () => {
   const container = useRef<HTMLDivElement>(null);

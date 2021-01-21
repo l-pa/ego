@@ -1,13 +1,8 @@
-import {
-  Button,
-  Heading,
-  Stack,
-} from "@chakra-ui/react";
+import { Button, Heading, Stack } from "@chakra-ui/react";
 import React from "react";
-import { settingsStore } from ".";
+import { settingsStore } from "..";
 
 export const LeftPanel: React.FunctionComponent = () => {
-
   return (
     <Stack p={5} w={"10em"}>
       <Heading as="h5" size="sm">

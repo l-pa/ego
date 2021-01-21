@@ -1,15 +1,15 @@
 import { Stack } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
-import { settingsStore } from ".";
-import { BasicZones } from "./settings/basic/BasicZones";
-import { BasicEdges } from "./settings/basic/BasicEdges";
-import { BasicNodes } from "./settings/basic/BasicNodes";
-import { ZonesIntersect } from "./settings/zones/ZonesIntersect";
-import { BasicLayout } from "./settings/basic/BasicLayout";
-import { ZonesMax } from "./settings/zones/ZonesMax";
-import { ZonesSubzone } from "./settings/zones/ZonesSubzone";
-import { ZonesSuperzone } from "./settings/zones/ZonesSuperzone";
+import { settingsStore } from "..";
+import { BasicZones } from "../settings/basic/BasicZones";
+import { BasicEdges } from "../settings/basic/BasicEdges";
+import { BasicNodes } from "../settings/basic/BasicNodes";
+import { ZonesIntersect } from "../settings/zones/ZonesIntersect";
+import { BasicLayout } from "../settings/basic/BasicLayout";
+import { ZonesMax } from "../settings/zones/ZonesMax";
+import { ZonesSubzone } from "../settings/zones/ZonesSubzone";
+import { ZonesSuperzone } from "../settings/zones/ZonesSuperzone";
 
 export const RightPanel: React.FunctionComponent = () => {
   const Settings = observer(() => (
