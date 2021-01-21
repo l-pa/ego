@@ -11,14 +11,10 @@ import {
   Button,
   Accordion,
   AccordionItem,
-  Tooltip,
   Checkbox,
   Input,
-  Text,
 } from "@chakra-ui/react";
 import { zoneStore } from ".";
-import EgoZone from "./objects/EgoZone";
-import Zone from "./objects/Zone";
 import CustomZone from "./objects/CustomZone";
 
 export const ZoneItemCustom: React.FunctionComponent<{

@@ -83,7 +83,7 @@ export default class Matrix {
     const minNodeId = Math.min.apply(
       Math,
       this.network.Nodes.map(function (o) {
-        return o.Id;
+        return Number.parseInt(o.Id);
       })
     );
 
@@ -149,7 +149,7 @@ export default class Matrix {
       this.network.Nodes.filter(
         (n) => Number.parseInt(n.Id.toString()) === i
       )[0].TwInDep = twindep;
-    }
+    }    
   }
 
   /**

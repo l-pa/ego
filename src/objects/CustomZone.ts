@@ -1,25 +1,22 @@
-import cytoscape, { Collection } from "cytoscape";
+import cytoscape from "cytoscape";
 
-import { settingsStore, zoneStore } from "..";
+import { settingsStore } from "..";
 
 import { cy } from "./graph/Cytoscape";
 import Zone from "./Zone";
 
 export default class CustomZone extends Zone {
-
-
   private automove: any = undefined;
 
-  constructor(collection: cytoscape.Collection, id:string) {
+  constructor(collection: cytoscape.Collection, id: string) {
     super(id);
     super.Points(super.CollectionPoints(collection));
-    super.SetAllCollection(collection )
+    super.SetAllCollection(collection);
   }
-
 
   public set EnableAutomove(enable: boolean) {
     if (enable) {
-  this.automove.enable();
+      this.automove.enable();
     } else {
       this.automove.disable();
     }
@@ -30,7 +27,6 @@ export default class CustomZone extends Zone {
    */
   public ClearZone() {
     if (settingsStore.HideOutsideZones) {
-
     }
     this.automove.destroy();
     super.ClearZone();
@@ -61,7 +57,7 @@ export default class CustomZone extends Zone {
       }
 
       super.DrawZone();
-      
+
       var my_gradient = super.CTX().createLinearGradient(0, 0, 100, 100);
       my_gradient.addColorStop(0, "black");
       my_gradient.addColorStop(0.5, "red");
@@ -77,5 +73,4 @@ export default class CustomZone extends Zone {
     super.Points(super.CollectionPoints(this.AllCollection()));
     super.Update();
   }
-
 }

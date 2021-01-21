@@ -16,8 +16,8 @@ export default class Edge implements ElementDefinition {
     this.Id = id;
 
     this.data = {
-      source: this.NodeA.Id.toString(),
-      target: this.NodeB.Id.toString(),
+      source: this.NodeA.Id,
+      target: this.NodeB.Id,
       edgeType: "",
     };
 
@@ -31,9 +31,11 @@ export default class Edge implements ElementDefinition {
   }
 
   public UpdateClasses() {
-    const source = this.NodeA.isProminent();
-    const target = this.NodeB.isProminent();
+    const source: number = this.NodeA.isProminent();
+    const target: number = this.NodeB.isProminent();
 
+    console.log(this.NodeA, source, this.NodeB, target);
+    
     if (source === 0 && target === 0) {
       // this.classes = "sptosp";
       this.data.edgeType = "sptosp";
@@ -45,7 +47,7 @@ export default class Edge implements ElementDefinition {
     }
 
     if (source === -1 && target === -1) {
-      // this.classes = "nptonp";
+      // this.classes = "nptonp";      
       this.data.edgeType = "nptonp";
     }
 
@@ -62,7 +64,7 @@ export default class Edge implements ElementDefinition {
     if ((source === 1 && target === -1) || (source === -1 && target === 1)) {
       // this.classes = "wptonp";
       this.data.edgeType = "wptonp";
-    }
+    }    
   }
 
 }

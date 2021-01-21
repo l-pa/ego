@@ -3,24 +3,6 @@ import EgoZone from "../objects/EgoZone";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { cy } from "../objects/graph/Cytoscape";
 import { Collection, EdgeSingular } from "cytoscape";
-import {
-  normal,
-  multiply,
-  screen,
-  overlay,
-  darken,
-  lighten,
-  colorDodge,
-  colorBurn,
-  hardLight,
-  softLight,
-  difference,
-  exclusion,
-  hue,
-  saturation,
-  color,
-  luminosity,
-} from "color-blend";
 import Zone from "../objects/Zone";
 import CustomZone from "../objects/CustomZone";
 import { createStandaloneToast } from "@chakra-ui/react";
@@ -34,7 +16,6 @@ export class ZoneStore {
 
   public duplicates: Zone[] = [];
 
-
   get Zones(): Zone[] {
     return this.zones;
   }
@@ -46,23 +27,23 @@ export class ZoneStore {
   /**
    * AddTmpZone
    */
-  public AddTmpZone(z:Zone) {
-    this.tmpZones.push(z)
-  }
 
+  public AddTmpZone(z: Zone) {
+    this.tmpZones.push(z);
+  }
   /**
    * FindZone by ID
    */
-  public FindZone(id:string) {
-    return this.zones.filter(z => z.GetId() === id)[0]
+  public FindZone(id: string) {
+    return this.zones.filter((z) => z.GetId() === id)[0];
   }
 
   /**
    * RemoveTmpZone
    */
-  public RemoveTmpZone(z:Zone) {
-    z.ClearZone()
-    this.tmpZones.splice(this.tmpZones.indexOf(z), 1)
+  public RemoveTmpZone(z: Zone) {
+    z.ClearZone();
+    this.tmpZones.splice(this.tmpZones.indexOf(z), 1);
   }
 
   /**
@@ -75,7 +56,7 @@ export class ZoneStore {
       if (zone instanceof EgoZone) {
         zone.AllCollection().removeClass("hide");
       }
-       zone.DrawZone();
+      zone.DrawZone();
       this.Duplicates();
       this.ColorNodesInZones();
       zoneStore.HideNodesOutsideZones();
@@ -127,10 +108,9 @@ export class ZoneStore {
    * Duplicates
    */
   public Duplicates() {
-
-    if (settingsStore.Duplicates === "all") {
-      this.duplicates.forEach(z => z.DrawZone())
-      this.duplicates = []
+    if (settingsStore.Duplicates === "all" && this.duplicates.length > 0) {
+      this.duplicates.forEach((z) => z.DrawZone());
+      this.duplicates = [];
     }
 
     if (settingsStore.Duplicates === "de") {
@@ -148,8 +128,11 @@ export class ZoneStore {
                 z1.InsideCollection.union(z1.OutsideCollection)
               ).length === 0
             ) {
-              if (this.duplicates.filter(z => z.GetId() === z2.GetId()).length === 0) {
-                this.duplicates.push(z2)
+              if (
+                this.duplicates.filter((z) => z.GetId() === z2.GetId())
+                  .length === 0
+              ) {
+                this.duplicates.push(z2);
               }
               z2.ClearZone();
             }
@@ -165,12 +148,16 @@ export class ZoneStore {
           const z2 = this.zones[j];
           if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
             if (
-              z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.GetId()).length === 1 &&
+              z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.GetId())
+                .length === 1 &&
               z1.InsideCollection.subtract(z2.InsideCollection).length === 0 &&
               z2.InsideCollection.subtract(z1.InsideCollection).length === 0
             ) {
-              if (this.duplicates.filter(z => z.GetId() === z2.GetId()).length === 0) {
-                this.duplicates.push(z2)
+              if (
+                this.duplicates.filter((z) => z.GetId() === z2.GetId())
+                  .length === 0
+              ) {
+                this.duplicates.push(z2);
               }
               z2.ClearZone();
             }
@@ -199,138 +186,35 @@ export class ZoneStore {
   }
 
   private EdgeColorCalc(e: EdgeSingular) {
-    const a = networkStore.Network?.getNode(e.data("source")).style(
-      "background-color"
-    );
+    // const a = networkStore.Network?.getNode(e.data("source")).style(
+    //   "background-color"
+    // );
 
-    const arrA = a
-      .substring(4, a.length - 1)
-      .replace(/ /g, "")
-      .split(",");
+    // const arrA = a
+    //   .substring(4, a.length - 1)
+    //   .replace(/ /g, "")
+    //   .split(",");
 
-    const b = networkStore.Network?.getNode(e.data("target")).style(
-      "background-color"
-    );
+    // const b = networkStore.Network?.getNode(e.data("target")).style(
+    //   "background-color"
+    // );
 
-    const arrB = b
-      .substring(4, b.length - 1)
-      .replace(/ /g, "")
-      .split(",");
+    // const arrB = b
+    //   .substring(4, b.length - 1)
+    //   .replace(/ /g, "")
+    //   .split(",");
 
-    arrA[0] = Number.parseFloat(arrA[0]);
-    arrA[1] = Number.parseFloat(arrA[1]);
-    arrA[2] = Number.parseFloat(arrA[2]);
+    // arrA[0] = Number.parseFloat(arrA[0]);
+    // arrA[1] = Number.parseFloat(arrA[1]);
+    // arrA[2] = Number.parseFloat(arrA[2]);
 
-    arrB[0] = Number.parseFloat(arrB[0]);
-    arrB[1] = Number.parseFloat(arrB[1]);
-    arrB[2] = Number.parseFloat(arrB[2]);
+    // arrB[0] = Number.parseFloat(arrB[0]);
+    // arrB[1] = Number.parseFloat(arrB[1]);
+    // arrB[2] = Number.parseFloat(arrB[2]);
 
-    let c = { r: 0, g: 0, b: 0, a: 0 };
+    // let c = { r: 0, g: 0, b: 0, a: 0 };
 
-    switch (settingsStore.SelectedEdgeBlendMode) {
-      case "normal":
-        c = normal(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-
-      case "multiply":
-        c = multiply(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "screen":
-        c = screen(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "overlay":
-        c = overlay(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "darken":
-        c = darken(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "lighten":
-        c = lighten(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "colorDodge":
-        c = colorDodge(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "colorBurn":
-        c = colorBurn(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "hardLight":
-        c = hardLight(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "softLight":
-        c = softLight(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "difference":
-        c = difference(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "exclusion":
-        c = exclusion(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "hue":
-        c = hue(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "saturation":
-        c = saturation(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "color":
-        c = color(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-      case "luminosity":
-        c = luminosity(
-          { r: arrA[0], g: arrA[1], b: arrA[2], a: 0.5 },
-          { r: arrB[1], g: arrB[2], b: arrB[3], a: 0.5 }
-        );
-        break;
-
-      default:
-        break;
-    }
-
-    e.style("line-color", `rgb(${c.r},${c.g},${c.b}, ${c.a})`);
+    e.classes(e.data("edgeType"));;;;;;;;;;;;;
   }
 
   /**
@@ -338,6 +222,7 @@ export class ZoneStore {
    */
   private EdgeColors(z: EgoZone | CustomZone, hover: boolean = false) {
     cy.edges().style("line-color", "");
+
     if (!hover) {
       let nodes: cytoscape.Collection = cy.collection();
 
@@ -346,27 +231,43 @@ export class ZoneStore {
           if (z.IsDrawn()) nodes = nodes.union(z.AllCollection());
       });
 
-      nodes.forEach((x, i) => {
-        nodes.forEach((y, j) => {
-          networkStore.Network?.getEdge(
-            (x as { [key: string]: any })["_private"]["data"]["id"] as number,
-            (y as { [key: string]: any })["_private"]["data"]["id"] as number
-          ).forEach((e) => {
-            this.EdgeColorCalc(e);
-          });
+      // nodes.forEach((x, i) => {
+      //   nodes.forEach((y, j) => {
+      //     networkStore.Network?.getEdge(
+      //       (x as { [key: string]: any })["_private"]["data"]["id"] as number,
+      //       (y as { [key: string]: any })["_private"]["data"]["id"] as number
+      //     ).forEach((e) => {
+      //      //  this.EdgeColorCalc(e);
+      //     });
+      //   });
+      // });
+
+      nodes
+        .nodes()
+        .edgesWith(nodes)
+        .forEach((e) => {
+          e.classes(e.data("edgeType"));
         });
-      });
     } else {
-      z.AllCollection().forEach((x, i) => {
-        z.AllCollection().forEach((y, j) => {
-          networkStore.Network?.getEdge(
-            (x as { [key: string]: any })["_private"]["data"]["id"] as number,
-            (y as { [key: string]: any })["_private"]["data"]["id"] as number
-          ).forEach((e) => {
-            this.EdgeColorCalc(e);
-          });
+      // z.AllCollection().forEach((x, i) => {
+      //   z.AllCollection().forEach((y, j) => {
+      //     networkStore.Network?.getEdge(
+      //       (x as { [key: string]: any })["_private"]["data"]["id"] as number,
+      //       (y as { [key: string]: any })["_private"]["data"]["id"] as number
+      //     ).forEach((e) => {
+      //       //this.EdgeColorCalc(e);
+      //       // console.log(e);
+
+      //     });
+      //   });
+      // });
+
+      z.AllCollection()
+        .nodes()
+        .edgesWith(z.AllCollection())
+        .forEach((e) => {
+          e.classes(e.data("edgeType"));
         });
-      });
     }
   }
 
@@ -396,7 +297,7 @@ export class ZoneStore {
                     node.Id ===
                     ((n as { [key: string]: any })["_private"]["data"][
                       "id"
-                    ] as number)
+                    ] as string)
                 )[0].classes
               );
             });
@@ -418,7 +319,7 @@ export class ZoneStore {
         networkStore.Network?.Nodes.filter(
           (node) =>
             node.Id ===
-            ((n as { [key: string]: any })["_private"]["data"]["id"] as number)
+            ((n as { [key: string]: any })["_private"]["data"]["id"] as string)
         )[0].classes // (n as { [key: string]: any })["_private"]["data"]["id"] as number;
       );
     });
@@ -500,30 +401,32 @@ export class ZoneStore {
    * SubzonesOfZone
    */
   public SubzonesOfZone(zone: Zone) {
-    const subzones: Array<EgoZone> = [];
-    console.log(zone.AllCollection().difference(`#${zone.GetId()}`));
+    return new Promise<EgoZone[]>((res) => {
+      const subzones: Array<EgoZone> = [];
+      console.log(zone.AllCollection().difference(`#${zone.GetId()}`));
 
-    zone
-      .AllCollection()
-      .difference(`#${zone.GetId()}`)
-      .forEach((node) => {
-        const n = networkStore.Network?.Nodes.filter(
-          (n) => n.Id === node.data("id")
-        )[0];
-        if (n) {
-          const newZone = new EgoZone(n);
-          if (
-            newZone.AllCollection().subtract(zone.AllCollection()).length === 0
-          ) {
-            subzones.push(newZone);
+      zone
+        .AllCollection()
+        .difference(`#${zone.GetId()}`)
+        .forEach((node) => {
+          const n = networkStore.Network?.Nodes.filter(
+            (n) => n.Id === node.data("id")
+          )[0];
+          if (n) {
+            const newZone = new EgoZone(n);
+            if (
+              newZone.AllCollection().subtract(zone.AllCollection()).length ===
+              0
+            ) {
+              subzones.push(newZone);
+            }
           }
-        }
-      });
-
-    return subzones;
+        });
+      res(subzones);
+    });
   }
 
-  public SuperzoneOfZone(zone: Zone) {
+  public async SuperzoneOfZone(zone: Zone) {
     const superzones: Array<Zone> = [];
 
     cy.nodes()

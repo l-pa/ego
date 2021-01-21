@@ -1,5 +1,5 @@
 import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
-import { action, observable } from "mobx";
+import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { zoneStore } from "../..";
@@ -17,8 +17,8 @@ export function ZonesSubzone() {
 
   const Zones = observer(() => (
     <div>
-      {zoneStore.TmpZones.map((z, i) => {
-        if (z instanceof EgoZone && !zoneStore.Zones.includes(z)) return <ZoneItem addButton={true} zone={z} key={i}></ZoneItem>;
+      {zoneStore.TmpZones.filter(z => z instanceof EgoZone && !zoneStore.Zones.includes(z)).map((z, i) => {
+       return <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>;
       })}
     </div>
   ));
@@ -42,14 +42,16 @@ export function ZonesSubzone() {
           clearZone();
           if (e.target.value) {
             zoneStore.FindZone(e.target.value).SetAlpha("00");
-            const a = zoneStore.SubzonesOfZone(
+            zoneStore.SubzonesOfZone(
               zoneStore.Zones.filter(
                 (z) => z.GetId().toString() === e.target.value
               )[0]
-            );
-            if (a.length > 0) {
-              a.forEach((z) => addZone(z));
+            ).then((res) => {
+              
+              if (res.length > 0) {
+                res.forEach((z) => addZone(z));
             }
+            })
           }
         }}
       >

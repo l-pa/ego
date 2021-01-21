@@ -183,14 +183,7 @@ export default class Cytoscape {
       });
 
       cy.on("click", "edge", function (event) {
-        console.log(event);
 
-        console.log(
-          networkStore.Network?.getEdge(
-            event.target.source,
-            event.target.target
-          )
-        );
       });
 
       cy.on("render cyCanvas.resize", (evt: cytoscape.EventObject) => {
@@ -208,7 +201,7 @@ export default class Cytoscape {
 
       cytoscape.use(automove);
       cytoscape.use(cycanvas);
-      cytoscape.use(cola);
+      cytoscape.use(cola);      
     }
   }
 }

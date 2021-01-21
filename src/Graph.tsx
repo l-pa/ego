@@ -10,6 +10,7 @@ export const Graph: React.FunctionComponent = () => {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const aa = new Cytoscape(container.current);
 
     return () => {

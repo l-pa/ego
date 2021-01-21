@@ -16,7 +16,6 @@ import {
   Flex,
   Stack,
   Text,
-  useToast,
 } from "@chakra-ui/react";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";

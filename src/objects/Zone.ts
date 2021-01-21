@@ -128,6 +128,7 @@ export default abstract class Zone {
 
   public Update() {
     if (this.isDrawn) {
+      this.CTXStyle(this.ctxStyle);
       this.calc();
     }
   }

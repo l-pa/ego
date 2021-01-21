@@ -1,5 +1,4 @@
 import React from "react";
-import Zone from "../../objects/EgoZone";
 import {
   Stack,
   Button,
@@ -23,17 +22,16 @@ import { ZoneItemCustom } from "../../ZoneItemCustom";
 export const BasicZones: React.FunctionComponent = () => {
   const Zones = observer(() => (
     <div>
-      {zoneStore.Zones.map((z, i) => {
-        if (z instanceof EgoZone) return <ZoneItem zone={z} key={i}></ZoneItem>;
+      {zoneStore.Zones.filter((z) => z instanceof EgoZone).map((z, i) => {
+        return <ZoneItem zone={z as EgoZone} key={i}></ZoneItem>;
       })}
     </div>
   ));
 
   const CustomZones = observer(() => (
     <div>
-      {zoneStore.Zones.map((z, i) => {
-        if (z instanceof CustomZone)
-          return <ZoneItemCustom zone={z} key={i}></ZoneItemCustom>;
+      {zoneStore.Zones.filter((z) => z instanceof CustomZone).map((z, i) => {
+        return <ZoneItemCustom zone={z as CustomZone} key={i}></ZoneItemCustom>;
       })}
     </div>
   ));
@@ -67,24 +65,24 @@ export const BasicZones: React.FunctionComponent = () => {
       <Heading as="h4" size="md" pb={5}>
         Add zones
       </Heading>
+
       <Button
         onClick={() => {
           networkStore.Network?.Nodes.forEach((n) => {
             if (n.isProminent() === 0) {
-              const z = new EgoZone(n);
-              zoneStore.AddZone(z);
+              zoneStore.AddZone(new EgoZone(n));
             }
           });
         }}
       >
         Strongly prominent
       </Button>
+
       <Button
         onClick={() => {
           networkStore.Network?.Nodes.forEach((n) => {
             if (n.isProminent() === 1) {
-              const z = new EgoZone(n);
-              zoneStore.AddZone(z);
+              zoneStore.AddZone(new EgoZone(n));
             }
           });
         }}
