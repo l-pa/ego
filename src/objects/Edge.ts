@@ -1,11 +1,12 @@
 import type Node from "./Node";
 import type { EdgeDataDefinition, ElementDefinition } from "cytoscape";
+import { networkStore } from "..";
 
 export default class Edge implements ElementDefinition {
-  public Id: string | number;
-  public NodeA: Node;
-  public NodeB: Node;
-  public Weight: number = 1;
+  private Id: string | number;
+  private NodeA: Node;
+  private NodeB: Node;
+  private Weight: number = 1;
 
   data: EdgeDataDefinition;
   classes = "";
@@ -13,7 +14,7 @@ export default class Edge implements ElementDefinition {
   constructor(nodeA: Node, nodeB: Node, id: string | number, weight?: number) {
     this.NodeA = nodeA;
     this.NodeB = nodeB;
-    this.Id = id;
+    this.Id = id.toString();
 
     this.data = {
       source: this.NodeA.Id,
@@ -26,16 +27,34 @@ export default class Edge implements ElementDefinition {
     }
   }
 
+  public GetNodeA() {
+    return this.NodeA;
+  }
+
+  public GetNodeB() {
+    return this.NodeB;
+  }
+
+  public GetId() {
+    return this.Id;
+  }
+
+  public GetWeight() {
+    return this.Weight;
+  }
+
   public PlainObject(): ElementDefinition {
     return Object.assign({}, this);
   }
 
   public UpdateClasses() {
-    const source: number = this.NodeA.isProminent();
-    const target: number = this.NodeB.isProminent();
+    const source: number | undefined = networkStore.Network?.Nodes.filter(
+      (n) => n.Id === this.NodeA.Id
+    )[0].isProminent();
+    const target: number | undefined = networkStore.Network?.Nodes.filter(
+      (n) => n.Id === this.NodeB.Id
+    )[0].isProminent();
 
-    console.log(this.NodeA, source, this.NodeB, target);
-    
     if (source === 0 && target === 0) {
       // this.classes = "sptosp";
       this.data.edgeType = "sptosp";
@@ -47,7 +66,7 @@ export default class Edge implements ElementDefinition {
     }
 
     if (source === -1 && target === -1) {
-      // this.classes = "nptonp";      
+      // this.classes = "nptonp";
       this.data.edgeType = "nptonp";
     }
 
@@ -64,7 +83,6 @@ export default class Edge implements ElementDefinition {
     if ((source === 1 && target === -1) || (source === -1 && target === 1)) {
       // this.classes = "wptonp";
       this.data.edgeType = "wptonp";
-    }    
+    }
   }
-
 }

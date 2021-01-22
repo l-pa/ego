@@ -214,7 +214,7 @@ export class ZoneStore {
 
     // let c = { r: 0, g: 0, b: 0, a: 0 };
 
-    e.classes(e.data("edgeType"));;;;;;;;;;;;;
+    e.not(".hide").classes(e.data("edgeType"));
   }
 
   /**
@@ -257,7 +257,6 @@ export class ZoneStore {
       //     ).forEach((e) => {
       //       //this.EdgeColorCalc(e);
       //       // console.log(e);
-
       //     });
       //   });
       // });
@@ -359,6 +358,22 @@ export class ZoneStore {
             .classes("coliaisons");
         });
       }
+      this.EdgeColors(z, true);
+    }
+
+    if (z instanceof CustomZone) {
+      z.AllCollection().not(".hide").classes("");
+      z.AllCollection().forEach((n) => {
+        z.AllCollection().classes(
+          networkStore.Network?.Nodes.filter(
+            (node) =>
+              node.Id ===
+              ((n as { [key: string]: any })["_private"]["data"][
+                "id"
+              ] as string)
+          )[0].classes // (n as { [key: string]: any })["_private"]["data"]["id"] as number;
+        );
+      });
       this.EdgeColors(z, true);
     }
   }

@@ -9,6 +9,7 @@ import { ZoneItem } from "../../components/ZoneItem";
 
 export function ZonesSubzone() {
   useEffect(() => {
+    zoneStore.Zones.forEach((z) => z.ClearZone());
     return () => {
       zoneStore.Zones.forEach((z) => z.SetAlpha("80"));
       zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
@@ -27,6 +28,7 @@ export function ZonesSubzone() {
     zoneStore.AddTmpZone(zone);
     zone.DrawZone();
     zone.SetAlpha("10");
+    zoneStore.ColorNodesInZone(zone);
   });
 
   const clearZone = action(() => {

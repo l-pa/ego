@@ -10,8 +10,8 @@ export function ZonesMax() {
   useEffect(() => {
     return () => {
       zoneStore.Zones.forEach((z) => {
-        z.DrawZone()
-      })
+        z.DrawZone();
+      });
     };
   });
 
@@ -27,13 +27,13 @@ export function ZonesMax() {
       const largestEgoZone = largestZone.sort(
         (a, b) => b.AllCollection().length - a.AllCollection().length
       )[0] as EgoZone;
-      zoneStore.HideAllZones()
+      zoneStore.HideAllZones();
 
-      largestEgoZone.DrawZone()
-      
+      largestEgoZone.DrawZone();
+
       return <ZoneItem zone={largestEgoZone}></ZoneItem>;
     } else {
-      return <Heading size="sm">Select at least one zone</Heading>;;
+      return <Heading size="sm">Select at least one zone</Heading>;
     }
   });
 

@@ -15,6 +15,7 @@ import {
   Checkbox,
   Input,
   Text,
+  Avatar,
 } from "@chakra-ui/react";
 import { zoneStore } from "..";
 import EgoZone from "../objects/EgoZone";
@@ -26,13 +27,12 @@ export const ZoneItem: React.FunctionComponent<{
   return (
     <Box zIndex={1} bg={zone.Color} p={4} color="white">
       {zone.Ego.isProminent() === 0 ? (
-        <Heading color={"red.400"} textAlign={"center"}>
-          {zone.GetId()}
-        </Heading>
+        <Avatar name={zone.GetId()} color={"red.400"} />
+        // <Heading color={"red.400"} textAlign={"center"}>
+        //   {zone.GetId()}
+        // </Heading>
       ) : zone.Ego.isProminent() === 1 ? (
-        <Heading color={"yellow.400"} textAlign={"center"}>
-          {zone.GetId()}
-        </Heading>
+        <Avatar name={zone.GetId()} color={"yellow.400"} />
       ) : (
         <Heading textAlign={"center"}>{zone.GetId()}</Heading>
       )}
@@ -61,7 +61,7 @@ export const ZoneItem: React.FunctionComponent<{
               label={zone.Ego.OwInDep.map((n) => n.Id).toString()}
               placement="bottom"
             >
-              <Text> &bull; OwInDep {zone.Ego.OwInDep.length}</Text>
+              <Text>OwInDep {zone.Ego.OwInDep.length}</Text>
             </Tooltip>
             <Tooltip
               zIndex={2}
@@ -69,7 +69,7 @@ export const ZoneItem: React.FunctionComponent<{
               label={zone.Ego.TwDep.map((n) => n.Id).toString()}
               placement="bottom"
             >
-              <Text> &bull; TwDep {zone.Ego.TwDep.length}</Text>
+              <Text>TwDep {zone.Ego.TwDep.length}</Text>
             </Tooltip>
             <Tooltip
               zIndex={2}
@@ -77,7 +77,7 @@ export const ZoneItem: React.FunctionComponent<{
               label={zone.Ego.TwInDep.map((n) => n.Id).toString()}
               placement="bottom"
             >
-              <Text> &bull; TwInDep {zone.Ego.TwInDep.length}</Text>
+              <Text>TwInDep {zone.Ego.TwInDep.length}</Text>
             </Tooltip>
           </Box>
         </Box>

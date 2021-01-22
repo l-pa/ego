@@ -125,7 +125,7 @@ export const BasicZones: React.FunctionComponent = () => {
       >
         Move zone
       </Checkbox>
-      <Checkbox
+      {/* <Checkbox
         defaultIsChecked={true}
         onChange={(e) => {
           if (e.target.checked) {
@@ -136,7 +136,7 @@ export const BasicZones: React.FunctionComponent = () => {
         }}
       >
         Z-index
-      </Checkbox>
+      </Checkbox> */}
       <Divider></Divider>
       <NodesWithLessThanSlider />
       <Heading as="h4" size="md" pb={5} pt={5}>

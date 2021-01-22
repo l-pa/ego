@@ -120,7 +120,7 @@ export default class EgoZone extends Zone {
 
       this.AllCollection().difference(nodesInZonesExceptZ).addClass("hide");
     }
-    this.automove.destroy();
+    if (this.automove) this.automove.destroy();
     super.ClearZone();
   }
 
@@ -132,7 +132,7 @@ export default class EgoZone extends Zone {
       this.AllCollection().removeClass("hide");
     }
     if (!super.IsDrawn()) {
-      if (this.AllCollection().length > settingsStore.MinNodesZoneShow) {
+      if (this.AllCollection().length < settingsStore.MinNodesZoneShow) {
         return;
       }
 

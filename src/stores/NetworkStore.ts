@@ -16,7 +16,7 @@ export class NetworkStore {
 
   public set Network(v: Network | undefined) {
     this.network = v;
-    if (v) settingsStore.MinNodesZoneShow = v.Nodes.length;
+    if (v) settingsStore.MinNodesZoneShow = 0;
   }
   
   public get Loaded() : boolean {

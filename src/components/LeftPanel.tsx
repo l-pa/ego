@@ -51,7 +51,7 @@ export const LeftPanel: React.FunctionComponent = () => {
       </Button>
 
       <Heading as="h5" size="sm">
-        Zones
+        Set operations
       </Heading>
       <Button
         isFullWidth={true}

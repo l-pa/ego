@@ -4,21 +4,11 @@ import type Node from "./Node";
 export default class Matrix {
   private network: Network;
 
-  private AdjencyMatrix: number[][];
-  private CommonNeighbors: Node[][];
+  private CommonNeighbors: Map<string, Node[]>;
 
   constructor(network: Network) {
     this.network = network;
-    this.AdjencyMatrix = new Array<Array<number>>();
-    this.CommonNeighbors = new Array<Array<Node>>();
-
-    for (var i: number = 0; i < network.Nodes.length + 1; i++) {
-      let row: number[] = new Array<number>();
-      for (var j: number = 0; j < network.Nodes.length + 1; j++) {
-        row.push(0);
-      }
-      this.AdjencyMatrix.push(row);
-    }
+    this.CommonNeighbors = new Map<string, Node[]>();
   }
 
   /**
@@ -27,129 +17,165 @@ export default class Matrix {
    * @returns Dependency matrix.
    *
    */
-  public dependencyMatrix(): number[][] {
+  public dependencyMatrix() {
     this.network.Edges.forEach((edge) => {
-      this.AdjencyMatrix[Number.parseInt(edge.NodeA.Id.toString())][
-        Number.parseInt(edge.NodeB.Id.toString())
-      ] = edge.Weight;
-    });
-
-    for (let i = 0; i < this.AdjencyMatrix.length; i++) {
-      let column = [];
-      for (let j = 0; j < this.AdjencyMatrix[i].length; j++) {
-        const e1 = this.AdjencyMatrix[i][j];
-        const e2 = this.AdjencyMatrix[j][i];
-
-        if (e1 !== 0) {
-          column.push(
-            this.network.Nodes.filter(
-              (e) => Number.parseInt(e.Id.toString()) === j
-            )[0]
-          );
-        }
-        if (e2 !== 0 && !this.network.Directed) {
-          column.push(
-            this.network.Nodes.filter(
-              (e) => Number.parseInt(e.Id.toString()) === j
-            )[0]
-          );
-        }
+      if (this.CommonNeighbors.has(edge.GetNodeA().Id)) {
+        this.CommonNeighbors.get(edge.GetNodeA().Id)?.push(edge.GetNodeB());
+      } else {
+        this.CommonNeighbors.set(edge.GetNodeA().Id, [edge.GetNodeB()]);
       }
-      this.CommonNeighbors[i] = column;
-    }
 
-    const DependencyMatrix: number[][] = new Array(
-      this.network.Nodes.length + 1
-    )
-      .fill(-1)
-      .map(() => new Array(this.network.Nodes.length + 1).fill(-1));
-
-    this.network.Edges.forEach((edge) => {
-      DependencyMatrix[Number.parseInt(edge.NodeA.Id.toString())][
-        Number.parseInt(edge.NodeB.Id.toString())
-      ] = this.isDependent(edge.NodeA, edge.NodeB);
       if (!this.network.Directed) {
-        DependencyMatrix[Number.parseInt(edge.NodeB.Id.toString())][
-          Number.parseInt(edge.NodeA.Id.toString())
-        ] = this.isDependent(edge.NodeB, edge.NodeA);
+        if (this.CommonNeighbors.has(edge.GetNodeB().Id)) {
+          this.CommonNeighbors.get(edge.GetNodeB().Id)?.push(edge.GetNodeA());
+        } else {
+          this.CommonNeighbors.set(edge.GetNodeB().Id, [edge.GetNodeA()]);
+        }
       }
     });
 
-    console.log(DependencyMatrix);
+    // const DependencyMatrix: number[][] = new Array(
+    //   this.network.Nodes.length + 1
+    // )
+    //   .fill(-1)
+    //   .map(() => new Array(this.network.Nodes.length).fill(-1));
+
+    const DependencyMatrix: Map<
+      string,
+      { node: Node; dependency: number }[]
+    > = new Map();
+
+    this.network.Edges.forEach((edge) => {
+      if (!DependencyMatrix.has(edge.GetNodeA().Id)) {
+        DependencyMatrix.set(edge.GetNodeA().Id, [
+          {
+            node: edge.GetNodeB(),
+            dependency: this.isDependent(edge.GetNodeA(), edge.GetNodeB()),
+          },
+        ]);
+      } else {
+        DependencyMatrix.get(edge.GetNodeA().Id)?.push({
+          node: edge.GetNodeB(),
+          dependency: this.isDependent(edge.GetNodeA(), edge.GetNodeB()),
+        });
+      }
+
+      if (!this.network.Directed) {
+        if (!DependencyMatrix.has(edge.GetNodeB().Id)) {
+          DependencyMatrix.set(edge.GetNodeB().Id, [
+            {
+              node: edge.GetNodeA(),
+              dependency: this.isDependent(edge.GetNodeB(), edge.GetNodeA()),
+            },
+          ]);
+        } else {
+          DependencyMatrix.get(edge.GetNodeB().Id)?.push({
+            node: edge.GetNodeA(),
+            dependency: this.isDependent(edge.GetNodeB(), edge.GetNodeA()),
+          });
+        }
+      }
+    });
+
     return DependencyMatrix;
   }
 
   public nodesDependency() {
-    const minNodeId = Math.min.apply(
-      Math,
-      this.network.Nodes.map(function (o) {
-        return Number.parseInt(o.Id);
-      })
+    const dependencyMatrix = this.dependencyMatrix();
+    dependencyMatrix.forEach(
+      (
+        value: {
+          node: Node;
+          dependency: number;
+        }[],
+        key: string
+      ) => {
+
+        const twdep: Node[] = [];
+        const twindep: Node[] = [];
+        const owdep: Node[] = [];
+        const owindep: Node[] = [];
+
+        value.forEach((element: { node: Node; dependency: number }) => {
+          if (element.node.Id !== key) {
+            const dependency = element.dependency;
+            dependencyMatrix.get(element.node.Id);
+            if (
+              dependency === 1 &&
+              dependencyMatrix
+                .get(element.node.Id)
+                ?.some(
+                  (v) =>
+                    v.node.Id ===
+                      this.network.Nodes.filter((n) => n.Id === key)[0].Id &&
+                    v.dependency === 0
+                )
+            ) {
+              owdep.push(
+                this.network.Nodes.filter((n) => n.Id === element.node.Id)[0]
+              );
+            }
+
+            if (
+              dependency === 0 &&
+              dependencyMatrix
+                .get(element.node.Id)
+                ?.some(
+                  (v) =>
+                    v.node.Id ===
+                      this.network.Nodes.filter((n) => n.Id === key)[0].Id &&
+                    v.dependency === 1
+                )
+            ) {
+              owindep.push(
+                this.network.Nodes.filter((n) => n.Id === element.node.Id)[0]
+              );
+            }
+
+            if (
+              dependency === 1 &&
+              dependencyMatrix
+                .get(element.node.Id)
+                ?.some(
+                  (v) =>
+                    v.node.Id ===
+                      this.network.Nodes.filter((n) => n.Id === key)[0].Id &&
+                    v.dependency === 1
+                )
+            ) {
+              twdep.push(
+                this.network.Nodes.filter((n) => n.Id === element.node.Id)[0]
+              );
+            }
+
+            if (
+              dependency === 0 &&
+              dependencyMatrix
+                .get(element.node.Id)
+                ?.some(
+                  (v) =>
+                    v.node.Id ===
+                      this.network.Nodes.filter((n) => n.Id === key)[0].Id &&
+                    v.dependency === 0
+                )
+            ) {
+              twindep.push(
+                this.network.Nodes.filter((n) => n.Id === element.node.Id)[0]
+              );
+            }
+          }
+        });
+
+        this.network.Nodes.filter((n) => n.Id === key)[0].OwDep = owdep;
+
+        this.network.Nodes.filter((n) => n.Id === key)[0].OwInDep = owindep;
+
+        this.network.Nodes.filter((n) => n.Id === key)[0].TwDep = twdep;
+
+        this.network.Nodes.filter((n) => n.Id === key)[0].TwInDep = twindep;
+      }
     );
 
-    const dependencyMatrix = this.dependencyMatrix();
-
-    for (let i = minNodeId; i <= this.network.Nodes.length; i++) {
-      const node = dependencyMatrix[i];
-
-      const twdep = [];
-      const twindep = [];
-      const owdep = [];
-      const owindep = [];
-
-      for (let j = minNodeId; j <= node.length; j++) {
-        const dependency = node[j];
-        if (j !== i) {
-          if (dependency === 1 && dependencyMatrix[j][i] === 0) {
-            owdep.push(
-              this.network.Nodes.filter(
-                (n) => Number.parseInt(n.Id.toString()) === j
-              )[0]
-            );
-          }
-
-          if (dependency === 0 && dependencyMatrix[j][i] === 1) {
-            owindep.push(
-              this.network.Nodes.filter(
-                (n) => Number.parseInt(n.Id.toString()) === j
-              )[0]
-            );
-          }
-
-          if (dependency === 1 && dependencyMatrix[j][i] === 1) {
-            twdep.push(
-              this.network.Nodes.filter(
-                (n) => Number.parseInt(n.Id.toString()) === j
-              )[0]
-            );
-          }
-
-          if (dependency === 0 && dependencyMatrix[j][i] === 0) {
-            twindep.push(
-              this.network.Nodes.filter(
-                (n) => Number.parseInt(n.Id.toString()) === j
-              )[0]
-            );
-          }
-        }
-      }
-
-      this.network.Nodes.filter(
-        (n) => Number.parseInt(n.Id.toString()) === i
-      )[0].OwDep = owdep;
-
-      this.network.Nodes.filter(
-        (n) => Number.parseInt(n.Id.toString()) === i
-      )[0].OwInDep = owindep;
-
-      this.network.Nodes.filter(
-        (n) => Number.parseInt(n.Id.toString()) === i
-      )[0].TwDep = twdep;
-
-      this.network.Nodes.filter(
-        (n) => Number.parseInt(n.Id.toString()) === i
-      )[0].TwInDep = twindep;
-    }    
   }
 
   /**
@@ -165,22 +191,18 @@ export default class Matrix {
    */
   private weight(nodeA: Node, nodeB: Node): number {
     const r = this.network.Edges.filter(
-      (e) => e.NodeA.Id === nodeA.Id && e.NodeB.Id === nodeB.Id
+      (e) => e.GetNodeA().Id === nodeA.Id && e.GetNodeB().Id === nodeB.Id
     )[0];
-    return r ? r.Weight : 1;
+    return r ? r.GetWeight() : 1;
   }
 
   /**
    * Returns the average of two numbers.
    *
-   * @remarks
-   * This method is part of the {@link core-library#Statistics | Statistics subsystem}.
-   *
    * @param x - The first input number
    * @param y - The second input number
    * @returns The arithmetic mean of `x` and `y`
    *
-   * @beta
    */
 
   private r(nodeA: Node, commonNode: Node, nodeB: Node): number {
@@ -191,32 +213,28 @@ export default class Matrix {
   /**
    * Calculates the dependency between two nodes.
    *
-   * @remarks
-   *
    *
    * @param nodeA - First node
    * @param nodeB - Second node
    * @returns Numeric dependency between input nodes.
    *
-   * @beta
    */
 
   private dependency(nodeA: Node, nodeB: Node): number {
     const w = this.weight(nodeA, nodeB);
-    const cN = this.CommonNeighbors[
-      Number.parseInt(nodeA.Id.toString())
-    ].filter((value) =>
-      this.CommonNeighbors[Number.parseInt(nodeB.Id.toString())].includes(value)
+    const cN = this.CommonNeighbors.get(nodeA.Id)?.filter((value) =>
+      this.CommonNeighbors.get(nodeB.Id)?.some((v2) => v2.Id === value.Id)
     );
-    const N = this.CommonNeighbors[Number.parseInt(nodeA.Id.toString())];
+    const N = this.CommonNeighbors.get(nodeA.Id);
 
     let cNSum = 0;
     let NSum = 0;
-    cN.forEach((element) => {
+
+    cN?.forEach((element) => {
       cNSum += this.weight(nodeA, element) * this.r(nodeA, element, nodeB);
     });
 
-    N.forEach((element) => {
+    N?.forEach((element) => {
       NSum += this.weight(nodeA, element);
     });
 

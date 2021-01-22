@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
 import Matrix from "./objects/DependencyMatrix";
@@ -11,6 +11,7 @@ import { observer } from "mobx-react-lite";
 import {
   Box,
   ChakraProvider,
+  Checkbox,
   createStandaloneToast,
   Divider,
   Flex,
@@ -23,6 +24,9 @@ import { RightPanel } from "./components/RightPanel";
 function App() {
   const context = useContext(Context);
   const toast = createStandaloneToast();
+
+  const directed = useRef<HTMLInputElement>(null);
+
   reaction(
     () => context.network.Network,
     (Network) => {
@@ -36,44 +40,60 @@ function App() {
         {!context.network.Network && (
           <div className="Background">
             <div className="LandingPage">
-              <Text fontSize="6xl" fontWeight="extrabold" pb={10}>
-                Ego-zones
-              </Text>
-              <CSVReader
-                onError={(err) => {
-                  toast({
-                    title: "Failed to load the network",
-                    description: err.message,
-                    status: "error",
-                    duration: 5000,
-                    isClosable: true,
-                  });
-                }}
-                onFileLoaded={(data, fileInfo) => {
-                  const network = new Network([], []);
-                  console.log(fileInfo);
-                  for (let i = 0; i < data.length; i++) {
-                    const element = data[i];
-                    network.addEdge(
-                      new Node(element[0]),
-                      new Node(element[1]),
-                      Number.parseFloat(element[2])
-                    );
-                  }
-                  new Matrix(network).nodesDependency();
-                  console.log(network);
-                  network.Edges.forEach((e) => e.UpdateClasses());
+              <div>
+                <Text fontSize="6xl" fontWeight="extrabold" pb={10}>
+                  Ego-zones
+                </Text>
+                <CSVReader
+                  onError={(err) => {
+                    toast({
+                      title: "Failed to load the network",
+                      description: err.message,
+                      status: "error",
+                      duration: 5000,
+                      isClosable: true,
+                    });
+                  }}
+                  onFileLoaded={(data, fileInfo) => {
+                    const network = new Network([], []);
 
-                  context.network.Network = network;
-                  toast({
-                    title: "Network loaded.",
-                    description: `${fileInfo.name} - ${network.Nodes.length} nodes ${network.Edges.length} egdes`,
-                    status: "success",
-                    duration: 2000,
-                    isClosable: true,
-                  });
-                }}
-              />
+                    if (directed.current?.checked) {
+                      network.Directed = true;
+                    }
+
+                    console.log(fileInfo);
+                    for (let i = 0; i < data.length; i++) {
+                      const element: Array<string> = data[i];
+                      if (element.length > 1 || element[0] !== "Source") {
+                        network.addEdge(
+                          new Node(element[0]),
+                          new Node(element[1]),
+                          Number.parseFloat(element[2])
+                        );
+                      }
+                    }
+                    new Matrix(network).nodesDependency();
+                    console.log(network);
+                    
+                    context.network.Network = network;
+                    toast({
+                      title: "Network loaded.",
+                      description: `${fileInfo.name} - ${
+                        network.Nodes.length
+                      } nodes - ${network.Edges.length} egdes -  ${
+                        network.Directed ? "✅" : "❌"
+                      } directed`,
+                      status: "success",
+                      duration: 5000,
+                      isClosable: true,
+                    });
+                  }}
+                />
+
+                <Checkbox pt={3} ref={directed}>
+                  Directed
+                </Checkbox>
+              </div>
             </div>
           </div>
         )}

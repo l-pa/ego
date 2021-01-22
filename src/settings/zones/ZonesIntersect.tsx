@@ -21,10 +21,16 @@ export function ZonesIntersect() {
 
   let intersect: cytoscape.Collection = cy.collection();
 
+  let customZone: CustomZone;
+
+  let id : string[] = []
+
+
   const r = reaction(
     () => zonesToIntersert.map((a) => a),
     (arr) => {
       if (arr.length > 1) {
+        intersect = cy.collection()
         const firstZone = arr[0];
         if (firstZone instanceof EgoZone || firstZone instanceof CustomZone)
           intersect = intersect.union(firstZone.AllCollection());
@@ -42,11 +48,13 @@ export function ZonesIntersect() {
 
   const addZone = action((zone: Zone) => {
     zonesToIntersert.push(zone);
-    zone.DrawZone();
+    id.push(zone.GetId())
+    // zone.DrawZone();
   });
   const removeZone = action((zone: Zone) => {
     zonesToIntersert.splice(zonesToIntersert.indexOf(zone), 1);
-    zone.ClearZone();
+    id = id.filter(i => i!== zone.GetId())
+    // zone.ClearZone();
   });
 
   useEffect(() => {
@@ -55,6 +63,10 @@ export function ZonesIntersect() {
     });
 
     return () => {
+      zonesToIntersert.forEach((z) => z.ClearZone());
+      if (customZone) {
+        customZone.ClearZone()
+      }
       zoneStore.Zones.forEach((z) => {
         z.DrawZone();
       });
@@ -70,20 +82,27 @@ export function ZonesIntersect() {
             key={z.GetId()}
             value={z.GetId()}
             onChange={(v) => {
-              if (v.target.value) {
-                if (v.target.checked) {
-                  addZone(
-                    zoneStore.Zones.filter(
-                      (z) => z.GetId() === v.target.value
-                    )[0]
-                  );
-                } else {
-                  removeZone(
-                    zonesToIntersert.filter(
-                      (z) => z.GetId() === v.target.value
-                    )[0]
-                  );
-                }
+              if (v.target.checked) {
+                addZone(
+                  zoneStore.Zones.filter((z) => z.GetId() === v.target.value)[0]
+                );
+              } else {
+                removeZone(
+                  zonesToIntersert.filter(
+                    (z) => z.GetId() === v.target.value
+                  )[0]
+                );
+              }
+
+              if (customZone)  {
+                zoneStore.RemoveTmpZone(customZone)
+              }
+              zoneStore.ColorNodesInZones()
+              if (zonesToIntersert.length > 1) {
+                customZone = new CustomZone(intersect, `i${id.join("_")}`);;
+                customZone.DrawZone();;
+                zoneStore.ColorNodesInZone(customZone)
+                zoneStore.AddTmpZone(customZone)
               }
             }}
           >
@@ -137,8 +156,8 @@ export function ZonesIntersect() {
                 <Button
                   isFullWidth={true}
                   onClick={() => {
-                    const z = new CustomZone(intersect, `${"1"}x`);
-                    zoneStore.AddZone(z);
+                    id = []
+                    zoneStore.AddZone(customZone);
                   }}
                 >
                   Add intersect
