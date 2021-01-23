@@ -50,6 +50,8 @@ export default abstract class Zone {
 
   private id: string;
 
+  private duplicate: string = "";
+
   constructor(id: string) {
     this.id = id;
   }
@@ -94,6 +96,15 @@ export default abstract class Zone {
   public GetId() {
     return this.id;
   }
+
+  public SetDuplicate(s:string){
+    this.duplicate = s
+  }
+
+  public GetDuplicate(){
+    return this.duplicate
+  }
+  
 
   public SetLabel(label: string) {
     this.label = label;
@@ -177,9 +188,9 @@ export default abstract class Zone {
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
-
+      
       this.ctx.fillStyle = this.ctxStyle;
-
+      
       this.isDrawn = true;
       zoneStore.ColorNodesInZones()
       this.Update();

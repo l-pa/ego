@@ -5,6 +5,7 @@ import {
   SliderFilledTrack,
   SliderThumb,
   SliderTrack,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import React from "react";
@@ -12,7 +13,7 @@ import { settingsStore, zoneStore } from "../..";
 
 export function BasicEdges() {
   return (
-    <div>
+    <Stack p={5}>
       <Heading as="h4" size="md" pb={5}>
         Properties
       </Heading>
@@ -67,6 +68,6 @@ export function BasicEdges() {
         <option value="color">color</option>
         <option value="luminosity">luminosity</option>
       </Select>
-    </div>
+    </Stack>
   );
 }

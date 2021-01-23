@@ -18,8 +18,12 @@ export function ZonesSubzone() {
 
   const Zones = observer(() => (
     <div>
-      {zoneStore.TmpZones.filter(z => z instanceof EgoZone && !zoneStore.Zones.includes(z)).map((z, i) => {
-       return <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>;
+      {zoneStore.TmpZones.filter(
+        (z) => z instanceof EgoZone && !zoneStore.Zones.includes(z)
+      ).map((z, i) => {
+        return (
+          <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>
+        );
       })}
     </div>
   ));
@@ -32,8 +36,8 @@ export function ZonesSubzone() {
   });
 
   const clearZone = action(() => {
-    zoneStore.TmpZones.forEach(z=>z.ClearZone())
-    zoneStore.TmpZones.length = 0
+    zoneStore.TmpZones.forEach((z) => z.ClearZone());
+    zoneStore.TmpZones.length = 0;
   });
 
   const ActiveZones = observer(() => (
@@ -44,16 +48,17 @@ export function ZonesSubzone() {
           clearZone();
           if (e.target.value) {
             zoneStore.FindZone(e.target.value).SetAlpha("00");
-            zoneStore.SubzonesOfZone(
-              zoneStore.Zones.filter(
-                (z) => z.GetId().toString() === e.target.value
-              )[0]
-            ).then((res) => {
-              
-              if (res.length > 0) {
-                res.forEach((z) => addZone(z));
-            }
-            })
+            zoneStore
+              .SubzonesOfZone(
+                zoneStore.Zones.filter(
+                  (z) => z.GetId().toString() === e.target.value
+                )[0]
+              )
+              .then((res) => {
+                if (res.length > 0) {
+                  res.forEach((z) => addZone(z));
+                }
+              });
           }
         }}
       >
@@ -61,26 +66,34 @@ export function ZonesSubzone() {
           return <option value={z.GetId()}>{z.GetId()}</option>;
         })}
       </Select>
-          </Stack>
+      {zoneStore.TmpZones.length > 0 && (
+        <Button
+          isFullWidth={true}
+          onClick={() => {
+            zoneStore.TmpZones.forEach((z) => zoneStore.AddZone(z));
+            zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
+          }}
+        >
+          Add all subzones
+        </Button>
+      )}
+
+      {zoneStore.TmpZones.length === 0 && (
+        <Heading size="md">Choose one zone</Heading>
+      )}
+    </Stack>
   ));
 
   return (
     <Stack>
-      <Heading as="h4" size="md" pb={5}>
-        Subzones
-      </Heading>
-      <ActiveZones />
-      
-      <Button
-        isFullWidth={true}
-        onClick={() => {
-          zoneStore.TmpZones.forEach((z) => zoneStore.AddZone(z));
-          zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
-        }}
-      >
-        Add all subzones
-      </Button>
-      <Divider />
+      <Stack p={5}>
+        <Heading as="h4" size="md" pb={5}>
+          Subzones
+        </Heading>
+        <ActiveZones />
+
+        <Divider />
+      </Stack>
       <Zones />
     </Stack>
   );

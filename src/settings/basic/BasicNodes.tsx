@@ -1,4 +1,11 @@
-import { Button, Checkbox, Divider, Heading, Text } from "@chakra-ui/react";
+import {
+  Button,
+  Checkbox,
+  Divider,
+  Heading,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { settingsStore } from "../..";
@@ -26,7 +33,7 @@ export function BasicNodes() {
     </Button>
   ));
   return (
-    <div>
+    <Stack p={5}>
       <Heading as="h4" size="md" pb={5}>
         Properties
       </Heading>
@@ -54,6 +61,6 @@ export function BasicNodes() {
       >
         In zones
       </Checkbox>
-    </div>
+    </Stack>
   );
 }

@@ -23,14 +23,13 @@ export function ZonesIntersect() {
 
   let customZone: CustomZone;
 
-  let id : string[] = []
-
+  let id: string[] = [];
 
   const r = reaction(
     () => zonesToIntersert.map((a) => a),
     (arr) => {
       if (arr.length > 1) {
-        intersect = cy.collection()
+        intersect = cy.collection();
         const firstZone = arr[0];
         if (firstZone instanceof EgoZone || firstZone instanceof CustomZone)
           intersect = intersect.union(firstZone.AllCollection());
@@ -48,12 +47,12 @@ export function ZonesIntersect() {
 
   const addZone = action((zone: Zone) => {
     zonesToIntersert.push(zone);
-    id.push(zone.GetId())
+    id.push(zone.GetId());
     // zone.DrawZone();
   });
   const removeZone = action((zone: Zone) => {
     zonesToIntersert.splice(zonesToIntersert.indexOf(zone), 1);
-    id = id.filter(i => i!== zone.GetId())
+    id = id.filter((i) => i !== zone.GetId());
     // zone.ClearZone();
   });
 
@@ -65,7 +64,7 @@ export function ZonesIntersect() {
     return () => {
       zonesToIntersert.forEach((z) => z.ClearZone());
       if (customZone) {
-        customZone.ClearZone()
+        customZone.ClearZone();
       }
       zoneStore.Zones.forEach((z) => {
         z.DrawZone();
@@ -94,15 +93,15 @@ export function ZonesIntersect() {
                 );
               }
 
-              if (customZone)  {
-                zoneStore.RemoveTmpZone(customZone)
+              if (customZone) {
+                zoneStore.RemoveTmpZone(customZone);
               }
-              zoneStore.ColorNodesInZones()
+              zoneStore.ColorNodesInZones();
               if (zonesToIntersert.length > 1) {
-                customZone = new CustomZone(intersect, `i${id.join("_")}`);;
-                customZone.DrawZone();;
-                zoneStore.ColorNodesInZone(customZone)
-                zoneStore.AddTmpZone(customZone)
+                customZone = new CustomZone(intersect, `i${id.join("_")}`);
+                customZone.DrawZone();
+                zoneStore.ColorNodesInZone(customZone);
+                zoneStore.AddTmpZone(customZone);
               }
             }}
           >
@@ -122,7 +121,7 @@ export function ZonesIntersect() {
   const ZonesToAdd = observer(() =>
     zonesToIntersert.length === 0 ? (
       <Stack>
-        <Heading as="h4" size="sm" pb={5}>
+        <Heading p={5} as="h4" size="sm" pb={5}>
           Nothing
         </Heading>
       </Stack>
@@ -130,24 +129,24 @@ export function ZonesIntersect() {
       <Stack>
         {zonesToIntersert.length === 1 ? (
           <Stack>
-            <Heading as="h4" size="sm" pb={5}>
+            <Heading p={5} as="h4" size="sm" pb={5}>
               Select 1 more
             </Heading>
           </Stack>
         ) : (
           <Stack>
             {intersect.length === 0 ? (
-              <Stack>
+              <Stack p={5}>
                 <Heading as="h4" size="sm" pb={5}>
                   Nothing
                 </Heading>
               </Stack>
             ) : (
               <Stack>
-                <Heading as="h4" size="md" pb={5}>
+                <Heading p={5} as="h4" size="md" pb={5}>
                   {intersect.length} node
                 </Heading>
-                <UnorderedList pl={5}>
+                <UnorderedList>
                   {intersect.nodes().map((e) => {
                     return <ListItem>{e.id()}</ListItem>;
                   })}
@@ -156,7 +155,7 @@ export function ZonesIntersect() {
                 <Button
                   isFullWidth={true}
                   onClick={() => {
-                    id = []
+                    id = [];
                     zoneStore.AddZone(customZone);
                   }}
                 >
@@ -171,12 +170,12 @@ export function ZonesIntersect() {
   );
 
   return (
-    <Stack>
+    <Stack p={5}>
       <Heading as="h4" size="md" pb={5}>
         Zones
       </Heading>
       <Zones />
-      <Divider mb={5} mt={5} />
+      <Divider  mb={5} mt={5} />
       <ZonesToAdd />
     </Stack>
   );

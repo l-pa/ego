@@ -1,4 +1,10 @@
-import { Heading, Stack } from "@chakra-ui/react";
+import {
+  FormControl,
+  FormLabel,
+  Heading,
+  Stack,
+  Switch,
+} from "@chakra-ui/react";
 import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
@@ -33,15 +39,27 @@ export function ZonesMax() {
 
       return <ZoneItem zone={largestEgoZone}></ZoneItem>;
     } else {
-      return <Heading size="sm">Select at least one zone</Heading>;
+      return (
+        <Heading p={5} size="sm">
+          Select at least one zone
+        </Heading>
+      );
     }
   });
 
   return (
     <Stack>
-      <Heading as="h4" size="md" pb={5}>
-        Max zone
-      </Heading>
+      <Stack p={5}>
+        <Heading as="h4" size="md" pb={5}>
+          Max zone
+        </Heading>
+        <FormControl display="flex" alignItems="center">
+          <FormLabel htmlFor="email-alerts" mb="0">
+            Only existing zones
+          </FormLabel>
+          <Switch defaultChecked={true} id="email-alerts" />
+        </FormControl>
+      </Stack>
       <LargestZone />
     </Stack>
   );

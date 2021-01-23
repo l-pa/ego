@@ -15,6 +15,7 @@ export default class Cytoscape {
       networkStore.Network.Edges.forEach((e: Edge) => {
         e.UpdateClasses();
       });
+
       const automove = require("cytoscape-automove");
       const cycanvas = require("cytoscape-canvas");
 
@@ -22,7 +23,7 @@ export default class Cytoscape {
       cytoscape.use(cycanvas);
       cytoscape.use(cola);
       cytoscape.use(coseBilkent);
-
+      
       cy = cytoscape({
         container: div,
         elements: [
@@ -183,6 +184,7 @@ export default class Cytoscape {
           },
         ],
       });
+
 
       let z: EgoZone | undefined = undefined;
       cy.on("mouseover", "node", (event) => {

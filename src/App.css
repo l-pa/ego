@@ -9,3 +9,7 @@
 .Background {
   height: 100vh;
 }
+.itemRight::before{
+  content: "\2002";
+}
+

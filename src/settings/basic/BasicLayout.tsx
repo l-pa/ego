@@ -1,11 +1,11 @@
-import { Button, Divider, Heading, Select } from "@chakra-ui/react";
+import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
 import React, { useRef } from "react";
 import { cy } from "../../objects/graph/Cytoscape";
 
 export function BasicLayout() {
   const layoutRef = useRef<HTMLSelectElement>(null);
   return (
-    <div>
+    <Stack p={5}>
       <Heading as="h4" size="md" pb={5}>
         Layout
       </Heading>
@@ -43,6 +43,6 @@ export function BasicLayout() {
       >
         Reset view
       </Button>
-    </div>
+    </Stack>
   );
 }

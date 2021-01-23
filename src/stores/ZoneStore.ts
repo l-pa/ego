@@ -109,7 +109,10 @@ export class ZoneStore {
    */
   public Duplicates() {
     if (settingsStore.Duplicates === "all" && this.duplicates.length > 0) {
-      this.duplicates.forEach((z) => z.DrawZone());
+      this.duplicates.forEach((z) => {
+        z.DrawZone();
+        z.SetDuplicate("");
+      });
       this.duplicates = [];
     }
 
@@ -134,6 +137,7 @@ export class ZoneStore {
               ) {
                 this.duplicates.push(z2);
               }
+              z2.SetDuplicate("de");
               z2.ClearZone();
             }
           }
@@ -159,12 +163,15 @@ export class ZoneStore {
               ) {
                 this.duplicates.push(z2);
               }
+              z2.SetDuplicate("me");
+
               z2.ClearZone();
             }
           }
         }
       }
     }
+    zoneStore.zones.map((a) => a);
   }
 
   /**

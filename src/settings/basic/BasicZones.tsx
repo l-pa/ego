@@ -20,12 +20,13 @@ import CustomZone from "../../objects/CustomZone";
 import { ZoneItemCustom } from "../../components/ZoneItemCustom";
 
 export const BasicZones: React.FunctionComponent = () => {
+
   const Zones = observer(() => (
-    <div>
-      {zoneStore.Zones.filter((z) => z instanceof EgoZone).map((z, i) => {
+    <Stack>
+      {zoneStore.Zones.filter((z) => z instanceof EgoZone).map((z, i) => {        
         return <ZoneItem zone={z as EgoZone} key={i}></ZoneItem>;
       })}
-    </div>
+    </Stack>
   ));
 
   const CustomZones = observer(() => (
@@ -38,7 +39,7 @@ export const BasicZones: React.FunctionComponent = () => {
 
   const NodesWithLessThanSlider = observer(() => {
     return (
-      <div>
+      <Stack>
         <Text fontSize="md">
           Hide zones with less than {settingsStore.MinNodesZoneShow} nodes
         </Text>
@@ -57,11 +58,13 @@ export const BasicZones: React.FunctionComponent = () => {
           </SliderTrack>
           <SliderThumb />
         </Slider>
-      </div>
+      </Stack>
     );
   });
   return (
     <Stack>
+      <Stack p={5}>
+
       <Heading as="h4" size="md" pb={5}>
         Add zones
       </Heading>
@@ -74,7 +77,7 @@ export const BasicZones: React.FunctionComponent = () => {
             }
           });
         }}
-      >
+        >
         Strongly prominent
       </Button>
 
@@ -86,7 +89,7 @@ export const BasicZones: React.FunctionComponent = () => {
             }
           });
         }}
-      >
+        >
         Weakly prominent
       </Button>
       <Heading as="h4" size="md" pb={5} pt={5}>
@@ -97,7 +100,7 @@ export const BasicZones: React.FunctionComponent = () => {
         onClick={() => {
           zoneStore.ClearZones();
         }}
-      >
+        >
         All zones
       </Button>
       <Heading as="h4" size="md" pb={5} pt={5}>
@@ -109,7 +112,7 @@ export const BasicZones: React.FunctionComponent = () => {
         onChange={(e) => {
           settingsStore.Duplicates = e.target.value;
         }}
-      >
+        >
         <option value="all">All</option>
         <option value="me">Mutli-ego</option>
         <option value="de">Duplicates</option>
@@ -122,7 +125,7 @@ export const BasicZones: React.FunctionComponent = () => {
         onChange={(e) => {
           settingsStore.Automove = e.target.checked;
         }}
-      >
+        >
         Move zone
       </Checkbox>
       {/* <Checkbox
@@ -134,7 +137,7 @@ export const BasicZones: React.FunctionComponent = () => {
             settingsStore.ZIndex = -1;
           }
         }}
-      >
+        >
         Z-index
       </Checkbox> */}
       <Divider></Divider>
@@ -142,9 +145,10 @@ export const BasicZones: React.FunctionComponent = () => {
       <Heading as="h4" size="md" pb={5} pt={5}>
         Zones
       </Heading>
+      </Stack>
       <Zones />
       <Divider />
-      <Heading as="h4" size="md" pb={5} pt={5}>
+      <Heading p={5} as="h4" size="md" pb={5} pt={5}>
         Custom zones
       </Heading>
       <CustomZones />
