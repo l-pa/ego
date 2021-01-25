@@ -32,9 +32,7 @@ export function ZonesMax() {
   let largestEgoZone: EgoZone;
 
   const addTmpZone = action((z:Zone)=> {
-    if (zoneStore.Zones.some(zo=> zo.GetId() === z.GetId())) {
-    zoneStore.Zones.filter(zo=>zo.GetId() === z.GetId())[0].DrawZone()
-    
+    if (zoneStore.Zones.some(zo=> zo.GetId() === z.GetId())) {    
     } else { 
       zoneStore.AddTmpZone(z)
       z.DrawZone()
@@ -47,11 +45,9 @@ export function ZonesMax() {
     zoneStore.TmpZones.length = 0
   })
 
-  const color = action((z:Zone[])=> {
-    console.log(z);
-    
-    zoneStore.ColorNodesInZones(z)
-  })
+  const color = action((z: Zone[]) => {
+    zoneStore.ColorNodesInZones(z);
+  });
   
   
 
@@ -68,18 +64,20 @@ export function ZonesMax() {
         largestEgoZone = largestZone.sort(
           (a, b) => b.AllCollection().length - a.AllCollection().length
         )[0] as EgoZone;
+
+        const tmp = largestZone.filter(
+          (z) =>
+            z.AllCollection().length === largestZone[0].AllCollection().length
+        );
+
+        color(tmp);
+
         return (
           <Stack>
-            {largestZone
-              .filter(
-                (z) =>
-                z.AllCollection().length ===
-                largestZone[0].AllCollection().length
-                )
-                .map((z) => {
-                z.DrawZone()
-                return <ZoneItem zone={z as EgoZone}></ZoneItem>;
-              })}
+            {tmp.map((z) => {
+              z.DrawZone();
+              return <ZoneItem zone={z as EgoZone}></ZoneItem>;
+            })}
           </Stack>
         );
       } else {
@@ -90,6 +88,7 @@ export function ZonesMax() {
         );
       }
     } else {
+      clearTmpZone()
       let tmp: EgoZone[] = [];
 
       networkStore.Network?.Nodes.forEach((n) => {
@@ -109,12 +108,12 @@ export function ZonesMax() {
       return (
         <Stack>
           {tmp.map((zone) => {
+            
             addTmpZone(zone)
             if (!zoneStore.Zones.some((z) => z.GetId() === zone.GetId())) {
               return (
                 <ZoneItem
                   addButton={true}
-                  drawByDefault={true}
                   zone={zone}
                 ></ZoneItem>
               );

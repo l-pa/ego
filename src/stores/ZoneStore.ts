@@ -17,7 +17,6 @@ export class ZoneStore {
   public duplicates: Zone[] = [];
   public zonesIdk: Zone[] = [];
 
-
   get Zones(): Zone[] {
     return this.zones;
   }
@@ -178,11 +177,11 @@ export class ZoneStore {
       }
     }
 
-    this.duplicates.filter((z)=> {
-      if (!this.zonesIdk.some(zone=>zone.GetId() === z.GetId())){
-        z.DrawZone()
+    this.duplicates.filter((z) => {
+      if (!this.zonesIdk.some((zone) => zone.GetId() === z.GetId())) {
+        z.DrawZone();
       }
-  })
+    });
     zoneStore.zones.map((a) => a);
   }
 
@@ -190,36 +189,34 @@ export class ZoneStore {
    * ZonesIdk
    */
   public ZonesIdk() {
-
     if (settingsStore.ZonesIdk === "all" && this.zonesIdk.length > 0) {
       this.zonesIdk.forEach((z) => {
         z.DrawZone();
       });
       this.zonesIdk = [];
     }
-    
-      this.zones.forEach((z) => {
-        z.ClearZone();
-      });
-      this.zonesIdk = [];
 
-      if (settingsStore.ZonesIdk === "all") {
-        this.zones.forEach((z) => {
-          z.DrawZone();
-        });
-      }
-  
+    this.zones.forEach((z) => {
+      z.ClearZone();
+    });
+    this.zonesIdk = [];
+
+    if (settingsStore.ZonesIdk === "all") {
+      this.zones.forEach((z) => {
+        z.DrawZone();
+      });
+    }
+
     if (settingsStore.ZonesIdk === "moreInner") {
       console.log("inner");
-      
+
       for (let i = 0; i < this.zones.length; i++) {
         const z1 = this.zones[i];
 
         if (z1 instanceof EgoZone) {
           if (z1.InsideNodes.length > z1.OutsideNodes.length) {
             if (
-              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length ===
-              0
+              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length === 0
             ) {
               this.zonesIdk.push(z1);
             }
@@ -235,8 +232,7 @@ export class ZoneStore {
         if (z1 instanceof EgoZone) {
           if (z1.InsideNodes.length < z1.OutsideNodes.length) {
             if (
-              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length ===
-              0
+              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length === 0
             ) {
               this.zonesIdk.push(z1);
             }
@@ -252,8 +248,7 @@ export class ZoneStore {
         if (z1 instanceof EgoZone) {
           if (z1.InsideNodes.length === z1.OutsideNodes.length) {
             if (
-              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length ===
-              0
+              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length === 0
             ) {
               this.zonesIdk.push(z1);
             }
@@ -269,8 +264,7 @@ export class ZoneStore {
         if (z1 instanceof EgoZone) {
           if (z1.OutsideNodes.length === 0) {
             if (
-              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length ===
-              0
+              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length === 0
             ) {
               this.zonesIdk.push(z1);
             }
@@ -279,11 +273,11 @@ export class ZoneStore {
       }
     }
 
-    this.zonesIdk.filter((z)=> {
-        if (!this.duplicates.some(zone=>zone.GetId() === z.GetId())){
-          z.DrawZone()
-        }
-    })
+    this.zonesIdk.filter((z) => {
+      if (!this.duplicates.some((zone) => zone.GetId() === z.GetId())) {
+        z.DrawZone();
+      }
+    });
 
     zoneStore.zones.map((a) => a);
   }
@@ -412,7 +406,7 @@ export class ZoneStore {
     } else {
       zones.forEach((element) => {
         if (
-          element.IsDrawn() &&
+           element.IsDrawn() &&
           (element instanceof EgoZone || element instanceof CustomZone)
         ) {
           element
@@ -544,14 +538,27 @@ export class ZoneStore {
   /**
    * SubzonesOfZone
    */
-  public SubzonesOfZone(zone: Zone) {
+  public SubzonesOfZone(zone: EgoZone[]) {
     return new Promise<EgoZone[]>((res) => {
       const subzones: Array<EgoZone> = [];
-      console.log(zone.AllCollection().difference(`#${zone.GetId()}`));
+      let egosCollection = cy.collection();
+      let zonesCollection = cy.collection();
 
-      zone
-        .AllCollection()
-        .difference(`#${zone.GetId()}`)
+      zone.forEach((z) => {
+        let a = networkStore.Network?.getNode(z.Ego.Id);
+        let b = z.AllCollection()
+        
+        if (a) {
+          egosCollection = egosCollection.union(a);
+        }
+        if (b) {
+          zonesCollection = zonesCollection.union(b)
+        }
+      });
+
+
+      zonesCollection
+        .difference(egosCollection)
         .forEach((node) => {
           const n = networkStore.Network?.Nodes.filter(
             (n) => n.Id === node.data("id")
@@ -559,7 +566,7 @@ export class ZoneStore {
           if (n) {
             const newZone = new EgoZone(n);
             if (
-              newZone.AllCollection().subtract(zone.AllCollection()).length ===
+              newZone.AllCollection().subtract(zonesCollection).length ===
               0
             ) {
               subzones.push(newZone);

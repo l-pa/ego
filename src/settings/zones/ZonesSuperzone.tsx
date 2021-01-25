@@ -26,9 +26,14 @@ export function ZonesSuperzone() {
             a.AllCollection().length - b.AllCollection().length
         )
         .map((z, i) => {
-          return (
-            <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>
-          );
+          if (zoneStore.Zones.some(zone => zone.GetId() === z.GetId())){
+
+          } else{
+
+            return (
+              <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>
+              );
+            }
         })}
     </div>
   ));
@@ -37,6 +42,7 @@ export function ZonesSuperzone() {
     zoneStore.AddTmpZone(zone);
     zone.DrawZone();
     zone.SetAlpha("25");
+    zoneStore.ColorNodesInZones(zoneStore.TmpZones);
   });
 
   const clearZone = action(() => {
@@ -44,6 +50,8 @@ export function ZonesSuperzone() {
 
     zoneStore.TmpZones.forEach((z) => z.ClearZone());
     zoneStore.TmpZones.length = 0;
+    zoneStore.ColorNodesInZones(zoneStore.TmpZones);
+
   });
 
   const ActiveZones = observer(() => (
@@ -66,8 +74,7 @@ export function ZonesSuperzone() {
                   res.forEach((z) => addZone(z));
                 }
               });
-          }
-          zoneStore.ColorNodesInZones(zoneStore.TmpZones);
+            }
 
         }}
       >

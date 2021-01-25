@@ -200,6 +200,10 @@ export default class Cytoscape {
 
       cy.on("mouseout", "node", (event) => {
         zoneStore.ColorNodesInZones(zoneStore.Zones);
+        // zoneStore.ColorNodesInZones(zoneStore.TmpZones);
+        console.log(zoneStore.Zones);
+        console.log(zoneStore.TmpZones);
+
         z = undefined;
       });
 

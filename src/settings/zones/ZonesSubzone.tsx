@@ -1,8 +1,15 @@
-import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
+import {
+  Button,
+  Checkbox,
+  Divider,
+  Heading,
+  Select,
+  Stack,
+} from "@chakra-ui/react";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
-import { zoneStore } from "../..";
+import { networkStore, zoneStore } from "../..";
 import EgoZone from "../../objects/EgoZone";
 import Zone from "../../objects/Zone";
 import { ZoneItem } from "../../components/ZoneItem";
@@ -13,9 +20,11 @@ export function ZonesSubzone() {
     return () => {
       zoneStore.Zones.forEach((z) => z.SetAlpha("80"));
       zoneStore.TmpZones.forEach((z) => z.ClearZone());
-      zoneStore.TmpZones.length = 0
+      zoneStore.TmpZones.length = 0;
     };
   });
+
+  let checked : string[] = []
 
   const Zones = observer(() => (
     <div>
@@ -27,58 +36,99 @@ export function ZonesSubzone() {
             a.AllCollection().length - b.AllCollection().length
         )
         .map((z, i) => {
+          if (!zoneStore.Zones.some(zone => zone.GetId() === z.GetId()))
           return (
             <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>
           );
         })}
     </div>
   ));
+  
 
-  const addZone = action((zone: Zone) => {
-    zoneStore.AddTmpZone(zone);
-    zone.DrawZone();
-    zone.SetAlpha("25");
+  const addZone = action((z:Zone) => {
+    zoneStore.AddTmpZone(z)
+  })
+
+  const update = action(() => {
+
+    const z: EgoZone[] = [];
+
+    checked.forEach((z) => {
+      const n = networkStore.Network?.Nodes.filter(n => n.Id === z)[0]
+      if (n){
+        zoneStore.AddTmpZone(new EgoZone(n))
+      }
+    })
+
+    zoneStore.TmpZones.forEach((zo) => {
+      if (zo instanceof EgoZone) {
+        z.push(zo);
+      }
+    });
+
+    zoneStore.SubzonesOfZone(z).then((zones) => {
+      zones.forEach((z) => {
+        if (
+          !zoneStore.Zones.some(
+            (zone) => z.GetId() === zone.GetId() && zone.IsDrawn() === false
+          )
+        ) {
+          zoneStore.AddTmpZone(z);
+          z.DrawZone();
+        }
+      });
+    });
   });
 
-  const clearZone = action(() => {
-
-    zoneStore.Zones.forEach(z=>z.ClearZone())
-
-    zoneStore.TmpZones.forEach((z) => z.ClearZone());
-    zoneStore.TmpZones.length = 0;
-  });
+  const clear = action(() => {
+    zoneStore.TmpZones.forEach((z) => {
+      z.ClearZone()
+    })
+    zoneStore.TmpZones.length = 0
+  })
 
   const ActiveZones = observer(() => (
     <Stack>
-      <Select
-        placeholder="None"
-        onChange={(e) => {
-          clearZone();
-          if (e.target.value) {
-             zoneStore.FindZone(e.target.value).DrawZone();
-             zoneStore.FindZone(e.target.value).SetAlpha("50");
-
-            zoneStore
-              .SubzonesOfZone(
-                zoneStore.Zones.filter(
-                  (z) => z.GetId().toString() === e.target.value
-                )[0]
-              )
-              .then((res) => {
-                if (res.length > 0) {
-                  res.forEach((z) => addZone(z));
+      {zoneStore.Zones.map((z, i) => {
+        return (
+          <Checkbox
+            value={z.GetId()}
+            onChange={(e) => {
+              console.log(checked);
+              
+              if (e.target.checked) {
+                checked.push(e.target.value)
+                if (
+                  !zoneStore.TmpZones.some((zo) => z.GetId() === zo.GetId())
+                ) {
+                  addZone(z)
+                  z.DrawZone();
+                  z.SetAlpha("70");
+              
+                  update();
                 }
-              });
-            } else {
-              zoneStore.Zones.forEach((z) => z.ClearZone());;
-            }
-            zoneStore.ColorNodesInZones(zoneStore.TmpZones)
-        }}
-      >
-        {zoneStore.Zones.map((z, i) => {
-          return <option value={z.GetId()}>{z.GetId()}</option>;
-        })}
-      </Select>
+              } else {
+                console.log(e.target.value, checked.indexOf(e.target.value));
+                
+                checked = checked.filter(v => v !== e.target.value)
+                console.log(checked);
+                
+                zoneStore.TmpZones.forEach((z) => {
+                  if (
+                    !zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())
+                  ) {
+                    clear()
+                    update()
+                  }
+                });
+              }
+            }}
+          >
+            {z.GetId()}
+          </Checkbox>
+        );
+      })}
+
       {zoneStore.TmpZones.length > 0 && (
         <Button
           isFullWidth={true}

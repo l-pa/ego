@@ -15,15 +15,22 @@ import {
   Divider,
 } from "@chakra-ui/react";
 
-import { zoneStore } from "..";
+import { networkStore, zoneStore } from "..";
 import EgoZone from "../objects/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
+import { cy } from "../objects/graph/Cytoscape";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
   addButton?: boolean;
   drawByDefault?: boolean;
 }> = ({ zone, addButton = false, drawByDefault = false }) => {
+  const innerE =
+    zone.AllCollection().edgesWith(zone.AllCollection()).length * 2;
+  const outerE =
+    zone.AllCollection().edgesWith(cy.nodes().difference(zone.AllCollection()))
+      .length + innerE;
+
   return (
     <Box zIndex={1} bg={zone.Color} p={4} color="white">
       <Box display={"flex"}>
@@ -100,11 +107,16 @@ export const ZoneItem: React.FunctionComponent<{
                 placement="bottom"
               >
                 <Stack>
-                  <Text className="itemRight">{zone.AllCollection().indegree(false) / zone.AllCollection().degree(false)}</Text>
+                  <Text className="itemRight">
+                    {(
+                      innerE /
+                      outerE
+                    ).toFixed(2)}
+                  </Text>
                 </Stack>
               </Tooltip>
 
-              <Tooltip
+              {/* <Tooltip
                 zIndex={2}
                 aria-label="inside"
                 label={"mod"}
@@ -113,7 +125,7 @@ export const ZoneItem: React.FunctionComponent<{
                 <Stack>
                   <Text className="itemRight">-</Text>
                 </Stack>
-              </Tooltip>
+              </Tooltip> */}
             </Box>
             <Box>
               <Tooltip
@@ -154,10 +166,10 @@ export const ZoneItem: React.FunctionComponent<{
                 placement="bottom"
               >
                 <Text className="itemRight">
-                  <span className="itemDeps">Embeddedness</span>
+                  <span className="itemDeps">Emb</span>
                 </Text>
               </Tooltip>
-              <Tooltip
+              {/* <Tooltip
                 zIndex={2}
                 aria-label="emb"
                 label={""}
@@ -166,7 +178,7 @@ export const ZoneItem: React.FunctionComponent<{
                 <Text className="itemRight">
                   <span className="itemDeps">Modularity</span>
                 </Text>
-              </Tooltip>
+              </Tooltip> */}
             </Box>
 
             <Box>
@@ -247,10 +259,10 @@ export const ZoneItem: React.FunctionComponent<{
         placeholder="Label"
       /> */}
       <Divider mb={1} mt={1} />
-      <Heading size="sm">Transparency</Heading>
+      <Heading size="sm">Opacity</Heading>
       <Slider
         color="pink"
-        defaultValue={50}
+        defaultValue={(Number.parseInt(zone.GetAlpha(), 16) / 255) * 100}
         onChange={(val) => {
           let alpha = Number.parseInt((255 * (val / 100)).toString()).toString(
             16
@@ -307,9 +319,8 @@ export const ZoneItem: React.FunctionComponent<{
               zoneStore.RemoveTmpZone(zone);
 
               if (drawByDefault) {
-                zone.DrawZone();;
+                zone.DrawZone();
               }
-
             }}
           >
             Add zone

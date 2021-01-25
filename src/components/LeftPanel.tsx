@@ -68,16 +68,6 @@ export const LeftPanel: React.FunctionComponent = () => {
         colorScheme="teal"
         variant="ghost"
         onClick={() => {
-          settingsStore.SelectedOption = "zonesMin";
-        }}
-      >
-        Min
-      </Button>
-      <Button
-        isFullWidth={true}
-        colorScheme="teal"
-        variant="ghost"
-        onClick={() => {
           settingsStore.SelectedOption = "zonesSubzone";
         }}
       >

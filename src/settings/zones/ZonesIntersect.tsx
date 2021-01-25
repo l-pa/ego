@@ -28,6 +28,7 @@ export function ZonesIntersect() {
   const r = reaction(
     () => zonesToIntersert.map((a) => a),
     (arr) => {
+      zoneStore.Zones.forEach((z) => z.ClearZone());
       if (arr.length > 1) {
         intersect = cy.collection();
         const firstZone = arr[0];
@@ -41,12 +42,14 @@ export function ZonesIntersect() {
       } else {
         console.log("< 2");
       }
-      console.log(intersect);
+      console.log(arr);
+      zoneStore.ColorNodesInZones(arr);
     }
   );
 
   const addZone = action((zone: Zone) => {
     zonesToIntersert.push(zone);
+    // zone.DrawZone();
     id.push(zone.GetId());
     // zone.DrawZone();
   });

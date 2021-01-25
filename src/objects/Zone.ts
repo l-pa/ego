@@ -159,10 +159,14 @@ export default abstract class Zone {
     return this.ctx;
   }
 
-  public CTXStyle(style: string) {
+  public CTXStyle(style: string | CanvasPattern) {
     if (this.ctx) {
-      this.ctxStyle = style;
-      this.ctx.fillStyle = style + this.alpha;
+      this.ctxStyle = style.toString();
+      if (style instanceof CanvasPattern){
+        this.ctx.fillStyle = style;
+      }  else {
+        this.ctx.fillStyle = style + this.alpha;
+      }     
     }
   }
 

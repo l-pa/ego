@@ -104,6 +104,7 @@ export class SettingsStore {
     this.minNodesZoneShow = v;
     
     zoneStore.Zones.forEach((element) => {
+      
       if (element.AllCollection().length >= this.minNodesZoneShow) {
         element.DrawZone();
       } else {
@@ -111,11 +112,11 @@ export class SettingsStore {
       }
     });
     if (zoneStore.Zones.length > 0) {
-      zoneStore.ColorNodesInZones(zoneStore.Zones);
-      zoneStore.HideNodesOutsideZones()
-    }
+        zoneStore.ColorNodesInZones(zoneStore.Zones.filter((z) => z.IsDrawn()));
+        zoneStore.HideNodesOutsideZones()
+      }
   }
-
+    
   private duplicates: string = "all";
 
   private zonesIdk: string = "all";
