@@ -111,12 +111,14 @@ export class SettingsStore {
       }
     });
     if (zoneStore.Zones.length > 0) {
-      zoneStore.ColorNodesInZones();
+      zoneStore.ColorNodesInZones(zoneStore.Zones);
       zoneStore.HideNodesOutsideZones()
     }
   }
 
   private duplicates: string = "all";
+
+  private zonesIdk: string = "all";
 
   public get Duplicates(): string {
     return this.duplicates;
@@ -125,5 +127,14 @@ export class SettingsStore {
   public set Duplicates(v: string) {
     this.duplicates = v;
     zoneStore.Duplicates();
+  }
+
+  public get ZonesIdk(): string {
+    return this.zonesIdk;
+  }
+
+  public set ZonesIdk(v: string) {
+    this.zonesIdk = v;    
+    zoneStore.ZonesIdk();
   }
 }

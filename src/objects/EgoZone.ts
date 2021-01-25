@@ -92,7 +92,6 @@ export default class EgoZone extends Zone {
     return this.color;
   }
 
-
   public set EnableAutomove(enable: boolean) {
     if (enable) {
       this.automove.enable();
@@ -100,7 +99,6 @@ export default class EgoZone extends Zone {
       this.automove.disable();
     }
   }
-
 
   /**
    * ClearZone
@@ -111,12 +109,12 @@ export default class EgoZone extends Zone {
       zoneStore.Zones.filter((zone) => zone.GetId() !== this.GetId()).forEach(
         (element) => {
           if (element instanceof EgoZone || element instanceof CustomZone)
-                nodesInZonesExceptZ = nodesInZonesExceptZ.union(
-                  element.AllCollection()
-                );
+            nodesInZonesExceptZ = nodesInZonesExceptZ.union(
+              element.AllCollection()
+            );
         }
       );
-    //  this.AllCollection().classes();
+      //  this.AllCollection().classes();
 
       this.AllCollection().difference(nodesInZonesExceptZ).addClass("hide");
     }

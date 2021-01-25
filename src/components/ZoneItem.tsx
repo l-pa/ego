@@ -22,7 +22,8 @@ import { WarningIcon } from "@chakra-ui/icons";
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
   addButton?: boolean;
-}> = ({ zone, addButton = false }) => {
+  drawByDefault?: boolean;
+}> = ({ zone, addButton = false, drawByDefault = false }) => {
   return (
     <Box zIndex={1} bg={zone.Color} p={4} color="white">
       <Box display={"flex"}>
@@ -47,8 +48,8 @@ export const ZoneItem: React.FunctionComponent<{
             name={zone.GetId().split("").join(" ")}
             backgroundColor={"green.400"}
             color={"black"}
-            />
-            )}
+          />
+        )}
         <Stack ml="2">
           <Box
             color="gray.50"
@@ -58,11 +59,10 @@ export const ZoneItem: React.FunctionComponent<{
             textTransform="uppercase"
             display={"flex"}
             alignItems="center"
-            >
-              {
-                (zone.GetDuplicate() === "de" || zone.GetDuplicate() === "me") &&
-                <WarningIcon/>
-              }
+          >
+            {(zone.GetDuplicate() === "de" || zone.GetDuplicate() === "me") && (
+              <WarningIcon />
+            )}
             <Box>
               <Tooltip
                 zIndex={2}
@@ -90,6 +90,28 @@ export const ZoneItem: React.FunctionComponent<{
               >
                 <Stack>
                   <Text className="itemRight">{zone.InsideNodes.length}</Text>
+                </Stack>
+              </Tooltip>
+
+              <Tooltip
+                zIndex={2}
+                aria-label="inside"
+                label={"emb"}
+                placement="bottom"
+              >
+                <Stack>
+                  <Text className="itemRight">{zone.AllCollection().indegree(false) / zone.AllCollection().degree(false)}</Text>
+                </Stack>
+              </Tooltip>
+
+              <Tooltip
+                zIndex={2}
+                aria-label="inside"
+                label={"mod"}
+                placement="bottom"
+              >
+                <Stack>
+                  <Text className="itemRight">-</Text>
                 </Stack>
               </Tooltip>
             </Box>
@@ -123,6 +145,26 @@ export const ZoneItem: React.FunctionComponent<{
               >
                 <Text className="itemRight">
                   <span className="itemDeps">Inside</span>
+                </Text>
+              </Tooltip>
+              <Tooltip
+                zIndex={2}
+                aria-label="emb"
+                label={""}
+                placement="bottom"
+              >
+                <Text className="itemRight">
+                  <span className="itemDeps">Embeddedness</span>
+                </Text>
+              </Tooltip>
+              <Tooltip
+                zIndex={2}
+                aria-label="emb"
+                label={""}
+                placement="bottom"
+              >
+                <Text className="itemRight">
+                  <span className="itemDeps">Modularity</span>
                 </Text>
               </Tooltip>
             </Box>
@@ -204,7 +246,7 @@ export const ZoneItem: React.FunctionComponent<{
         style={{ color: "black" }}
         placeholder="Label"
       /> */}
-      <Divider mb={1} mt={1}/>
+      <Divider mb={1} mt={1} />
       <Heading size="sm">Transparency</Heading>
       <Slider
         color="pink"
@@ -220,51 +262,59 @@ export const ZoneItem: React.FunctionComponent<{
         <SliderFilledTrack />
         <SliderThumb />
       </Slider>
-        <Stack flexDirection="row" alignItems="center" justifyContent="space-between">
-
-      <Checkbox
-        onChange={(e) => {
-          zone.SetIsZoneShown(e.target.checked);
-        }}
-        size="lg"
-        defaultIsChecked={zone.IsDrawn()}
+      <Stack
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Checkbox
+          onChange={(e) => {
+            zone.SetIsZoneShown(e.target.checked);
+          }}
+          size="lg"
+          defaultIsChecked={zone.IsDrawn()}
         ></Checkbox>
-      {!addButton && (
-        <Button
-        colorScheme="red"
-        isFullWidth={false}
-        size="sm"
-        aria-label="Remove zone"
-        onClick={() => {
-          zoneStore.RemoveZone(zone);
-        }}
-        >
-          Remove
-        </Button>
+        {!addButton && (
+          <Button
+            colorScheme="red"
+            isFullWidth={false}
+            size="sm"
+            aria-label="Remove zone"
+            onClick={() => {
+              zoneStore.RemoveZone(zone);
+            }}
+          >
+            Remove
+          </Button>
 
-// <Button
-//   size="xs"
-//   colorScheme="teal"
-//   onClick={() => {
-  //     zoneStore.RemoveZone(zone);
-  //   }}
-  // >
-  //   Delete
-  // </Button>
-  )}
-      {addButton && (
-        <Button
-        colorScheme="green"
-        size="sm"
-        aria-label="Add zone"
-        onClick={() => {
-          zoneStore.AddZone(zone);
-          zoneStore.RemoveTmpZone(zone);
-        }}
-        >
-          Add zone
-        </Button>
-      )}
+          // <Button
+          //   size="xs"
+          //   colorScheme="teal"
+          //   onClick={() => {
+          //     zoneStore.RemoveZone(zone);
+          //   }}
+          // >
+          //   Delete
+          // </Button>
+        )}
+        {addButton && (
+          <Button
+            colorScheme="green"
+            size="sm"
+            aria-label="Add zone"
+            onClick={() => {
+              zoneStore.AddZone(zone);
+              zoneStore.RemoveTmpZone(zone);
+
+              if (drawByDefault) {
+                zone.DrawZone();;
+              }
+
+            }}
+          >
+            Add zone
+          </Button>
+        )}
       </Stack>
     </Box>
   );

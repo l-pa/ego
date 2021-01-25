@@ -96,7 +96,7 @@ export function ZonesIntersect() {
               if (customZone) {
                 zoneStore.RemoveTmpZone(customZone);
               }
-              zoneStore.ColorNodesInZones();
+              zoneStore.ColorNodesInZones(zoneStore.Zones);
               if (zonesToIntersert.length > 1) {
                 customZone = new CustomZone(intersect, `i${id.join("_")}`);
                 customZone.DrawZone();

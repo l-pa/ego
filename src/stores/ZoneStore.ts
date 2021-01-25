@@ -15,6 +15,8 @@ export class ZoneStore {
   private tmpZones: Zone[] = [];
 
   public duplicates: Zone[] = [];
+  public zonesIdk: Zone[] = [];
+
 
   get Zones(): Zone[] {
     return this.zones;
@@ -58,7 +60,9 @@ export class ZoneStore {
       }
       zone.DrawZone();
       this.Duplicates();
-      this.ColorNodesInZones();
+      this.ZonesIdk();
+
+      this.ColorNodesInZones(this.zones);
       zoneStore.HideNodesOutsideZones();
     } else {
       const toast = createStandaloneToast();
@@ -91,7 +95,7 @@ export class ZoneStore {
     // });
 
     this.zones = [];
-    this.ColorNodesInZones();
+    this.ColorNodesInZones(this.zones);
   }
 
   /**
@@ -101,7 +105,9 @@ export class ZoneStore {
     this.zones = this.zones.filter((zone) => zone.GetId() !== z.GetId());
     z.ClearZone();
     this.Duplicates();
-    this.ColorNodesInZones();
+    this.ZonesIdk();
+
+    this.ColorNodesInZones(this.zones);
   }
 
   /**
@@ -171,6 +177,114 @@ export class ZoneStore {
         }
       }
     }
+
+    this.duplicates.filter((z)=> {
+      if (!this.zonesIdk.some(zone=>zone.GetId() === z.GetId())){
+        z.DrawZone()
+      }
+  })
+    zoneStore.zones.map((a) => a);
+  }
+
+  /**
+   * ZonesIdk
+   */
+  public ZonesIdk() {
+
+    if (settingsStore.ZonesIdk === "all" && this.zonesIdk.length > 0) {
+      this.zonesIdk.forEach((z) => {
+        z.DrawZone();
+      });
+      this.zonesIdk = [];
+    }
+    
+      this.zones.forEach((z) => {
+        z.ClearZone();
+      });
+      this.zonesIdk = [];
+
+      if (settingsStore.ZonesIdk === "all") {
+        this.zones.forEach((z) => {
+          z.DrawZone();
+        });
+      }
+  
+    if (settingsStore.ZonesIdk === "moreInner") {
+      console.log("inner");
+      
+      for (let i = 0; i < this.zones.length; i++) {
+        const z1 = this.zones[i];
+
+        if (z1 instanceof EgoZone) {
+          if (z1.InsideNodes.length > z1.OutsideNodes.length) {
+            if (
+              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length ===
+              0
+            ) {
+              this.zonesIdk.push(z1);
+            }
+          }
+        }
+      }
+    }
+
+    if (settingsStore.ZonesIdk === "moreOuter") {
+      for (let i = 0; i < this.zones.length; i++) {
+        const z1 = this.zones[i];
+
+        if (z1 instanceof EgoZone) {
+          if (z1.InsideNodes.length < z1.OutsideNodes.length) {
+            if (
+              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length ===
+              0
+            ) {
+              this.zonesIdk.push(z1);
+            }
+          }
+        }
+      }
+    }
+
+    if (settingsStore.ZonesIdk === "sameBoth") {
+      for (let i = 0; i < this.zones.length; i++) {
+        const z1 = this.zones[i];
+
+        if (z1 instanceof EgoZone) {
+          if (z1.InsideNodes.length === z1.OutsideNodes.length) {
+            if (
+              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length ===
+              0
+            ) {
+              this.zonesIdk.push(z1);
+            }
+          }
+        }
+      }
+    }
+
+    if (settingsStore.ZonesIdk === "withoutOuter") {
+      for (let i = 0; i < this.zones.length; i++) {
+        const z1 = this.zones[i];
+
+        if (z1 instanceof EgoZone) {
+          if (z1.OutsideNodes.length === 0) {
+            if (
+              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length ===
+              0
+            ) {
+              this.zonesIdk.push(z1);
+            }
+          }
+        }
+      }
+    }
+
+    this.zonesIdk.filter((z)=> {
+        if (!this.duplicates.some(zone=>zone.GetId() === z.GetId())){
+          z.DrawZone()
+        }
+    })
+
     zoneStore.zones.map((a) => a);
   }
 
@@ -227,13 +341,21 @@ export class ZoneStore {
   /**
    * EdgeColors
    */
-  private EdgeColors(z: EgoZone | CustomZone, hover: boolean = false) {
+  private EdgeColors(
+    z: EgoZone | CustomZone,
+    hover: boolean = false,
+    tmpZone = false
+  ) {
     cy.edges().style("line-color", "");
 
     if (!hover) {
       let nodes: cytoscape.Collection = cy.collection();
 
       this.zones.forEach((z) => {
+        if (z instanceof EgoZone || z instanceof CustomZone)
+          if (z.IsDrawn()) nodes = nodes.union(z.AllCollection());
+      });
+      this.TmpZones.forEach((z) => {
         if (z instanceof EgoZone || z instanceof CustomZone)
           if (z.IsDrawn()) nodes = nodes.union(z.AllCollection());
       });
@@ -280,15 +402,15 @@ export class ZoneStore {
   /**
    * ColorNodesInZones
    */
-  public ColorNodesInZones() {
+  public ColorNodesInZones(zones: Zone[]) {
     cy.nodes().not(".hide").classes("");
     cy.edges().not(".hide").classes("");
 
-    if (this.zones.length === 0) {
+    if (zoneStore.Zones.length === 0) {
       this.ColorAllNodes();
       this.ColorAllEdges();
     } else {
-      zoneStore.Zones.forEach((element) => {
+      zones.forEach((element) => {
         if (
           element.IsDrawn() &&
           (element instanceof EgoZone || element instanceof CustomZone)
@@ -309,7 +431,7 @@ export class ZoneStore {
             });
         }
       });
-      this.zones.forEach((z) => {
+      zones.forEach((z) => {
         if (z instanceof EgoZone || z instanceof CustomZone) this.EdgeColors(z);
       });
     }

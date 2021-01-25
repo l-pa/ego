@@ -199,7 +199,7 @@ export default class Cytoscape {
       });
 
       cy.on("mouseout", "node", (event) => {
-        zoneStore.ColorNodesInZones();
+        zoneStore.ColorNodesInZones(zoneStore.Zones);
         z = undefined;
       });
 

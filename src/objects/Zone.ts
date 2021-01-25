@@ -42,8 +42,7 @@ export default abstract class Zone {
 
   private ctxStyle: string = "#000000";
 
-  private alpha : string = "80"
-
+  private alpha: string = "80";
 
   private points: Array<IPoint> = [];
   private collection: cytoscape.Collection = cy.collection();
@@ -71,14 +70,14 @@ export default abstract class Zone {
     }
   }
 
-  public GetAlpha(){
-    return this.alpha
+  public GetAlpha() {
+    return this.alpha;
   }
 
   public SetAlpha(alpha: string) {
     this.alpha = alpha.padStart(2, "0");
-    if (this.IsDrawn()){
-      this.ctx.fillStyle = this.ctxStyle + this.alpha
+    if (this.IsDrawn()) {
+      this.ctx.fillStyle = this.ctxStyle + this.alpha;
       if (this.IsDrawn()) {
         this.Update();
       }
@@ -97,14 +96,13 @@ export default abstract class Zone {
     return this.id;
   }
 
-  public SetDuplicate(s:string){
-    this.duplicate = s
+  public SetDuplicate(s: string) {
+    this.duplicate = s;
   }
 
-  public GetDuplicate(){
-    return this.duplicate
+  public GetDuplicate() {
+    return this.duplicate;
   }
-  
 
   public SetLabel(label: string) {
     this.label = label;
@@ -115,11 +113,11 @@ export default abstract class Zone {
     return this.areShownNodes;
   }
 
-  public AllCollection() : cytoscape.Collection {
+  public AllCollection(): cytoscape.Collection {
     return this.collection;
   }
 
-  public SetAllCollection(collection:cytoscape.Collection) {
+  public SetAllCollection(collection: cytoscape.Collection) {
     this.collection = collection;
   }
 
@@ -163,8 +161,8 @@ export default abstract class Zone {
 
   public CTXStyle(style: string) {
     if (this.ctx) {
-      this.ctxStyle = style
-      this.ctx.fillStyle = style + this.alpha
+      this.ctxStyle = style;
+      this.ctx.fillStyle = style + this.alpha;
     }
   }
 
@@ -188,11 +186,11 @@ export default abstract class Zone {
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
-      
+
       this.ctx.fillStyle = this.ctxStyle;
-      
+
       this.isDrawn = true;
-      zoneStore.ColorNodesInZones()
+      zoneStore.ColorNodesInZones(zoneStore.Zones);
       this.Update();
     } else {
       //this.updatePath();

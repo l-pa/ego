@@ -12,7 +12,8 @@ export function ZonesSubzone() {
     zoneStore.Zones.forEach((z) => z.ClearZone());
     return () => {
       zoneStore.Zones.forEach((z) => z.SetAlpha("80"));
-      zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
+      zoneStore.TmpZones.forEach((z) => z.ClearZone());
+      zoneStore.TmpZones.length = 0
     };
   });
 
@@ -20,22 +21,29 @@ export function ZonesSubzone() {
     <div>
       {zoneStore.TmpZones.filter(
         (z) => z instanceof EgoZone && !zoneStore.Zones.includes(z)
-      ).map((z, i) => {
-        return (
-          <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>
-        );
-      })}
+      )
+        .sort(
+          (b: Zone, a: Zone) =>
+            a.AllCollection().length - b.AllCollection().length
+        )
+        .map((z, i) => {
+          return (
+            <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>
+          );
+        })}
     </div>
   ));
 
   const addZone = action((zone: Zone) => {
     zoneStore.AddTmpZone(zone);
     zone.DrawZone();
-    zone.SetAlpha("10");
-    zoneStore.ColorNodesInZone(zone);
+    zone.SetAlpha("25");
   });
 
   const clearZone = action(() => {
+
+    zoneStore.Zones.forEach(z=>z.ClearZone())
+
     zoneStore.TmpZones.forEach((z) => z.ClearZone());
     zoneStore.TmpZones.length = 0;
   });
@@ -47,7 +55,9 @@ export function ZonesSubzone() {
         onChange={(e) => {
           clearZone();
           if (e.target.value) {
-            zoneStore.FindZone(e.target.value).SetAlpha("00");
+             zoneStore.FindZone(e.target.value).DrawZone();
+             zoneStore.FindZone(e.target.value).SetAlpha("50");
+
             zoneStore
               .SubzonesOfZone(
                 zoneStore.Zones.filter(
@@ -59,7 +69,10 @@ export function ZonesSubzone() {
                   res.forEach((z) => addZone(z));
                 }
               });
-          }
+            } else {
+              zoneStore.Zones.forEach((z) => z.ClearZone());;
+            }
+            zoneStore.ColorNodesInZones(zoneStore.TmpZones)
         }}
       >
         {zoneStore.Zones.map((z, i) => {
@@ -78,9 +91,7 @@ export function ZonesSubzone() {
         </Button>
       )}
 
-      {zoneStore.TmpZones.length === 0 && (
-        <Heading size="md">Choose one zone</Heading>
-      )}
+      {zoneStore.TmpZones.length === 0 && <Heading size="md">Nothing</Heading>}
     </Stack>
   ));
 

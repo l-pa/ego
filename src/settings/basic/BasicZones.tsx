@@ -64,71 +64,86 @@ export const BasicZones: React.FunctionComponent = () => {
   return (
     <Stack>
       <Stack p={5}>
+        <Heading as="h4" size="md" pb={5}>
+          Add zones
+        </Heading>
 
-      <Heading as="h4" size="md" pb={5}>
-        Add zones
-      </Heading>
+        <Button
+          onClick={() => {
+            networkStore.Network?.Nodes.forEach((n) => {
+              if (n.isProminent() === 0) {
+                zoneStore.AddZone(new EgoZone(n));
+              }
+            });
+          }}
+        >
+          Strongly prominent
+        </Button>
 
-      <Button
-        onClick={() => {
-          networkStore.Network?.Nodes.forEach((n) => {
-            if (n.isProminent() === 0) {
-              zoneStore.AddZone(new EgoZone(n));
-            }
-          });
-        }}
+        <Button
+          onClick={() => {
+            networkStore.Network?.Nodes.forEach((n) => {
+              if (n.isProminent() === 1) {
+                zoneStore.AddZone(new EgoZone(n));
+              }
+            });
+          }}
         >
-        Strongly prominent
-      </Button>
+          Weakly prominent
+        </Button>
+        <Heading as="h4" size="md" pb={5} pt={5}>
+          Remove zones
+        </Heading>
+        <Button
+          colorScheme={"red"}
+          onClick={() => {
+            zoneStore.ClearZones();
+          }}
+        >
+          All zones
+        </Button>
+        <Heading as="h4" size="md" pb={5} pt={5}>
+          Duplicates
+        </Heading>
+        <Select
+          defaultValue={settingsStore.Duplicates}
+          isFullWidth={true}
+          onChange={(e) => {
+            settingsStore.Duplicates = e.target.value;
+          }}
+        >
+          <option value="all">All</option>
+          <option value="me">Mutli-ego</option>
+          <option value="de">Duplicates</option>
+        </Select>
 
-      <Button
-        onClick={() => {
-          networkStore.Network?.Nodes.forEach((n) => {
-            if (n.isProminent() === 1) {
-              zoneStore.AddZone(new EgoZone(n));
-            }
-          });
-        }}
+        <Divider p={5}/>
+        <Select
+          defaultValue={settingsStore.ZonesIdk}
+          isFullWidth={true}
+          onChange={(e) => {
+            settingsStore.ZonesIdk = e.target.value;
+          }}
         >
-        Weakly prominent
-      </Button>
-      <Heading as="h4" size="md" pb={5} pt={5}>
-        Remove zones
-      </Heading>
-      <Button
-        colorScheme={"red"}
-        onClick={() => {
-          zoneStore.ClearZones();
-        }}
+          <option value="all">All</option>
+          <option value="moreInner"> inner {'>'} outer</option>
+          <option value="moreOuter">outer {'>'} inner</option>
+          <option value="sameBoth">inner length same as outer</option>
+          <option value="withoutOuter">zones without outer</option>
+        </Select>
+        
+        <Heading as="h4" size="md" pb={5} pt={5}>
+          Options
+        </Heading>
+        <Checkbox
+          defaultIsChecked={settingsStore.Automove}
+          onChange={(e) => {
+            settingsStore.Automove = e.target.checked;
+          }}
         >
-        All zones
-      </Button>
-      <Heading as="h4" size="md" pb={5} pt={5}>
-        Duplicates
-      </Heading>
-      <Select
-        defaultValue={settingsStore.Duplicates}
-        isFullWidth={true}
-        onChange={(e) => {
-          settingsStore.Duplicates = e.target.value;
-        }}
-        >
-        <option value="all">All</option>
-        <option value="me">Mutli-ego</option>
-        <option value="de">Duplicates</option>
-      </Select>
-      <Heading as="h4" size="md" pb={5} pt={5}>
-        Options
-      </Heading>
-      <Checkbox
-        defaultIsChecked={settingsStore.Automove}
-        onChange={(e) => {
-          settingsStore.Automove = e.target.checked;
-        }}
-        >
-        Move zone
-      </Checkbox>
-      {/* <Checkbox
+          Move zone
+        </Checkbox>
+        {/* <Checkbox
         defaultIsChecked={true}
         onChange={(e) => {
           if (e.target.checked) {
@@ -140,11 +155,13 @@ export const BasicZones: React.FunctionComponent = () => {
         >
         Z-index
       </Checkbox> */}
-      <Divider></Divider>
-      <NodesWithLessThanSlider />
-      <Heading as="h4" size="md" pb={5} pt={5}>
-        Zones
-      </Heading>
+
+
+        <Divider></Divider>
+        <NodesWithLessThanSlider />
+        <Heading as="h4" size="md" pb={5} pt={5}>
+          Zones
+        </Heading>
       </Stack>
       <Zones />
       <Divider />
