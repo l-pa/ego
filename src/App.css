@@ -1,0 +1,15 @@
+.LandingPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 70vh;
+}
+
+.Background {
+  height: 100vh;
+}
+.itemRight::before{
+  content: "\2002";
+}
+

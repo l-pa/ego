@@ -1,0 +1,22 @@
+@media only screen and (min-width: 0px) {
+  .graph {
+      width: 1vw;
+      height: 100%;
+    }
+}
+
+@media only screen and (min-width: 800px) {
+  .graph {
+      width: 60vw;
+      height: 100%;
+    }
+}
+@media only screen and (min-width: 1400px) {
+  .graph {
+      width: 70vw;
+      height: 100%;
+    }
+}
+
+
+  

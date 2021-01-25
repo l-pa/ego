@@ -1,13 +1,12 @@
 import {
+  Button,
   Checkbox,
   Divider,
   Heading,
-  Slider,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderTrack,
+  Stack,
   Text,
 } from "@chakra-ui/react";
+import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { settingsStore } from "../..";
 
@@ -18,8 +17,23 @@ export function BasicNodes() {
       console.log(settingsStore.HideOutsideZones);
     };
   });
+
+  const DegreeSize = observer(() => (
+    <Button
+      isFullWidth={true}
+      onClick={() => {
+        if (settingsStore.GetNodeSize() === "fixed") {
+          settingsStore.SetNodeSize("degree");
+        } else {
+          settingsStore.SetNodeSize("fixed");
+        }
+      }}
+    >
+      {settingsStore.GetNodeSize() === "fixed" ? "Degree" : "Fixed"}
+    </Button>
+  ));
   return (
-    <div>
+    <Stack p={5}>
       <Heading as="h4" size="md" pb={5}>
         Properties
       </Heading>
@@ -33,18 +47,7 @@ export function BasicNodes() {
         Size
       </Text>
 
-      <Slider
-        aria-label="slider-ex-1"
-        defaultValue={10}
-        min={1}
-        max={100}
-        onChange={(e) => {}}
-      >
-        <SliderTrack>
-          <SliderFilledTrack />
-        </SliderTrack>
-        <SliderThumb />
-      </Slider>
+      <DegreeSize />
       <Divider paddingBottom={5} marginBottom={5} />
       <Heading as="h4" size="md" pb={5}>
         Show
@@ -58,6 +61,6 @@ export function BasicNodes() {
       >
         In zones
       </Checkbox>
-    </div>
+    </Stack>
   );
 }

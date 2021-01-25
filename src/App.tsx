@@ -1,20 +1,31 @@
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
 import Matrix from "./objects/DependencyMatrix";
-import { Graph } from "./Graph";
+import { Graph } from "./components/Graph";
 import Node from "./objects/Node";
 import Network from "./objects/Network";
 import { Context } from ".";
 import { reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { ZoneItem } from "./ZoneItem";
-import { Box, ChakraProvider, Divider, Flex, Stack } from "@chakra-ui/react";
-import { LeftPanel } from "./LeftPanel";
-import { RightPanel } from "./RightPanel";
+import {
+  Box,
+  ChakraProvider,
+  Checkbox,
+  createStandaloneToast,
+  Divider,
+  Flex,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
+import { LeftPanel } from "./components/LeftPanel";
+import { RightPanel } from "./components/RightPanel";
 
 function App() {
   const context = useContext(Context);
+  const toast = createStandaloneToast();
+
+  const directed = useRef<HTMLInputElement>(null);
 
   reaction(
     () => context.network.Network,
@@ -27,23 +38,64 @@ function App() {
     return (
       <div className="App">
         {!context.network.Network && (
-          <CSVReader
-            onFileLoaded={(data, fileInfo) => {
-              const network = new Network([], []);
-              console.log(fileInfo);
-              for (let i = 0; i < data.length; i++) {
-                const element = data[i];
-                network.addEdge(
-                  new Node(element[0]),
-                  new Node(element[1]),
-                  Number.parseFloat(element[2])
-                );
-              }
-              new Matrix(network).nodesDependency();
-              network.Edges.forEach((e) => e.UpdateClasses());
-              context.network.Network = network;
-            }}
-          />
+          <div className="Background">
+            <div className="LandingPage">
+              <div>
+                <Text fontSize="6xl" fontWeight="extrabold" pb={10}>
+                  Ego-zones
+                </Text>
+                <CSVReader
+                  onError={(err) => {
+                    toast({
+                      title: "Failed to load the network",
+                      description: err.message,
+                      status: "error",
+                      duration: 5000,
+                      isClosable: true,
+                    });
+                  }}
+                  onFileLoaded={(data, fileInfo) => {
+                    const network = new Network([], []);
+
+                    if (directed.current?.checked) {
+                      network.Directed = true;
+                    }
+
+                    console.log(fileInfo);
+                    for (let i = 0; i < data.length; i++) {
+                      const element: Array<string> = data[i];
+                      if (element.length > 1 || element[0] !== "Source") {
+                        network.addEdge(
+                          new Node(element[0]),
+                          new Node(element[1]),
+                          Number.parseFloat(element[2])
+                        );
+                      }
+                    }
+                    new Matrix(network).nodesDependency();
+                    console.log(network);
+                    
+                    context.network.Network = network;
+                    toast({
+                      title: "Network loaded.",
+                      description: `${fileInfo.name} - ${
+                        network.Nodes.length
+                      } nodes - ${network.Edges.length} egdes -  ${
+                        network.Directed ? "✅" : "❌"
+                      } directed`,
+                      status: "success",
+                      duration: 5000,
+                      isClosable: true,
+                    });
+                  }}
+                />
+
+                <Checkbox pt={3} ref={directed}>
+                  Directed
+                </Checkbox>
+              </div>
+            </div>
+          </div>
         )}
         {context.network.Network && (
           <div>

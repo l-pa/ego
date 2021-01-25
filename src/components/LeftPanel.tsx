@@ -1,22 +1,8 @@
-import {
-  Button,
-  Heading,
-  ListItem,
-  Stack,
-  UnorderedList,
-} from "@chakra-ui/react";
-import react, { useState, useRef, useEffect, createRef } from "react";
-import { Flex, Spacer, Box } from "@chakra-ui/react";
+import { Button, Heading, Stack } from "@chakra-ui/react";
 import React from "react";
-import { settingsStore } from ".";
+import { settingsStore } from "..";
 
 export const LeftPanel: React.FunctionComponent = () => {
-  const [activeOption, setActiveOption] = useState();
-
-  useEffect(() => {
-    console.log(activeOption);
-  }, [activeOption]);
-
   return (
     <Stack p={5} w={"10em"}>
       <Heading as="h5" size="sm">
@@ -65,7 +51,7 @@ export const LeftPanel: React.FunctionComponent = () => {
       </Button>
 
       <Heading as="h5" size="sm">
-        Zones
+        Set operations
       </Heading>
       <Button
         isFullWidth={true}

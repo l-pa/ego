@@ -1,37 +1,168 @@
-import { Button, Heading, Select, Stack, Text } from "@chakra-ui/react";
-import { autorun, observe } from "mobx";
+import {
+  FormControl,
+  FormLabel,
+  Heading,
+  Stack,
+  Switch,
+} from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useState } from "react";
-import { zoneStore } from "../..";
-import { ZoneItem } from "../../ZoneItem";
+import React, { useEffect } from "react";
+import { networkStore, zoneStore } from "../..";
+import EgoZone from "../../objects/EgoZone";
+import { ZoneItem } from "../../components/ZoneItem";
+import { action, observable } from "mobx";
+import Zone from "../../objects/Zone";
 
 export function ZonesMax() {
   useEffect(() => {
-    return () => {};
+    console.log("idk");
+    
+    return () => {
+      
+      clearTmpZone()
+      zoneStore.Zones.forEach((z) => {
+        z.DrawZone();
+      });
+
+    };
   });
 
-  autorun(() => {
-    console.log(zoneStore.Zones);
+  let onlyExistingZones = observable({ idk: true });
+  
+  let largestEgoZone: EgoZone;
+
+  const addTmpZone = action((z:Zone)=> {
+    if (zoneStore.Zones.some(zo=> zo.GetId() === z.GetId())) {
+    zoneStore.Zones.filter(zo=>zo.GetId() === z.GetId())[0].DrawZone()
+    
+    } else { 
+      zoneStore.AddTmpZone(z)
+      z.DrawZone()
+    }
+  })
+  
+
+  const clearTmpZone = action(()=> {
+    zoneStore.TmpZones.forEach((z) => z.ClearZone());
+    zoneStore.TmpZones.length = 0
+  })
+
+  const color = action((z:Zone[])=> {
+    console.log(z);
+    
+    zoneStore.ColorNodesInZones(z)
+  })
+  
+  
+
+  const LargestZone = observer(() => {    
+    zoneStore.HideAllZones()
+    
+    if (onlyExistingZones.idk) {  
+      clearTmpZone()
+      if (zoneStore.Zones.length > 0) {
+        let largestZone = [...zoneStore.Zones].filter(
+          (z) => z instanceof EgoZone
+        );
+
+        largestEgoZone = largestZone.sort(
+          (a, b) => b.AllCollection().length - a.AllCollection().length
+        )[0] as EgoZone;
+        return (
+          <Stack>
+            {largestZone
+              .filter(
+                (z) =>
+                z.AllCollection().length ===
+                largestZone[0].AllCollection().length
+                )
+                .map((z) => {
+                z.DrawZone()
+                return <ZoneItem zone={z as EgoZone}></ZoneItem>;
+              })}
+          </Stack>
+        );
+      } else {
+        return (
+          <Heading p={5} size="sm">
+            Select at least one zone
+          </Heading>
+        );
+      }
+    } else {
+      let tmp: EgoZone[] = [];
+
+      networkStore.Network?.Nodes.forEach((n) => {
+        tmp.push(new EgoZone(n));
+      });
+
+      largestEgoZone = tmp.sort(
+        (a: EgoZone, b: EgoZone) =>
+          b.AllCollection().length - a.AllCollection().length
+      )[0];
+
+      tmp = tmp.filter(
+        (z) =>
+          z.AllCollection().length === largestEgoZone.AllCollection().length
+      );
+        color(tmp)
+      return (
+        <Stack>
+          {tmp.map((zone) => {
+            addTmpZone(zone)
+            if (!zoneStore.Zones.some((z) => z.GetId() === zone.GetId())) {
+              return (
+                <ZoneItem
+                  addButton={true}
+                  drawByDefault={true}
+                  zone={zone}
+                ></ZoneItem>
+              );
+            } else {
+              return (
+                <ZoneItem
+                  addButton={false}
+                  zone={
+                    zoneStore.Zones.filter(
+                      (z) => z.GetId() === zone.GetId()
+                    )[0] as EgoZone
+                  }
+                ></ZoneItem>
+              );
+            }
+          }
+          )
+
+          }
+        </Stack>
+      );
+    }
   });
 
-  const LargestZone = observer(() => {
-    return (
-      <ZoneItem
-        zone={
-          [...zoneStore.Zones].sort(
-            (a, b) => b.AllCollection.length - a.AllCollection.length
-          )[0]
-        }
-      ></ZoneItem>
-    );
+  const changeSwitch = action((v: boolean) => {
+    onlyExistingZones.idk = v;
   });
 
   return (
     <Stack>
-      <Heading as="h4" size="md" pb={5}>
-        Max zone
-      </Heading>
-      {zoneStore.Zones.length > 0 && <LargestZone />}
+      <Stack p={5}>
+        <Heading as="h4" size="md" pb={5}>
+          Max zone
+        </Heading>
+        <FormControl display="flex" alignItems="center">
+          <FormLabel htmlFor="all-zones" mb="0">
+            Only existing zones
+          </FormLabel>
+          <Switch
+            id={"all-zones"}
+            onChange={(e) => {
+              changeSwitch(e.target.checked);
+            }}
+            defaultChecked={onlyExistingZones.idk}
+          />
+        </FormControl>
+      </Stack>
+      <LargestZone />
     </Stack>
   );
 }

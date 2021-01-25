@@ -1,353 +1,214 @@
-import type Node from "./Node";
-import cytoscape, {
-  Collection,
-  CollectionReturnValue,
-  CytoscapeOptions,
-  NodeSingular,
-} from "cytoscape";
-
-import { settingsStore, zoneStore } from "..";
+import { zoneStore } from "..";
+import { cy } from "./graph/Cytoscape";
 import {
-  CrossCalc,
   Subtract,
-  unitNormal,
+  CrossCalc,
+  vecUnit,
   vecFrom,
+  vecSum,
   vecScale,
   vecScaleTo,
-  vecSum,
-  vecUnit,
+  unitNormal,
 } from "./Vector";
-import { cy } from "./graph/Cytoscape";
-import { Fade } from "@chakra-ui/react";
 
-export default class Zone {
-  public Ego: Node;
-  public innerZoneNodes: Node[];
-  public outerZoneNodes: Node[][];
+export interface IPoint {
+  x: number;
+  y: number;
+}
 
-  private color: string =
-    "#" +
-    Math.floor(Math.random() * 16777215)
-      .toString(16)
-      .padStart(6, "0");
+export class Point implements IPoint {
+  public x: number;
+  public y: number;
 
-  private alpha: string = "80";
-  public isDrawn: boolean = false;
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+export default abstract class Zone {
+  private isDrawn: boolean = false;
 
   private isZoneShown: boolean = true;
   private areShownNodes: boolean = false;
 
   private zIndex: number = -1;
 
-  private automove: any;
-
-  private layer: any =undefined;
+  private layer: any = undefined;
   private canvas: any = undefined;
-  private ctx: any =undefined;
-
-  private insideCollection: Collection = cytoscape().collection();
-  private outsideCollection: Collection = cytoscape().collection();
-
+  private ctx: any = undefined;
 
   private label: string = "";
 
-  constructor(ego: Node) {
-    this.Ego = ego;
+  private ctxStyle: string = "#000000";
 
-    this.innerZoneNodes = [];
-    this.outerZoneNodes = [[], []];
+  private alpha: string = "80";
 
-    this.innerZone(ego);
-    this.outerZone(this.innerZoneNodes);
+  private points: Array<IPoint> = [];
+  private collection: cytoscape.Collection = cy.collection();
 
-    this.insideCollection = cy.collection();
-    this.outsideCollection = cy.collection();
+  private id: string;
 
+  private duplicate: string = "";
 
-    //   let insideCollectionEdges = cy.collection();
-    //   let outsideCollectionEdges = cy.collection();
-
-    this.innerZoneNodes.forEach((node) => {
-      this.insideCollection = this.insideCollection.union(
-        cy.nodes(`[id ='${node.Id.toString()}']`)[0]
-      );
-      /*        insideCollectionEdges = insideCollectionEdges.union(
-          cy.edges(`[source ='${node.Id.toString()}']`)
-        );
-
-        insideCollectionEdges = insideCollectionEdges.union(
-          cy.edges(`[target ='${node.Id.toString()}']`)
-        );
-        */
-    });
-
-    this.outerZoneNodes[0].forEach((node) => {
-      this.outsideCollection = this.outsideCollection.union(
-        cy.nodes(`[id ='${node.Id.toString()}']`)[0]
-      );
-    });
-
-    this.outerZoneNodes[1].forEach((node) => {
-      this.outsideCollection = this.outsideCollection.union(
-        cy.nodes(`[id ='${node.Id.toString()}']`)[0]
-      );
-    });
-
-    //     this.drawZone();
+  constructor(id: string) {
+    this.id = id;
   }
 
-  public set Alpha(alpha: string) {
-    this.alpha = alpha.padStart(2, "0");
-
-    if (this.isZoneShown) {
-      this.updatePath();
-    }
+  public Points(v: IPoint[]) {
+    this.points = v;
   }
 
-  public set Zindex(index: number) {
+  public SetZindex(index: number) {
     this.zIndex = index;
-    this.clearPath();
+    this.ClearZone();
     if (this.isZoneShown) {
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
-      this.drawZone();
+      this.DrawZone();
     }
   }
 
-  public get IsDrawn(): boolean {
-    return this.isDrawn;
-  }
-
-  public get InsideCollection() {
-    return this.insideCollection;
-  }
-
-  public get OutsideCollection() {
-    return this.outsideCollection;
-  }
-
-  public get AllCollection() {
-    return this.outsideCollection.union(this.insideCollection);
-  }
-
-  public get Label() {
-    return this.label;
-  }
-
-  public set Label(label: string) {
-    this.label = label;
-    this.updatePath();
-  }
-
-  public set EnableAutomove(enable: boolean) {
-    if (enable) {
-      this.automove.enable();
-    } else {
-      this.automove.disable();
-    }
-  }
-
-  public get AreShownNodes() {
-    return this.areShownNodes;
-  }
-
-  public get IsZoneShown() {
-    return this.isZoneShown;
-  }
-
-  public set AreShownNodes(show: boolean) {
-    this.areShownNodes = show;
-  }
-
-  public set IsZoneShown(show: boolean) {
-    this.isZoneShown = show;
-
-    if (this.isZoneShown) {
-      this.drawZone();
-    } else {
-      this.clearPath();
-    }
-  }
-
-  public set Color(color: string) {
-    this.color = color;
-    this.updatePath();
-  }
-
-  public get Color() {
-    return this.color;
-  }
-
-  public get Alpha() {
+  public GetAlpha() {
     return this.alpha;
   }
 
-  public updatePath() {
+  public SetAlpha(alpha: string) {
+    this.alpha = alpha.padStart(2, "0");
+    if (this.IsDrawn()) {
+      this.ctx.fillStyle = this.ctxStyle + this.alpha;
+      if (this.IsDrawn()) {
+        this.Update();
+      }
+    }
+  }
+
+  public IsDrawn(): boolean {
+    return this.isDrawn;
+  }
+
+  public GetLabel() {
+    return this.label;
+  }
+
+  public GetId() {
+    return this.id;
+  }
+
+  public SetDuplicate(s: string) {
+    this.duplicate = s;
+  }
+
+  public GetDuplicate() {
+    return this.duplicate;
+  }
+
+  public SetLabel(label: string) {
+    this.label = label;
+    // this.updatePath();
+  }
+
+  public GetAreShownNodes() {
+    return this.areShownNodes;
+  }
+
+  public AllCollection(): cytoscape.Collection {
+    return this.collection;
+  }
+
+  public SetAllCollection(collection: cytoscape.Collection) {
+    this.collection = collection;
+  }
+
+  public SetAreShownNodes(show: boolean) {
+    this.areShownNodes = show;
+  }
+
+  public SetIsZoneShown(show: boolean) {
+    this.isZoneShown = show;
+
+    if (this.isZoneShown) {
+      this.DrawZone();
+    } else {
+      this.ClearZone();
+    }
+  }
+
+  public Update() {
     if (this.isDrawn) {
-      this.calc(this.insideCollection.union(this.outsideCollection));
+      this.CTXStyle(this.ctxStyle);
+      this.calc();
     }
   }
 
-  public applyLayout(layout: string) {
-    this.insideCollection
-      .union(this.outsideCollection)
-      .layout({
-        name: layout,
-      })
-      .start();
-  }
-
-  public clearPath() {
-    if (settingsStore.HideOutsideZones) {
-      let nodesInZonesExceptZ: Collection = cy.collection();
-      zoneStore.Zones.filter((zone) => zone.Ego.Id !== this.Ego.Id).forEach(
-        (element) => {
-          nodesInZonesExceptZ = nodesInZonesExceptZ.union(
-            element.AllCollection
-          );
-        }
-      );
-      this.AllCollection.classes();
-
-      this.AllCollection.difference(nodesInZonesExceptZ).addClass("hide");
-    }
-    
+  public ClearZone() {
     if (this.isDrawn) {
       this.isDrawn = false;
       this.layer.clear(this.ctx);
-      this.canvas.remove()
-      this.automove.destroy()
+      this.canvas.remove();
     } else {
       console.log("Nothing to clear");
     }
   }
 
-  public drawZone() {
-    if (settingsStore.HideOutsideZones) {
-      this.AllCollection.removeClass("hide");
+  /**
+   * CTX
+   */
+  public CTX() {
+    return this.ctx;
+  }
+
+  public CTXStyle(style: string) {
+    if (this.ctx) {
+      this.ctxStyle = style;
+      this.ctx.fillStyle = style + this.alpha;
     }
+  }
 
-    
+  public CollectionPoints(
+    hull:
+      | cytoscape.SingularElementReturnValue[]
+      | cytoscape.CollectionReturnValue
+      | cytoscape.Collection
+  ) {
+    const a: Array<IPoint> = [];
+
+    hull.forEach((element: cytoscape.NodeSingular) => {
+      a.push(new Point(element.position().x, element.position().y));
+    });
+
+    return a;
+  }
+
+  public DrawZone() {
     if (!this.isDrawn) {
-      if (this.AllCollection.length > settingsStore.MinNodesZoneShow) {
-        return
-      }
+      this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
+      this.canvas = this.layer.getCanvas();
+      this.ctx = this.canvas.getContext("2d");
 
-      
-        // >/
-              
-        this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
-        this.canvas = this.layer.getCanvas();
-        this.ctx = this.canvas.getContext("2d");
-      
-      
-      this.automove = (cy as any).automove({
-        nodesMatching: this.insideCollection
-        .subtract(this.insideCollection[0])
-        .union(this.outsideCollection),
-        
-        reposition: "drag",
-        
-        dragWith: this.insideCollection[0],
-      });
-      
-      this.automove.disable();
-      
-      if (settingsStore.Automove) {
-        this.automove.enable();
-      }
+      this.ctx.fillStyle = this.ctxStyle;
+
       this.isDrawn = true;
-      this.updatePath();
+      zoneStore.ColorNodesInZones(zoneStore.Zones);
+      this.Update();
     } else {
       //this.updatePath();
     }
-  }
-
-  private collectionPoints(hull :  cytoscape.SingularElementReturnValue[] | cytoscape.CollectionReturnValue) {
-    const a: Array<[number, number]> = [];
-
-    hull.forEach((element:cytoscape.NodeSingular) => {
-      a.push([element.position().x, element.position().y]);
-    });
-
-    return a
-  }
-
-  private convexHullPoints(
-    nodes: CollectionReturnValue
-  ): Array<[number, number]> {
-    nodes = nodes.sort((a: NodeSingular, b: NodeSingular) => {
-      return a.position().x - b.position().x;
-    });
-
-    let hull = [];
-
-    let leftMost;
-    let currentVertex;
-    let index;
-    let nextVertex;
-
-    leftMost = nodes[0];
-
-    currentVertex = leftMost;
-    hull.push(currentVertex);
-
-    nextVertex = nodes[1];
-    index = 2;
-
-    if (nodes.length < 3) {
-      index = 1;
-    }
-
-    let isRunning = true;
-
-    while (isRunning) {
-      const checking = nodes[index];
-      const a = Subtract(
-        [nextVertex.position().x, nextVertex.position().y],
-        [currentVertex.position().x, currentVertex.position().y]
-      );
-      const b = Subtract(
-        [checking.position().x, checking.position().y],
-        [currentVertex.position().x, currentVertex.position().y]
-      );
-
-      const cross = CrossCalc(a, b);
-
-      if (cross < 0) {
-        nextVertex = checking;
-      }
-
-      index += 1;
-      if (index === nodes.length) {
-        if (nextVertex === leftMost) {
-          isRunning = false;
-        } else {
-          hull.push(nextVertex);
-          currentVertex = nextVertex;
-          index = 0;
-          nextVertex = leftMost;
-        }
-      }
-    }
-
-
-    return this.collectionPoints(hull);
   }
 
   private hullPadding = 60;
 
   private line(
     a: {
-      p: [number, number];
-      v: [number, number];
+      p: IPoint;
+      v: IPoint;
     }[]
   ) {
     return a;
   }
 
-/*
+  /*
     Modified 
 
     
@@ -374,15 +235,15 @@ export default class Zone {
     SOFTWARE.imitations under the License.
 */
 
-  private smoothHull(polyPoints: Array<[number, number]>) {
+  private smoothHull(polyPoints: Array<IPoint>) {
     // Returns the SVG path data string representing the polygon, expanded and smoothed.
 
     var pointCount = polyPoints.length;
 
     // Handle special cases
     // if (!polyPoints || pointCount < 1) return undefined;
-     if (pointCount === 1) this.smoothHull1(polyPoints);
-     if (pointCount === 2) this.smoothHull2(polyPoints);
+    if (pointCount === 1) this.smoothHull1(polyPoints);
+    if (pointCount === 2) this.smoothHull2(polyPoints);
 
     var hullPoints = polyPoints.map(function (point, index) {
       var pNext = polyPoints[(index + 1) % pointCount];
@@ -407,26 +268,24 @@ export default class Zone {
     return this.line(hullPoints);
   }
 
-  private smoothHull1(polyPoints: Array<[number, number]>) {
+  private smoothHull1(polyPoints: Array<IPoint>) {
     // Returns the path for a circular hull around a single point.
 
     this.ctx.beginPath();
-    this.ctx.ellipse(polyPoints[0][0], polyPoints[0][1], this.hullPadding, this.hullPadding, Math.PI / 4, 0, 2 * Math.PI);
+    this.ctx.ellipse(
+      polyPoints[0].x,
+      polyPoints[0].y,
+      this.hullPadding,
+      this.hullPadding,
+      Math.PI / 4,
+      0,
+      2 * Math.PI
+    );
     this.ctx.closePath();
     this.ctx.fill();
-/*
-    console.log(
-      "M " +
-        p1 +
-        " A " +
-        [this.hullPadding, this.hullPadding, "0,0,0", p2].join(",") +
-        " A " +
-        [this.hullPadding, this.hullPadding, "0,0,0", p1].join(",")
-    );
-    */
   }
 
-  private smoothHull2(polyPoints: Array<[number, number]>) {
+  private smoothHull2(polyPoints: Array<IPoint>) {
     // Returns the path for a rounded hull around two points.
 
     var v = vecFrom(polyPoints[0], polyPoints[1]);
@@ -445,89 +304,106 @@ export default class Zone {
     var control4 = vecSum(extension1, controlDelta);
 
     this.ctx.beginPath();
-    this.ctx.moveTo(extension0[0], extension0[1]);
-    this.ctx.bezierCurveTo(control0[0], control0[1], control1[0], control1[1], extension1[0], extension1[1])
-    this.ctx.bezierCurveTo(control4[0], control4[1], control3[0], control3[1], extension0[0], extension0[1])
+    this.ctx.moveTo(extension0.x, extension0.y);
+    this.ctx.bezierCurveTo(
+      control0.x,
+      control0.y,
+      control1.x,
+      control1.y,
+      extension1.x,
+      extension1.y
+    );
+    this.ctx.bezierCurveTo(
+      control4.x,
+      control4.y,
+      control3.x,
+      control3.y,
+      extension0.x,
+      extension0.y
+    );
 
     this.ctx.closePath();
     this.ctx.fill();
   }
 
-  private calc(allCollection: CollectionReturnValue) {
+  private convexHullPoints(): Array<IPoint> {
+    this.points = this.points.sort((a, b) => {
+      return a.x - b.x;
+    });
+
+    let hull = [];
+
+    let leftMost;
+    let currentVertex;
+    let index;
+    let nextVertex;
+
+    leftMost = this.points[0];
+
+    currentVertex = leftMost;
+    hull.push(currentVertex);
+
+    nextVertex = this.points[1];
+    index = 2;
+
+    if (this.points.length < 3) {
+      index = 1;
+    }
+
+    let isRunning = true;
+
+    while (isRunning) {
+      const checking = this.points[index];
+      const a = Subtract(nextVertex, currentVertex);
+      const b = Subtract(checking, currentVertex);
+
+      const cross = CrossCalc(a, b);
+
+      if (cross < 0) {
+        nextVertex = checking;
+      }
+
+      index += 1;
+      if (index === this.points.length) {
+        if (nextVertex === leftMost) {
+          isRunning = false;
+        } else {
+          hull.push(nextVertex);
+          currentVertex = nextVertex;
+          index = 0;
+          nextVertex = leftMost;
+        }
+      }
+    }
+
+    return hull;
+  }
+
+  private calc() {
     this.layer.resetTransform(this.ctx);
     this.layer.clear(this.ctx);
     this.layer.setTransform(this.ctx);
-    this.ctx.fillStyle = this.color + this.alpha;
 
     let a;
-    if (allCollection.length > 2) {
-      a = this.smoothHull(this.convexHullPoints(allCollection));
+    if (this.points.length > 2) {
+      a = this.smoothHull(this.convexHullPoints());
       // a.push(a[a.length - 1]);
       this.ctx.save();
       this.ctx.beginPath();
-      this.ctx.moveTo(a[0].p[0], a[0].p[1]);
-      
-      const x:Array<number> = []
+      this.ctx.moveTo(a[0].p.x, a[0].p.y);
 
-      a.forEach(element => {
-        x.push(element.p[0])
-        x.push(element.p[1])
+      const x: Array<number> = [];
+
+      a.forEach((element) => {
+        x.push(element.p.x);
+        x.push(element.p.y);
       });
-      this.ctx.curve(x, 0.5, 25, true);                 // add cardinal spline to path
+      this.ctx.curve(x, 0.5, 25, true); // add cardinal spline to path
 
       this.ctx.closePath();
       this.ctx.fill();
     } else {
-      a = this.smoothHull(this.collectionPoints(allCollection));
+      a = this.smoothHull(this.points);
     }
-  }
-
-  private innerZone(node: Node) {
-    this.innerZoneNodes.push(node);
-    node.OwInDep.forEach((node) => {
-      if (!this.innerZoneNodes.includes(node)) {
-        this.innerZone(node);
-      }
-    });
-    node.TwDep.forEach((node) => {
-      if (!this.innerZoneNodes.includes(node)) {
-        this.innerZone(node);
-      }
-    });
-  }
-
-  private outerZone(nodes: Node[]) {
-    nodes.forEach((node) => {
-      node.OwDep.forEach((node) => {
-        if (
-          !this.innerZoneNodes.includes(node) &&
-          !this.outerZoneNodes[0].includes(node)
-        ) {
-          this.outerZoneNodes[0].push(node);
-        }
-      });
-      node.TwDep.forEach((node) => {
-        if (
-          !this.innerZoneNodes.includes(node) &&
-          !this.outerZoneNodes[0].includes(node)
-        ) {
-          this.outerZoneNodes[0].push(node);
-        }
-      });
-    });
-
-    this.outerZoneNodes[0].forEach((node) => {
-      node.OwDep.forEach((owdep) => {
-        if (
-          this.outerZoneNodes[0].includes(owdep) &&
-          !this.outerZoneNodes[1].includes(node)
-        ) {
-          this.outerZoneNodes[1].push(node);
-          this.outerZoneNodes[0] = this.outerZoneNodes[0].filter(
-            (obj) => obj.Id !== node.Id
-          );
-        }
-      });
-    });
   }
 }

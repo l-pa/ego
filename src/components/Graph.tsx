@@ -1,17 +1,14 @@
-import cytoscape, { ElementDefinition } from "cytoscape";
 import React, { useRef, useEffect } from "react";
 import "./style.css";
 
-import Zone from "./objects/Zone";
-
-import { networkStore, zoneStore } from ".";
-import Cytoscape, { cy } from "./objects/graph/Cytoscape";
-
+import { networkStore } from "..";
+import Cytoscape, { cy } from "../objects/graph/Cytoscape";
 
 export const Graph: React.FunctionComponent = () => {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const aa = new Cytoscape(container.current);
 
     return () => {

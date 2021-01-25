@@ -1,22 +1,52 @@
-import cytoscape, { ElementDefinition } from "cytoscape";
+import cytoscape from "cytoscape";
 // @ts-ignore
 import cola from "cytoscape-cola";
-import { networkStore, settingsStore, zoneStore } from "../..";
-import type Network from "../Network";
-import Zone from "../Zone";
+// @ts-ignore
+import coseBilkent from "cytoscape-cose-bilkent";
+import { networkStore, zoneStore } from "../..";
+import Edge from "../Edge";
+import EgoZone from "../EgoZone";
 
 export let cy: cytoscape.Core;
 
 export default class Cytoscape {
   constructor(div: HTMLDivElement | null) {
     if (networkStore.Network) {
+      networkStore.Network.Edges.forEach((e: Edge) => {
+        e.UpdateClasses();
+      });
+
+      const automove = require("cytoscape-automove");
+      const cycanvas = require("cytoscape-canvas");
+
+      cytoscape.use(automove);
+      cytoscape.use(cycanvas);
+      cytoscape.use(cola);
+      cytoscape.use(coseBilkent);
+      
       cy = cytoscape({
         container: div,
         elements: [
           ...networkStore.Network.Nodes.map((e) => e.PlainObject()),
           ...networkStore.Network.Edges.map((e) => e.PlainObject()),
         ],
-        wheelSensitivity: 0.3,
+        layout: {
+          // @ts-ignore
+          name: "cose-bilkent",
+          // @ts-ignore
+          quality: "proof",
+          // @ts-ignore
+          nodeRepulsion: 4500,
+          // @ts-ignore
+          idealEdgeLength: 100,
+          // @ts-ignore
+          edgeElasticity: 0.45,
+          // Nesting factor (multiplier) to compute ideal edge length for inter-graph edges
+          nestingFactor: 0.1,
+          // Gravity force (constant)
+          gravity: 0.25,
+        },
+        //  wheelSensitivity: 0.3,
         style: [
           // the stylesheet for the graph
           {
@@ -155,10 +185,11 @@ export default class Cytoscape {
         ],
       });
 
-      let z: Zone | undefined = undefined;
+
+      let z: EgoZone | undefined = undefined;
       cy.on("mouseover", "node", (event) => {
         if (networkStore.Network) {
-          z = new Zone(
+          z = new EgoZone(
             networkStore.Network.Nodes.filter(
               (e) => e.Id.toString() === event.target._private.data.id
             )[0]
@@ -168,46 +199,32 @@ export default class Cytoscape {
       });
 
       cy.on("mouseout", "node", (event) => {
-        zoneStore.ColorNodesInZones();
+        zoneStore.ColorNodesInZones(zoneStore.Zones);
         z = undefined;
       });
 
       cy.on("click", "node", function (event) {
         if (networkStore.Network) {
-          const z = new Zone(
+          const z = new EgoZone(
             networkStore.Network.Nodes.filter(
               (e) => e.Id === event.target._private.data.id
             )[0]
           );
           zoneStore.AddZone(z);
-          z.drawZone();
-          zoneStore.HideNodesOutsideZones();
         }
       });
 
-      cy.on("click", "edge", function (event) {
-        console.log(event);
-
-        console.log(
-          networkStore.Network?.getEdge(
-            event.target.source,
-            event.target.target
-          )
-        );
-      });
+      cy.on("click", "edge", function (event) {});
 
       cy.on("render cyCanvas.resize", (evt: cytoscape.EventObject) => {
         zoneStore.Zones.forEach((z) => {
-          z.updatePath();
+          z.Update();
+        });
+
+        zoneStore.TmpZones.forEach((z) => {
+          z.Update();
         });
       });
-
-      const automove = require("cytoscape-automove");
-      const cycanvas = require("cytoscape-canvas");
-
-      cytoscape.use(automove);
-      cytoscape.use(cycanvas);
-      cytoscape.use(cola);
     }
   }
 }

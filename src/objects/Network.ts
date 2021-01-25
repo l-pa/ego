@@ -7,6 +7,9 @@ export default class Network {
   public Edges: Edge[];
   public Directed: boolean = false;
 
+  public StronglyProminent: number = 0;
+  public WeaklyProminent: number = 0;
+
   constructor(nodes: Node[], edges: Edge[], directed?: boolean) {
     this.Edges = edges;
     this.Nodes = nodes;
@@ -27,13 +30,13 @@ export default class Network {
     }
   }
 
-  public getNode(nodeId: number): cytoscape.NodeCollection {
+  public getNode(nodeId: number | string): cytoscape.NodeCollection {
     return cy.nodes("#" + nodeId.toString());
   }
 
   public getEdge(source: number, target: number): cytoscape.EdgeCollection {
-    return cy.edges(
-      `[source = "${source.toString()}"][target = "${target.toString()}"]`
+    return cy.$(
+      `edge[source = "${source.toString()}"][target = "${target.toString()}"]`
     );
   }
 

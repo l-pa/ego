@@ -1,3 +1,5 @@
+import { IPoint, Point } from "./Zone";
+
 export class Vector {
   public static NormalizeDirection(
     x1: number,
@@ -10,44 +12,44 @@ export class Vector {
   }
 }
 
-export function Subtract([x1, y1]: any, [x2, y2]: any) {
-  return [-x2 + x1, -y2 + y1];
+export function Subtract(p1: IPoint, p2: Point) {
+  return new Point(-p2.x + p1.x, -p2.y + p1.y);
 }
 
-export function CrossCalc([x1, y1]: any, [x2, y2]: any) {
-  return x1 * y2 - y1 * x2;
+export function CrossCalc(p1:IPoint, p2: IPoint) {
+  return p1.x * p2.y - p1.y * p2.x;
 }
 
 
-export function vecFrom(p0: [number, number], p1: [number, number]):[number, number] {
+export function vecFrom(p0: IPoint, p1: IPoint): IPoint {
   // Vector from p0 to p1
-  return [p1[0] - p0[0], p1[1] - p0[1]];
+  return new Point(p1.x - p0.x, p1.y - p0.y);
 }
 
-export function vecScale(v: [number, number], scale: number):[number, number]  {
+export function vecScale(v: IPoint, scale: number): IPoint {
   // Vector v scaled by 'scale'
-  return [scale * v[0], scale * v[1]];
+  return new Point(scale * v.x, scale * v.y);
 }
 
-export function vecSum(pv1: [number, number], pv2: [number, number]):[number, number] {
+export function vecSum(pv1: IPoint, pv2: IPoint): IPoint {
   // The sum of two points/vectors
-  return [pv1[0] + pv2[0], pv1[1] + pv2[1]];
+  return new Point(pv1.x + pv2.x, pv1.y + pv2.y);
 }
 
-export function vecUnit(v: [number, number]) {
+export function vecUnit(v: IPoint) {
   // Vector with direction of v and length 1
-  var norm = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+  var norm = Math.sqrt(v.x * v.x + v.y * v.y);
   return vecScale(v, 1 / norm);
 }
 
-export function vecScaleTo(v: [number, number], length: number) {
+export function vecScaleTo(v: IPoint, length: number) {
   // Vector with direction of v with specified length
   return vecScale(vecUnit(v), length);
 }
 
-export function unitNormal (pv0: [number, number], p1: [number, number] | undefined) {
+export function unitNormal(pv0: IPoint, p1: IPoint | undefined) {
   // Unit normal to vector pv0, or line segment from p0 to p1
   if (p1 != null) pv0 = vecFrom(pv0, p1);
-  var normalVec:[number, number] = [-pv0[1], pv0[0]];
+  var normalVec:  IPoint = new Point(-pv0.y, pv0.x);
   return vecUnit(normalVec);
 };
