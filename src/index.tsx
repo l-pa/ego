@@ -6,6 +6,12 @@ import reportWebVitals from './reportWebVitals';
 import {ZoneStore} from './stores/ZoneStore'
 import { SettingsStore } from './stores/SettingsStore';
 import { NetworkStore } from './stores/NetworkStore';
+import cytoscape from "cytoscape";
+
+// @ts-ignore
+import cola from "cytoscape-cola";
+// @ts-ignore
+import coseBilkent from "cytoscape-cose-bilkent";
 
 interface IStore {
   zones: ZoneStore,
@@ -16,6 +22,14 @@ interface IStore {
 export const zoneStore = new ZoneStore()
 export const settingsStore = new SettingsStore()
 export const networkStore = new NetworkStore()
+
+const automove = require("cytoscape-automove");
+const cycanvas = require("cytoscape-canvas");
+
+cytoscape.use(automove);
+cytoscape.use(cycanvas);
+cytoscape.use(cola);
+cytoscape.use(coseBilkent);
 
 
 export const Context = React.createContext<IStore>({zones: zoneStore, settings: settingsStore, network:networkStore});

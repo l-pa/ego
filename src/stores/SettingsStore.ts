@@ -21,8 +21,6 @@ export class SettingsStore {
 
   private nodeSize: string = "fixed";
 
-
-
   public get Automove(): boolean {
     return this.automove;
   }
@@ -40,6 +38,7 @@ export class SettingsStore {
   }
 
   public set SelectedOption(v: string) {
+    // data-active
     this.selectedOption = v;
   }
 
@@ -54,8 +53,8 @@ export class SettingsStore {
       cy.nodes().forEach((n) => {
         n.style("width", 30);
         n.style("height", 30);
-      })
-    } else if (this.nodeSize=== "degree") {
+      });
+    } else if (this.nodeSize === "degree") {
       const min = cy.nodes().minDegree(false);
       const max = cy.nodes().maxDegree(false);
 
@@ -69,7 +68,6 @@ export class SettingsStore {
       }
     }
   }
-
 
   public get SelectedEdgeBlendMode(): string {
     return this.selectedEdgeBlend;
@@ -102,7 +100,7 @@ export class SettingsStore {
 
   public set MinNodesZoneShow(v: number) {
     this.minNodesZoneShow = v;
-    
+
     zoneStore.Zones.forEach((element) => {
       if (element.AllCollection().length >= this.minNodesZoneShow) {
         element.DrawZone();
@@ -112,7 +110,7 @@ export class SettingsStore {
     });
     if (zoneStore.Zones.length > 0) {
       zoneStore.ColorNodesInZones(zoneStore.Zones);
-      zoneStore.HideNodesOutsideZones()
+      zoneStore.HideNodesOutsideZones();
     }
   }
 
@@ -134,7 +132,7 @@ export class SettingsStore {
   }
 
   public set ZonesIdk(v: string) {
-    this.zonesIdk = v;    
+    this.zonesIdk = v;
     zoneStore.ZonesIdk();
   }
 }

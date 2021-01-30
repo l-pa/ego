@@ -3,14 +3,8 @@ import {
   Stack,
   Button,
   Checkbox,
-  Select,
   Divider,
-  Slider,
-  SliderTrack,
-  SliderThumb,
-  SliderFilledTrack,
   Heading,
-  Text,
 } from "@chakra-ui/react";
 import { ZoneItem } from "../../components/ZoneItem";
 import { networkStore, settingsStore, zoneStore } from "../../.";
@@ -20,10 +14,9 @@ import CustomZone from "../../objects/CustomZone";
 import { ZoneItemCustom } from "../../components/ZoneItemCustom";
 
 export const BasicZones: React.FunctionComponent = () => {
-
   const Zones = observer(() => (
     <Stack>
-      {zoneStore.Zones.filter((z) => z instanceof EgoZone).map((z, i) => {        
+      {zoneStore.Zones.filter((z) => z instanceof EgoZone).map((z, i) => {
         return <ZoneItem zone={z as EgoZone} key={i}></ZoneItem>;
       })}
     </Stack>
@@ -37,30 +30,6 @@ export const BasicZones: React.FunctionComponent = () => {
     </div>
   ));
 
-  const NodesWithLessThanSlider = observer(() => {
-    return (
-      <Stack>
-        <Text fontSize="md">
-          Hide zones with less than {settingsStore.MinNodesZoneShow} nodes
-        </Text>
-
-        <Slider
-          aria-label="slider-ex-1"
-          defaultValue={settingsStore.MinNodesZoneShow}
-          min={0}
-          max={networkStore.Network?.Nodes.length}
-          onChange={(e) => {
-            settingsStore.MinNodesZoneShow = e;
-          }}
-        >
-          <SliderTrack>
-            <SliderFilledTrack />
-          </SliderTrack>
-          <SliderThumb />
-        </Slider>
-      </Stack>
-    );
-  });
   return (
     <Stack>
       <Stack p={5}>
@@ -102,35 +71,6 @@ export const BasicZones: React.FunctionComponent = () => {
         >
           All zones
         </Button>
-        <Heading as="h4" size="md" pb={5} pt={5}>
-          Duplicates
-        </Heading>
-        <Select
-          defaultValue={settingsStore.Duplicates}
-          isFullWidth={true}
-          onChange={(e) => {
-            settingsStore.Duplicates = e.target.value;
-          }}
-        >
-          <option value="all">All</option>
-          <option value="me">Mutli-ego</option>
-          <option value="de">Duplicates</option>
-        </Select>
-
-        <Divider p={5}/>
-        <Select
-          defaultValue={settingsStore.ZonesIdk}
-          isFullWidth={true}
-          onChange={(e) => {
-            settingsStore.ZonesIdk = e.target.value;
-          }}
-        >
-          <option value="all">All</option>
-          <option value="moreInner"> inner {'>'} outer</option>
-          <option value="moreOuter">outer {'>'} inner</option>
-          <option value="sameBoth">inner length same as outer</option>
-          <option value="withoutOuter">zones without outer</option>
-        </Select>
         
         <Heading as="h4" size="md" pb={5} pt={5}>
           Options
@@ -156,9 +96,6 @@ export const BasicZones: React.FunctionComponent = () => {
         Z-index
       </Checkbox> */}
 
-
-        <Divider></Divider>
-        <NodesWithLessThanSlider />
         <Heading as="h4" size="md" pb={5} pt={5}>
           Zones
         </Heading>

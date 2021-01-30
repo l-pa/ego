@@ -1,50 +1,60 @@
 import { Button, Heading, Stack } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { settingsStore } from "..";
 
 export const LeftPanel: React.FunctionComponent = () => {
+  
+  const [activeButton, setActiveButton] = useState<string>("basicZones");
+
   return (
     <Stack p={5} w={"10em"}>
       <Heading as="h5" size="sm">
         Basic
       </Heading>
       <Button
-        isActive={true}
+        isActive={activeButton === "basicZones"}
         isFullWidth={true}
-        colorScheme="teal"
+        colorScheme="primary"
         variant="ghost"
-        onClick={(e) => {
-          settingsStore.SelectedOption = "basicZones";
+        onClick={() => {
+          setActiveButton("basicZones");
+          settingsStore.SelectedOption = "basicZones"
         }}
       >
         Zones
       </Button>
       <Button
-        isFullWidth={true}
-        colorScheme="teal"
+        isActive={activeButton === "basicNodes"}
+        colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          settingsStore.SelectedOption = "basicNodes";
+          setActiveButton("basicNodes");
+          settingsStore.SelectedOption = "basicNodes"
+
         }}
       >
         Nodes
       </Button>
       <Button
-        isFullWidth={true}
-        colorScheme="teal"
+        isActive={activeButton === "basicEdges"}
+        colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          settingsStore.SelectedOption = "basicEdges";
+          setActiveButton("basicEdges");
+          settingsStore.SelectedOption = "basicEdges"
+
         }}
       >
         Edges
       </Button>
       <Button
-        isFullWidth={true}
-        colorScheme="teal"
+        isActive={activeButton === "basicLayout"}
+        colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          settingsStore.SelectedOption = "basicLayout";
+          setActiveButton("basicLayout");
+          settingsStore.SelectedOption = "basicLayout"
+
         }}
       >
         Layout
@@ -54,51 +64,50 @@ export const LeftPanel: React.FunctionComponent = () => {
         Set operations
       </Heading>
       <Button
-        isFullWidth={true}
-        colorScheme="teal"
+        isActive={activeButton === "zonesMax"}
+        colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          settingsStore.SelectedOption = "zonesMax";
+          setActiveButton("zonesMax");
+          settingsStore.SelectedOption = "zonesMax"
+
         }}
       >
         Max
       </Button>
+
       <Button
-        isFullWidth={true}
-        colorScheme="teal"
+        isActive={activeButton === "zonesSubzone"}
+        colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          settingsStore.SelectedOption = "zonesMin";
-        }}
-      >
-        Min
-      </Button>
-      <Button
-        isFullWidth={true}
-        colorScheme="teal"
-        variant="ghost"
-        onClick={() => {
-          settingsStore.SelectedOption = "zonesSubzone";
+          setActiveButton("zonesSubzone");
+          settingsStore.SelectedOption = "zonesSubzone"
+
         }}
       >
         Subzone
       </Button>
       <Button
-        isFullWidth={true}
-        colorScheme="teal"
+        isActive={activeButton === "zonesSuperzone"}
+        colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          settingsStore.SelectedOption = "zonesSuperzone";
+          setActiveButton("zonesSuperzone");
+          settingsStore.SelectedOption = "zonesSuperzone"
+
         }}
       >
         Superzone
       </Button>
       <Button
-        isFullWidth={true}
-        colorScheme="teal"
+        isActive={activeButton === "zonesIntersect"}
+        colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          settingsStore.SelectedOption = "zonesIntersect";
+          setActiveButton("zonesIntersect");
+          settingsStore.SelectedOption = "zonesIntersect"
+
         }}
       >
         Intersect

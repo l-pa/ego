@@ -1,8 +1,4 @@
 import cytoscape from "cytoscape";
-// @ts-ignore
-import cola from "cytoscape-cola";
-// @ts-ignore
-import coseBilkent from "cytoscape-cose-bilkent";
 import { networkStore, zoneStore } from "../..";
 import Edge from "../Edge";
 import EgoZone from "../EgoZone";
@@ -16,14 +12,6 @@ export default class Cytoscape {
         e.UpdateClasses();
       });
 
-      const automove = require("cytoscape-automove");
-      const cycanvas = require("cytoscape-canvas");
-
-      cytoscape.use(automove);
-      cytoscape.use(cycanvas);
-      cytoscape.use(cola);
-      cytoscape.use(coseBilkent);
-      
       cy = cytoscape({
         container: div,
         elements: [
@@ -184,7 +172,6 @@ export default class Cytoscape {
           },
         ],
       });
-
 
       let z: EgoZone | undefined = undefined;
       cy.on("mouseover", "node", (event) => {
