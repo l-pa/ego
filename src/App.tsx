@@ -6,8 +6,8 @@ import { Graph } from "./components/Graph";
 import Node from "./objects/Node";
 import Network from "./objects/Network";
 import { Context } from ".";
-import { reaction } from "mobx";
 import { observer } from "mobx-react-lite";
+
 import {
   Box,
   ChakraProvider,
@@ -18,21 +18,15 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
+
 import { LeftPanel } from "./components/LeftPanel";
 import { RightPanel } from "./components/RightPanel";
+import theme from "./theme";
 
 function App() {
   const context = useContext(Context);
   const toast = createStandaloneToast();
-
   const directed = useRef<HTMLInputElement>(null);
-
-  reaction(
-    () => context.network.Network,
-    (Network) => {
-      console.log(Network);
-    }
-  );
 
   const App = observer(() => {
     return (
@@ -41,7 +35,11 @@ function App() {
           <div className="Background">
             <div className="LandingPage">
               <div>
-                <Text fontSize="6xl" fontWeight="extrabold" pb={10}>
+                <Text
+                  fontSize="6xl"
+                  fontWeight="extrabold"
+                  pb={10}
+                >
                   Ego-zones
                 </Text>
                 <CSVReader
@@ -74,7 +72,7 @@ function App() {
                     }
                     new Matrix(network).nodesDependency();
                     console.log(network);
-                    
+
                     context.network.Network = network;
                     toast({
                       title: "Network loaded.",
@@ -117,7 +115,7 @@ function App() {
   });
 
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <App />
     </ChakraProvider>
   );

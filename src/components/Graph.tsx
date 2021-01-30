@@ -13,6 +13,7 @@ export const Graph: React.FunctionComponent = () => {
 
     return () => {
       cy.off("click mouseout mousein render cyCanvas.resize");
+      console.log("Cy instance destroyed");
       cy.destroy();
 
       networkStore.Network = undefined;

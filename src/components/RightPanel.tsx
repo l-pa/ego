@@ -1,5 +1,4 @@
-import { Stack } from "@chakra-ui/react";
-import { Box } from "@chakra-ui/react";
+import { Divider, Stack } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
 import { settingsStore } from "..";
 import { BasicZones } from "../settings/basic/BasicZones";
@@ -10,10 +9,12 @@ import { BasicLayout } from "../settings/basic/BasicLayout";
 import { ZonesMax } from "../settings/zones/ZonesMax";
 import { ZonesSubzone } from "../settings/zones/ZonesSubzone";
 import { ZonesSuperzone } from "../settings/zones/ZonesSuperzone";
+import { Filters } from "../components/Filters";
+
 
 export const RightPanel: React.FunctionComponent = () => {
   const Settings = observer(() => (
-    <Stack zIndex={1} mt={5}>
+    <Stack height={"50%"} overflowY={"scroll"} zIndex={1} mt={5}>
       {(() => {
         switch (settingsStore.SelectedOption) {
           case "basicZones":
@@ -38,12 +39,12 @@ export const RightPanel: React.FunctionComponent = () => {
       })()}
     </Stack>
   ));
-
+  
   return (
     <Stack overflowY={"scroll"} height={"100vh"} width={"25vw"}>
-      <Box>
-        <Settings />
-      </Box>
+      <Settings />
+      <Divider size="3px" variant="dashed" />
+      <Filters />
     </Stack>
   );
 };
