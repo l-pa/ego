@@ -1,7 +1,7 @@
 import cytoscape from "cytoscape";
 import { networkStore, zoneStore } from "../..";
-import Edge from "../Edge";
-import EgoZone from "../EgoZone";
+import Edge from "../network/Edge";
+import EgoZone from "../zone/EgoZone";
 
 export let cy: cytoscape.Core;
 
@@ -188,9 +188,6 @@ export default class Cytoscape {
       cy.on("mouseout", "node", (event) => {
         zoneStore.ColorNodesInZones(zoneStore.Zones);
         // zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-        console.log(zoneStore.Zones);
-        console.log(zoneStore.TmpZones);
-
         z = undefined;
       });
 

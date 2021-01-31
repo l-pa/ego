@@ -14,7 +14,7 @@ import { Filters } from "../components/Filters";
 
 export const RightPanel: React.FunctionComponent = () => {
   const Settings = observer(() => (
-    <Stack height={"50%"} overflowY={"scroll"} zIndex={1} mt={5}>
+    <Stack height={"80%"} overflowY={"scroll"} zIndex={1} mt={5}>
       {(() => {
         switch (settingsStore.SelectedOption) {
           case "basicZones":

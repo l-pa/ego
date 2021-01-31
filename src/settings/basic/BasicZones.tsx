@@ -9,8 +9,8 @@ import {
 import { ZoneItem } from "../../components/ZoneItem";
 import { networkStore, settingsStore, zoneStore } from "../../.";
 import { observer } from "mobx-react-lite";
-import EgoZone from "../../objects/EgoZone";
-import CustomZone from "../../objects/CustomZone";
+import EgoZone from "../../objects/zone/EgoZone";
+import CustomZone from "../../objects/zone/CustomZone";
 import { ZoneItemCustom } from "../../components/ZoneItemCustom";
 
 export const BasicZones: React.FunctionComponent = () => {
@@ -71,7 +71,7 @@ export const BasicZones: React.FunctionComponent = () => {
         >
           All zones
         </Button>
-        
+
         <Heading as="h4" size="md" pb={5} pt={5}>
           Options
         </Heading>

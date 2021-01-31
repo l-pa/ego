@@ -1,8 +1,8 @@
 import cytoscape from "cytoscape";
 
-import { settingsStore } from "..";
+import { settingsStore } from "../..";
 
-import { cy } from "./graph/Cytoscape";
+import { cy } from "../graph/Cytoscape";
 import Zone from "./Zone";
 
 export default class CustomZone extends Zone {

@@ -10,8 +10,8 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { networkStore, zoneStore } from "../..";
-import EgoZone from "../../objects/EgoZone";
-import Zone from "../../objects/Zone";
+import EgoZone from "../../objects/zone/EgoZone";
+import Zone from "../../objects/zone/Zone";
 import { ZoneItem } from "../../components/ZoneItem";
 
 export function ZonesSubzone() {

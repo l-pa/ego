@@ -1,6 +1,6 @@
 import type Node from "./Node";
 import type { EdgeDataDefinition, ElementDefinition } from "cytoscape";
-import { networkStore } from "..";
+import { networkStore } from "../..";
 
 export default class Edge implements ElementDefinition {
   private Id: string | number;

@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { settingsStore } from "..";
-import Network from "../objects/Network";
+import Network from "../objects/network/Network";
 
 export class NetworkStore {
   constructor() {

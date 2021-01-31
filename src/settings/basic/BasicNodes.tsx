@@ -6,9 +6,13 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
+import { NodeSingular } from "cytoscape";
+import { SingleTarget } from "framer-motion";
+import { action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
-import { settingsStore } from "../..";
+import { networkStore, settingsStore, zoneStore } from "../..";
+import { cy } from "../../objects/graph/Cytoscape";
 
 export function BasicNodes() {
   useEffect(() => {
@@ -17,6 +21,28 @@ export function BasicNodes() {
       console.log(settingsStore.HideOutsideZones);
     };
   });
+
+  const nodesInSameZones: { selected: NodeSingular[] } = observable({
+    selected: [],
+  });
+
+  const addNode = action((node: NodeSingular) => {
+    nodesInSameZones.selected.push(node);
+  });
+
+  const removeNode = action((node: NodeSingular) => {
+    nodesInSameZones.selected.splice(
+      nodesInSameZones.selected.indexOf(node),
+      1
+    );
+  });
+
+  reaction(
+    () => nodesInSameZones.selected.map((a) => a),
+    (arr) => {
+      console.log(arr);
+    }
+  );
 
   const DegreeSize = observer(() => (
     <Button
@@ -61,6 +87,31 @@ export function BasicNodes() {
       >
         In zones
       </Checkbox>
+
+      <Divider />
+      <Heading as="h4" size="md" pt={5}>
+        Nodes in same zone
+      </Heading>
+      {cy.nodes().map((n) => {
+        return (
+          <Checkbox
+            onChange={(e) => {
+              const node = networkStore.Network?.getNode(e.target.value)[0];
+              if (node) {
+                if (e.target.checked) {
+                  addNode(node);
+                } else {
+                  removeNode(node);
+                }
+              }
+              console.log(zoneStore.ZonesForNodes(nodesInSameZones.selected));
+            }}
+            value={n.id()}
+          >
+            {n.id()}
+          </Checkbox>
+        );
+      })}
     </Stack>
   );
 }

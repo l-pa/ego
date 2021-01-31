@@ -1,9 +1,9 @@
-import type Node from "./Node";
+import type Node from "../network/Node";
 import cytoscape, { Collection } from "cytoscape";
 
-import { settingsStore, zoneStore } from "..";
+import { settingsStore, zoneStore } from "../..";
 
-import { cy } from "./graph/Cytoscape";
+import { cy } from "../graph/Cytoscape";
 import Zone from "./Zone";
 import CustomZone from "./CustomZone";
 

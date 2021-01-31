@@ -15,30 +15,34 @@ import {
   Divider,
 } from "@chakra-ui/react";
 
-import { networkStore, zoneStore } from "..";
-import EgoZone from "../objects/EgoZone";
+import { settingsStore, zoneStore } from "..";
+import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
   addButton?: boolean;
-  drawByDefault?: boolean;
-}> = ({ zone, addButton = false, drawByDefault = false }) => {
+  greyed?: boolean;
+}> = ({ zone, addButton = false, greyed = false }) => {
   const innerE =
     zone.AllCollection().edgesWith(zone.AllCollection()).length * 2;
   const outerE =
     zone.AllCollection().edgesWith(cy.nodes().difference(zone.AllCollection()))
       .length + innerE;
 
+  const color = settingsStore.DetermineTextColor(zone.Color)
+    ? "black"
+    : "white";
+
   return (
-    <Box zIndex={1} bg={zone.Color} p={4} color="white">
+    <Box zIndex={1} bg={!greyed ? zone.Color : "grey"} p={4}>
       <Box display={"flex"}>
         {zone.Ego.isProminent() === 0 ? (
           <Avatar
             name={zone.GetId().split("").join(" ")}
-            backgroundColor={"red.400"}
-            color={"black"}
+            backgroundColor={!greyed ? "red.400" : "grey"}
+            colorScheme={"primary"}
             outline=""
           />
         ) : // <Heading color={"red.400"} textAlign={"center"}>
@@ -47,19 +51,19 @@ export const ZoneItem: React.FunctionComponent<{
         zone.Ego.isProminent() === 1 ? (
           <Avatar
             name={zone.GetId().split("").join(" ")}
-            backgroundColor={"yellow.400"}
-            color={"black"}
+            backgroundColor={!greyed ? "yellow.400" : "grey"}
+            colorScheme={"primary"}
           />
         ) : (
           <Avatar
             name={zone.GetId().split("").join(" ")}
-            backgroundColor={"green.400"}
-            color={"black"}
+            backgroundColor={!greyed ? "green.400" : "grey"}
+            colorScheme={"primary"}
           />
         )}
         <Stack ml="2">
           <Box
-            color="gray.50"
+            color={color}
             fontWeight="semibold"
             letterSpacing="wide"
             fontSize="xs"
@@ -108,10 +112,7 @@ export const ZoneItem: React.FunctionComponent<{
               >
                 <Stack>
                   <Text className="itemRight">
-                    {(
-                      innerE /
-                      outerE
-                    ).toFixed(2)}
+                    {(innerE / outerE).toFixed(2)}
                   </Text>
                 </Stack>
               </Tooltip>
@@ -259,7 +260,9 @@ export const ZoneItem: React.FunctionComponent<{
         placeholder="Label"
       /> */}
       <Divider mb={1} mt={1} />
-      <Heading size="sm">Opacity</Heading>
+      <Heading color={color} size="sm">
+        Opacity
+      </Heading>
       <Slider
         color="pink"
         defaultValue={(Number.parseInt(zone.GetAlpha(), 16) / 255) * 100}
@@ -311,16 +314,12 @@ export const ZoneItem: React.FunctionComponent<{
         )}
         {addButton && (
           <Button
-            colorScheme="green"
+            colorScheme="primary"
             size="sm"
             aria-label="Add zone"
             onClick={() => {
               zoneStore.AddZone(zone);
               zoneStore.RemoveTmpZone(zone);
-
-              if (drawByDefault) {
-                zone.DrawZone();
-              }
             }}
           >
             Add zone

@@ -90,7 +90,6 @@ export default class Matrix {
         }[],
         key: string
       ) => {
-
         const twdep: Node[] = [];
         const twindep: Node[] = [];
         const owdep: Node[] = [];
@@ -175,7 +174,6 @@ export default class Matrix {
         this.network.Nodes.filter((n) => n.Id === key)[0].TwInDep = twindep;
       }
     );
-
   }
 
   /**

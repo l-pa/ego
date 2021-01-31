@@ -1,4 +1,4 @@
-import { IPoint, Point } from "./Zone";
+import { IPoint, Point } from "../zone/Zone";
 
 export class Vector {
   public static NormalizeDirection(
@@ -16,10 +16,9 @@ export function Subtract(p1: IPoint, p2: Point) {
   return new Point(-p2.x + p1.x, -p2.y + p1.y);
 }
 
-export function CrossCalc(p1:IPoint, p2: IPoint) {
+export function CrossCalc(p1: IPoint, p2: IPoint) {
   return p1.x * p2.y - p1.y * p2.x;
 }
-
 
 export function vecFrom(p0: IPoint, p1: IPoint): IPoint {
   // Vector from p0 to p1
@@ -50,6 +49,6 @@ export function vecScaleTo(v: IPoint, length: number) {
 export function unitNormal(pv0: IPoint, p1: IPoint | undefined) {
   // Unit normal to vector pv0, or line segment from p0 to p1
   if (p1 != null) pv0 = vecFrom(pv0, p1);
-  var normalVec:  IPoint = new Point(-pv0.y, pv0.x);
+  var normalVec: IPoint = new Point(-pv0.y, pv0.x);
   return vecUnit(normalVec);
-};
+}

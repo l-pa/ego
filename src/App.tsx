@@ -1,10 +1,10 @@
 import React, { useContext, useRef } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
-import Matrix from "./objects/DependencyMatrix";
+import Matrix from "./objects/network/DependencyMatrix";
 import { Graph } from "./components/Graph";
-import Node from "./objects/Node";
-import Network from "./objects/Network";
+import Node from "./objects/network/Node";
+import Network from "./objects/network/Network";
 import { Context } from ".";
 import { observer } from "mobx-react-lite";
 

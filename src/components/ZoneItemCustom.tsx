@@ -15,7 +15,7 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { zoneStore } from "..";
-import CustomZone from "../objects/CustomZone";
+import CustomZone from "../objects/zone/CustomZone";
 
 export const ZoneItemCustom: React.FunctionComponent<{
   zone: CustomZone;

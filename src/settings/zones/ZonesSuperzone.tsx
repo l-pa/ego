@@ -3,8 +3,8 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { zoneStore } from "../..";
-import EgoZone from "../../objects/EgoZone";
-import Zone from "../../objects/Zone";
+import EgoZone from "../../objects/zone/EgoZone";
+import Zone from "../../objects/zone/Zone";
 import { ZoneItem } from "../../components/ZoneItem";
 
 export function ZonesSuperzone() {
@@ -12,28 +12,51 @@ export function ZonesSuperzone() {
     zoneStore.Zones.forEach((z) => z.ClearZone());
     return () => {
       zoneStore.Zones.forEach((z) => z.SetAlpha("80"));
-      zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
+      zoneStore.TmpZones.forEach((z) => z.ClearZone());
+      zoneStore.TmpZones.length = 0;
+      zoneStore.ColorNodesInZones(zoneStore.Zones);
     };
   });
 
   const Zones = observer(() => (
     <div>
-      {zoneStore.TmpZones.filter(
-        (z) => z instanceof EgoZone && !zoneStore.Zones.includes(z)
-      )
+      {zoneStore
+        .Filter(zoneStore.TmpZones)[0]
+        .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
         .sort(
           (b: Zone, a: Zone) =>
             a.AllCollection().length - b.AllCollection().length
         )
         .map((z, i) => {
-          if (zoneStore.Zones.some(zone => zone.GetId() === z.GetId())){
-
-          } else{
-
+          z.DrawZone();
+          if (zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())) {
+          } else {
             return (
               <ZoneItem addButton={true} zone={z as EgoZone} key={i}></ZoneItem>
-              );
-            }
+            );
+          }
+        })}
+
+      {zoneStore
+        .Filter(zoneStore.TmpZones)[1]
+        .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
+        .sort(
+          (b: Zone, a: Zone) =>
+            a.AllCollection().length - b.AllCollection().length
+        )
+        .map((z, i) => {
+          z.ClearZone();
+          if (zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())) {
+          } else {
+            return (
+              <ZoneItem
+                addButton={true}
+                greyed={true}
+                zone={z as EgoZone}
+                key={i}
+              ></ZoneItem>
+            );
+          }
         })}
     </div>
   ));
@@ -51,7 +74,6 @@ export function ZonesSuperzone() {
     zoneStore.TmpZones.forEach((z) => z.ClearZone());
     zoneStore.TmpZones.length = 0;
     zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-
   });
 
   const ActiveZones = observer(() => (
@@ -62,7 +84,7 @@ export function ZonesSuperzone() {
           clearZone();
           if (e.target.value) {
             zoneStore.FindZone(e.target.value).DrawZone();
-            zoneStore.FindZone(e.target.value).SetAlpha("50");
+            zoneStore.FindZone(e.target.value).SetAlpha("ff");
             zoneStore
               .SuperzoneOfZone(
                 zoneStore.Zones.filter(
@@ -70,12 +92,14 @@ export function ZonesSuperzone() {
                 )[0]
               )
               .then((res) => {
+                console.log(res);
+
                 if (res.length > 0) {
-                  res.forEach((z) => addZone(z));
+                  res[0].forEach((z) => addZone(z));
+                  res[1].forEach((z) => addZone(z));
                 }
               });
-            }
-
+          }
         }}
       >
         {zoneStore.Zones.map((z, i) => {
@@ -94,9 +118,7 @@ export function ZonesSuperzone() {
         </Button>
       )}
 
-      {zoneStore.TmpZones.length === 0 && (
-        <Heading size="md">Nothing</Heading>
-      )}
+      {zoneStore.TmpZones.length === 0 && <Heading size="md">Nothing</Heading>}
     </Stack>
   ));
 

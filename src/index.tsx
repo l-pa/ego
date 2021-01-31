@@ -13,6 +13,9 @@ import cola from "cytoscape-cola";
 // @ts-ignore
 import coseBilkent from "cytoscape-cose-bilkent";
 
+// @ts-ignore
+import contextMenus from "cytoscape-context-menus";
+
 interface IStore {
   zones: ZoneStore,
   settings:SettingsStore,
@@ -30,6 +33,7 @@ cytoscape.use(automove);
 cytoscape.use(cycanvas);
 cytoscape.use(cola);
 cytoscape.use(coseBilkent);
+cytoscape.use(contextMenus);
 
 
 export const Context = React.createContext<IStore>({zones: zoneStore, settings: settingsStore, network:networkStore});

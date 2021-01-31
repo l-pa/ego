@@ -1,6 +1,6 @@
 import type Node from "./Node";
 import Edge from "./Edge";
-import { cy } from "./graph/Cytoscape";
+import { cy } from "../graph/Cytoscape";
 
 export default class Network {
   public Nodes: Node[];

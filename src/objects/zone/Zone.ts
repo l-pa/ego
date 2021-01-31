@@ -1,5 +1,6 @@
-import { zoneStore } from "..";
-import { cy } from "./graph/Cytoscape";
+import { observable } from "mobx";
+import { zoneStore } from "../..";
+import { cy } from "../graph/Cytoscape";
 import {
   Subtract,
   CrossCalc,
@@ -9,7 +10,7 @@ import {
   vecScale,
   vecScaleTo,
   unitNormal,
-} from "./Vector";
+} from "../utility/Vector";
 
 export interface IPoint {
   x: number;
@@ -162,11 +163,11 @@ export default abstract class Zone {
   public CTXStyle(style: string | CanvasPattern) {
     if (this.ctx) {
       this.ctxStyle = style.toString();
-      if (style instanceof CanvasPattern){
+      if (style instanceof CanvasPattern) {
         this.ctx.fillStyle = style;
-      }  else {
+      } else {
         this.ctx.fillStyle = style + this.alpha;
-      }     
+      }
     }
   }
 

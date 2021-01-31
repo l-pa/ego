@@ -1,11 +1,16 @@
 import { makeAutoObservable } from "mobx";
-import EgoZone from "../objects/EgoZone";
+import EgoZone from "../objects/zone/EgoZone";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { cy } from "../objects/graph/Cytoscape";
-import { Collection, EdgeSingular } from "cytoscape";
-import Zone from "../objects/Zone";
-import CustomZone from "../objects/CustomZone";
+import { Collection, EdgeSingular, NodeSingular } from "cytoscape";
+import Zone from "../objects/zone/Zone";
+import CustomZone from "../objects/zone/CustomZone";
 import { createStandaloneToast } from "@chakra-ui/react";
+import Filter, {
+  DuplicatesByEgo,
+  DuplicatesByZoneProperties,
+  ZoneSize,
+} from "../objects/zone/Filter";
 
 export class ZoneStore {
   constructor() {
@@ -57,12 +62,8 @@ export class ZoneStore {
       if (zone instanceof EgoZone) {
         zone.AllCollection().removeClass("hide");
       }
-      zone.DrawZone();
-      this.Duplicates();
-      this.ZonesIdk();
 
-      this.ColorNodesInZones(this.zones);
-      zoneStore.HideNodesOutsideZones();
+      this.Update();
     } else {
       const toast = createStandaloneToast();
       toast({
@@ -73,6 +74,28 @@ export class ZoneStore {
         isClosable: true,
       });
     }
+  }
+
+  /**
+   * Update
+   */
+  public Update() {
+    zoneStore.zones.forEach((z) => z.ClearZone());
+    zoneStore.tmpZones.forEach((z) => z.ClearZone());
+
+
+    const filter: Zone[] = zoneStore.Filter(this.zones)[0];
+    const filter2: Zone[] = zoneStore.Filter(this.tmpZones)[0];
+
+
+    filter.forEach((z) => z.DrawZone());
+    filter2.forEach((z) => z.DrawZone());
+
+
+    this.ColorNodesInZones(filter);
+    this.ColorNodesInZones(filter2);
+
+    // zoneStore.HideNodesOutsideZones(); // ????
   }
 
   /**
@@ -94,7 +117,7 @@ export class ZoneStore {
     // });
 
     this.zones = [];
-    this.ColorNodesInZones(this.zones);
+    this.Update();
   }
 
   /**
@@ -103,183 +126,8 @@ export class ZoneStore {
   public RemoveZone(z: Zone) {
     this.zones = this.zones.filter((zone) => zone.GetId() !== z.GetId());
     z.ClearZone();
-    this.Duplicates();
-    this.ZonesIdk();
 
-    this.ColorNodesInZones(this.zones);
-  }
-
-  /**
-   * Duplicates
-   */
-  public Duplicates() {
-    if (settingsStore.Duplicates === "all" && this.duplicates.length > 0) {
-      this.duplicates.forEach((z) => {
-        z.DrawZone();
-        z.SetDuplicate("");
-      });
-      this.duplicates = [];
-    }
-
-    if (settingsStore.Duplicates === "de") {
-      for (let i = 0; i < this.zones.length; i++) {
-        const z1 = this.zones[i];
-
-        for (let j = i + 1; j < this.zones.length; j++) {
-          const z2 = this.zones[j];
-          if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
-            if (
-              z1.InsideCollection.union(z1.OutsideCollection).difference(
-                z2.InsideCollection.union(z2.OutsideCollection)
-              ).length === 0 &&
-              z2.InsideCollection.union(z2.OutsideCollection).difference(
-                z1.InsideCollection.union(z1.OutsideCollection)
-              ).length === 0
-            ) {
-              if (
-                this.duplicates.filter((z) => z.GetId() === z2.GetId())
-                  .length === 0
-              ) {
-                this.duplicates.push(z2);
-              }
-              z2.SetDuplicate("de");
-              z2.ClearZone();
-            }
-          }
-        }
-      }
-    }
-
-    if (settingsStore.Duplicates === "me") {
-      for (let i = 0; i < this.zones.length; i++) {
-        const z1 = this.zones[i];
-        for (let j = i + 1; j < this.zones.length; j++) {
-          const z2 = this.zones[j];
-          if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
-            if (
-              z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.GetId())
-                .length === 1 &&
-              z1.InsideCollection.subtract(z2.InsideCollection).length === 0 &&
-              z2.InsideCollection.subtract(z1.InsideCollection).length === 0
-            ) {
-              if (
-                this.duplicates.filter((z) => z.GetId() === z2.GetId())
-                  .length === 0
-              ) {
-                this.duplicates.push(z2);
-              }
-              z2.SetDuplicate("me");
-
-              z2.ClearZone();
-            }
-          }
-        }
-      }
-    }
-
-    this.duplicates.filter((z) => {
-      if (!this.zonesIdk.some((zone) => zone.GetId() === z.GetId())) {
-        z.DrawZone();
-      }
-    });
-    zoneStore.zones.map((a) => a);
-  }
-
-  /**
-   * ZonesIdk
-   */
-  public ZonesIdk() {
-    if (settingsStore.ZonesIdk === "all" && this.zonesIdk.length > 0) {
-      this.zonesIdk.forEach((z) => {
-        z.DrawZone();
-      });
-      this.zonesIdk = [];
-    }
-
-    this.zones.forEach((z) => {
-      z.ClearZone();
-    });
-    this.zonesIdk = [];
-
-    if (settingsStore.ZonesIdk === "all") {
-      this.zones.forEach((z) => {
-        z.DrawZone();
-      });
-    }
-
-    if (settingsStore.ZonesIdk === "moreInner") {
-      console.log("inner");
-
-      for (let i = 0; i < this.zones.length; i++) {
-        const z1 = this.zones[i];
-
-        if (z1 instanceof EgoZone) {
-          if (z1.InsideNodes.length > z1.OutsideNodes.length) {
-            if (
-              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length === 0
-            ) {
-              this.zonesIdk.push(z1);
-            }
-          }
-        }
-      }
-    }
-
-    if (settingsStore.ZonesIdk === "moreOuter") {
-      for (let i = 0; i < this.zones.length; i++) {
-        const z1 = this.zones[i];
-
-        if (z1 instanceof EgoZone) {
-          if (z1.InsideNodes.length < z1.OutsideNodes.length) {
-            if (
-              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length === 0
-            ) {
-              this.zonesIdk.push(z1);
-            }
-          }
-        }
-      }
-    }
-
-    if (settingsStore.ZonesIdk === "sameBoth") {
-      for (let i = 0; i < this.zones.length; i++) {
-        const z1 = this.zones[i];
-
-        if (z1 instanceof EgoZone) {
-          if (z1.InsideNodes.length === z1.OutsideNodes.length) {
-            if (
-              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length === 0
-            ) {
-              this.zonesIdk.push(z1);
-            }
-          }
-        }
-      }
-    }
-
-    if (settingsStore.ZonesIdk === "withoutOuter") {
-      for (let i = 0; i < this.zones.length; i++) {
-        const z1 = this.zones[i];
-
-        if (z1 instanceof EgoZone) {
-          if (z1.OutsideNodes.length === 0) {
-            if (
-              this.zonesIdk.filter((z) => z.GetId() === z1.GetId()).length === 0
-            ) {
-              this.zonesIdk.push(z1);
-            }
-          }
-        }
-      }
-    }
-
-    this.zonesIdk.filter((z) => {
-      if (!this.duplicates.some((zone) => zone.GetId() === z.GetId())) {
-        z.DrawZone();
-      }
-    });
-
-    zoneStore.zones.map((a) => a);
+    this.Update();
   }
 
   /**
@@ -396,38 +244,42 @@ export class ZoneStore {
   /**
    * ColorNodesInZones
    */
-  public ColorNodesInZones(zones: Zone[]) {
-    cy.nodes().not(".hide").classes("");
-    cy.edges().not(".hide").classes("");
 
-    if (zoneStore.Zones.length === 0) {
-      this.ColorAllNodes();
-      this.ColorAllEdges();
-    } else {
-      zones.forEach((element) => {
-        if (
-           element.IsDrawn() &&
-          (element instanceof EgoZone || element instanceof CustomZone)
-        ) {
-          element
-            .AllCollection()
-            .not(".hide")
-            ?.forEach((n) => {
-              n.classes(
-                networkStore.Network?.Nodes.filter(
-                  (node) =>
-                    node.Id ===
-                    ((n as { [key: string]: any })["_private"]["data"][
-                      "id"
-                    ] as string)
-                )[0].classes
-              );
-            });
-        }
-      });
-      zones.forEach((z) => {
-        if (z instanceof EgoZone || z instanceof CustomZone) this.EdgeColors(z);
-      });
+  public ColorNodesInZones(zones: Zone[]) {
+    if (cy) {
+      cy.nodes().not(".hide").classes("");
+      cy.edges().not(".hide").classes("");
+
+      if (zoneStore.Zones.length === 0) {
+        this.ColorAllNodes();
+        this.ColorAllEdges();
+      } else {
+        zones.forEach((element) => {
+          if (
+            element.IsDrawn() &&
+            (element instanceof EgoZone || element instanceof CustomZone)
+          ) {
+            element
+              .AllCollection()
+              .not(".hide")
+              ?.forEach((n) => {
+                n.classes(
+                  networkStore.Network?.Nodes.filter(
+                    (node) =>
+                      node.Id ===
+                      ((n as { [key: string]: any })["_private"]["data"][
+                        "id"
+                      ] as string)
+                  )[0].classes
+                );
+              });
+          }
+        });
+        zones.forEach((z) => {
+          if (z instanceof EgoZone || z instanceof CustomZone)
+            this.EdgeColors(z);
+        });
+      }
     }
   }
 
@@ -546,33 +398,27 @@ export class ZoneStore {
 
       zone.forEach((z) => {
         let a = networkStore.Network?.getNode(z.Ego.Id);
-        let b = z.AllCollection()
-        
+        let b = z.AllCollection();
+
         if (a) {
           egosCollection = egosCollection.union(a);
         }
         if (b) {
-          zonesCollection = zonesCollection.union(b)
+          zonesCollection = zonesCollection.union(b);
         }
       });
 
-
-      zonesCollection
-        .difference(egosCollection)
-        .forEach((node) => {
-          const n = networkStore.Network?.Nodes.filter(
-            (n) => n.Id === node.data("id")
-          )[0];
-          if (n) {
-            const newZone = new EgoZone(n);
-            if (
-              newZone.AllCollection().subtract(zonesCollection).length ===
-              0
-            ) {
-              subzones.push(newZone);
-            }
+      zonesCollection.difference(egosCollection).forEach((node) => {
+        const n = networkStore.Network?.Nodes.filter(
+          (n) => n.Id === node.data("id")
+        )[0];
+        if (n) {
+          const newZone = new EgoZone(n);
+          if (newZone.AllCollection().subtract(zonesCollection).length === 0) {
+            subzones.push(newZone);
           }
-        });
+        }
+      });
       res(subzones);
     });
   }
@@ -596,7 +442,7 @@ export class ZoneStore {
         }
       });
 
-    return superzones;
+    return this.Filter(superzones);
   }
 
   /**
@@ -604,5 +450,59 @@ export class ZoneStore {
    */
   public HideAllZones() {
     zoneStore.Zones.forEach((z) => z.ClearZone());
+  }
+
+  /**
+   * ZonesForNodes, returns zones in which are nodes contained.
+   */
+  public ZonesForNodes(nodes: NodeSingular[]) {
+    const zones: EgoZone[] = [];
+    let toCheckNodes = cy.collection();
+
+    nodes.forEach((n) => {
+      toCheckNodes = toCheckNodes.union(n.nodes());
+    });
+
+    cy.nodes().forEach((n) => {
+      const node = networkStore.Network?.Nodes.filter(
+        (node) => node.Id === n.id()
+      )[0];
+      if (node) {
+        const zone = new EgoZone(node);
+
+        if (toCheckNodes.nodes().subtract(zone.AllCollection()).length === 0) {
+          zones.push(new EgoZone(node));
+        }
+      }
+    });
+    return zones;
+  }
+
+  /**
+   * Filter
+   */
+  public Filter(zones: Zone[], except:Zone[] = []) {
+    const filter = new Filter();
+
+    const duplicatesByEgo = new DuplicatesByEgo();
+    const duplicatesByProperties = new DuplicatesByZoneProperties();
+    const duplicatedBySize = new ZoneSize();
+
+    filter
+      .LinkNext(duplicatesByEgo)
+      .LinkNext(duplicatesByProperties)
+      .LinkNext(duplicatedBySize);
+
+    const returnFilter = filter.Filter(zones).map((a) => a);
+
+    const difference: Zone[] = [];
+
+    zones.forEach((z) => {
+      if (!returnFilter.some((a) => a.GetId() === z.GetId())) {
+        difference.push(z);
+      }
+    });
+
+    return [[...returnFilter, ...except], difference];
   }
 }

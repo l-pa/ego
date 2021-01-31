@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import { zoneStore } from "..";
-import CustomZone from "../objects/CustomZone";
-import EgoZone from "../objects/EgoZone";
+import CustomZone from "../objects/zone/CustomZone";
+import EgoZone from "../objects/zone/EgoZone";
 import { cy } from "../objects/graph/Cytoscape";
 
 export class SettingsStore {
@@ -100,21 +100,9 @@ export class SettingsStore {
 
   public set MinNodesZoneShow(v: number) {
     this.minNodesZoneShow = v;
-
-    zoneStore.Zones.forEach((element) => {
-      
-      if (element.AllCollection().length >= this.minNodesZoneShow) {
-        element.DrawZone();
-      } else {
-        element.ClearZone();
-      }
-    });
-    if (zoneStore.Zones.length > 0) {
-        zoneStore.ColorNodesInZones(zoneStore.Zones.filter((z) => z.IsDrawn()));
-        zoneStore.HideNodesOutsideZones()
-      }
+    zoneStore.Update();;
   }
-    
+
   private duplicates: string = "all";
 
   private zonesIdk: string = "all";
@@ -125,7 +113,8 @@ export class SettingsStore {
 
   public set Duplicates(v: string) {
     this.duplicates = v;
-    zoneStore.Duplicates();
+    zoneStore.Update();
+
   }
 
   public get ZonesIdk(): string {
@@ -134,6 +123,31 @@ export class SettingsStore {
 
   public set ZonesIdk(v: string) {
     this.zonesIdk = v;
-    zoneStore.ZonesIdk();
+    zoneStore.Update()
+  }
+
+  /**
+   *  Converts hex format to rgb
+   */
+  public HexToRgb(hex: string) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : undefined;
+  }
+
+  /**
+   * DetermineTextColor, depends on the brightness of a background returns true if a text should have black or false if white color.
+   */
+  public DetermineTextColor(hex: string) {
+    const rgb = this.HexToRgb(hex);
+    if (rgb) {
+      var a = 1 - (0.299 * rgb?.r + 0.587 * rgb?.g + 0.114 * rgb?.b) / 255;
+      return a < 0.5;
+    }
   }
 }

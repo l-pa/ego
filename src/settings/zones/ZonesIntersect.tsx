@@ -12,9 +12,9 @@ import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { zoneStore } from "../..";
 import { cy } from "../../objects/graph/Cytoscape";
-import CustomZone from "../../objects/CustomZone";
-import Zone from "../../objects/Zone";
-import EgoZone from "../../objects/EgoZone";
+import CustomZone from "../../objects/zone/CustomZone";
+import Zone from "../../objects/zone/Zone";
+import EgoZone from "../../objects/zone/EgoZone";
 
 export function ZonesIntersect() {
   const zonesToIntersert: Zone[] = observable([]);
@@ -175,10 +175,10 @@ export function ZonesIntersect() {
   return (
     <Stack p={5}>
       <Heading as="h4" size="md" pb={5}>
-        Zones
+        Intersect
       </Heading>
       <Zones />
-      <Divider  mb={5} mt={5} />
+      <Divider mb={5} mt={5} />
       <ZonesToAdd />
     </Stack>
   );
