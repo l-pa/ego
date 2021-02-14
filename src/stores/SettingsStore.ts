@@ -21,6 +21,9 @@ export class SettingsStore {
 
   private nodeSize: string = "fixed";
 
+  private filterChanged: boolean = false;
+  private filterExistingZones: boolean = true;
+
   public get Automove(): boolean {
     return this.automove;
   }
@@ -42,8 +45,24 @@ export class SettingsStore {
     this.selectedOption = v;
   }
 
+  public get FilterExistingZones(): boolean {
+    return this.filterExistingZones
+  }
+
+  public set FilterExistingZones(v: boolean) {
+    this.filterExistingZones = v;
+  }
+
+
   public GetNodeSize(): string {
     return this.nodeSize;
+  }
+
+  /**
+   * GetFilterChanged
+   */
+  public GetFilterChanged() {
+    return this.filterChanged;
   }
 
   public SetNodeSize(v: string, maxA: number = 80, minA: number = 20) {
@@ -100,7 +119,8 @@ export class SettingsStore {
 
   public set MinNodesZoneShow(v: number) {
     this.minNodesZoneShow = v;
-    zoneStore.Update();;
+    this.filterChanged = !this.filterChanged;;;
+    zoneStore.Update();
   }
 
   private duplicates: string = "all";
@@ -113,8 +133,8 @@ export class SettingsStore {
 
   public set Duplicates(v: string) {
     this.duplicates = v;
+    this.filterChanged = !this.filterChanged;;;
     zoneStore.Update();
-
   }
 
   public get ZonesIdk(): string {
@@ -123,7 +143,8 @@ export class SettingsStore {
 
   public set ZonesIdk(v: string) {
     this.zonesIdk = v;
-    zoneStore.Update()
+    this.filterChanged = !this.filterChanged;;;
+    zoneStore.Update();
   }
 
   /**

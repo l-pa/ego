@@ -14,48 +14,40 @@ import { action, observable } from "mobx";
 import Zone from "../../objects/zone/Zone";
 
 export function ZonesMax() {
-  useEffect(() => {
-    console.log("idk");
-    
+
+  useEffect(() => {    
     return () => {
-      
       clearTmpZone()
       zoneStore.Zones.forEach((z) => {
         z.DrawZone();
       });
 
     };
-  });
+  }, []);
 
   let onlyExistingZones = observable({ idk: true });
-  
   let largestEgoZone: EgoZone;
 
   const addTmpZone = action((z:Zone)=> {
     if (zoneStore.Zones.some(zo=> zo.GetId() === z.GetId())) {    
     } else { 
-      zoneStore.AddTmpZone(z)
-      z.DrawZone()
+      zoneStore.AddTmpZone([z], true)
     }
   })
-  
 
   const clearTmpZone = action(()=> {
-    zoneStore.TmpZones.forEach((z) => z.ClearZone());
-    zoneStore.TmpZones.length = 0
+    zoneStore.ClearTmpZones()
+    zoneStore.HideAllZones()
   })
 
-  const color = action((z: Zone[]) => {
-    zoneStore.ColorNodesInZones(z);
+  const color = action(() => {
+    zoneStore.ColorNodesInZones(zoneStore.TmpZones);
   });
-  
-  
 
   const LargestZone = observer(() => {    
-    zoneStore.HideAllZones()
-    
-    if (onlyExistingZones.idk) {  
-      clearTmpZone()
+    clearTmpZone()
+
+    if (onlyExistingZones.idk) {
       if (zoneStore.Zones.length > 0) {
         let largestZone = [...zoneStore.Zones].filter(
           (z) => z instanceof EgoZone
@@ -69,14 +61,16 @@ export function ZonesMax() {
           (z) =>
             z.AllCollection().length === largestZone[0].AllCollection().length
         );
-
-        color(tmp);
+          
+        tmp.forEach(z => {
+          addTmpZone(z)
+        })
+        color()
 
         return (
           <Stack>
             {tmp.map((z) => {
-              z.DrawZone();
-              return <ZoneItem zone={z as EgoZone}></ZoneItem>;
+              return <ZoneItem key={z.GetId()} zone={z as EgoZone}></ZoneItem>;
             })}
           </Stack>
         );
@@ -88,7 +82,6 @@ export function ZonesMax() {
         );
       }
     } else {
-      clearTmpZone()
       let tmp: EgoZone[] = [];
 
       networkStore.Network?.Nodes.forEach((n) => {
@@ -104,15 +97,19 @@ export function ZonesMax() {
         (z) =>
           z.AllCollection().length === largestEgoZone.AllCollection().length
       );
-        color(tmp)
+
+      tmp.forEach(z => {
+        addTmpZone(z)
+      })
+      color()
+
       return (
         <Stack>
           {tmp.map((zone) => {
-            
-            addTmpZone(zone)
             if (!zoneStore.Zones.some((z) => z.GetId() === zone.GetId())) {
               return (
                 <ZoneItem
+                  key={zone.GetId()}
                   addButton={true}
                   zone={zone}
                 ></ZoneItem>
@@ -120,6 +117,7 @@ export function ZonesMax() {
             } else {
               return (
                 <ZoneItem
+                  key={zone.GetId()}
                   addButton={false}
                   zone={
                     zoneStore.Zones.filter(

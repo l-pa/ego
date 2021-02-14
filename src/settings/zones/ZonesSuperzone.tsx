@@ -12,6 +12,7 @@ export function ZonesSuperzone() {
     zoneStore.Zones.forEach((z) => z.ClearZone());
     return () => {
       zoneStore.Zones.forEach((z) => z.SetAlpha("80"));
+      zoneStore.Zones.forEach((z) => z.DrawZone());
       zoneStore.TmpZones.forEach((z) => z.ClearZone());
       zoneStore.TmpZones.length = 0;
       zoneStore.ColorNodesInZones(zoneStore.Zones);
@@ -62,8 +63,7 @@ export function ZonesSuperzone() {
   ));
 
   const addZone = action((zone: Zone) => {
-    zoneStore.AddTmpZone(zone);
-    zone.DrawZone();
+    zoneStore.AddTmpZone([zone], true);
     zone.SetAlpha("25");
     zoneStore.ColorNodesInZones(zoneStore.TmpZones);
   });
@@ -83,8 +83,8 @@ export function ZonesSuperzone() {
         onChange={(e) => {
           clearZone();
           if (e.target.value) {
-            zoneStore.FindZone(e.target.value).DrawZone();
-            zoneStore.FindZone(e.target.value).SetAlpha("ff");
+            // zoneStore.FindZone(e.target.value).DrawZone();
+            // zoneStore.FindZone(e.target.value).SetAlpha("ff");
             zoneStore
               .SuperzoneOfZone(
                 zoneStore.Zones.filter(
@@ -96,7 +96,7 @@ export function ZonesSuperzone() {
 
                 if (res.length > 0) {
                   res[0].forEach((z) => addZone(z));
-                  res[1].forEach((z) => addZone(z));
+                  //res[1].forEach((z) => addZone(z));
                 }
               });
           }

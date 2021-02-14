@@ -9,6 +9,7 @@ import {
   Divider,
   Select,
   Box,
+  Checkbox,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
 import React, { FunctionComponent } from "react";
@@ -44,9 +45,13 @@ export const Filters: FunctionComponent = () => {
     <Stack height={"50%"} p={5}>
       <Box bg={"black"}></Box>
       <Heading size="md">Filters</Heading>
+      {/* <Checkbox defaultChecked={settingsStore.FilterExistingZones} onChange={(e) => {
+        settingsStore.FilterExistingZones = e.target.checked
+      }}>Include created zones</Checkbox> */}
+      <Divider />
       <NodesWithLessThanSlider />
       <Divider />
-      <Heading as="h4" size="md" pb={5} pt={5}>
+      <Heading as="h4" size="md">
         Duplicates
       </Heading>
       <Select
@@ -61,7 +66,7 @@ export const Filters: FunctionComponent = () => {
         <option value="de">Duplicates</option>
       </Select>
 
-      <Divider p={5} />
+      <Divider />
       <Select
         defaultValue={settingsStore.ZonesIdk}
         isFullWidth={true}

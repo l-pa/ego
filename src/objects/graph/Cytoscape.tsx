@@ -52,6 +52,12 @@ export default class Cytoscape {
             },
           },
           {
+            selector: ".tmpHide",
+            style: {
+              display: "none",
+            },
+          },
+          {
             selector: ".weaklyProminent",
             style: {
               "background-color": "yellow",
@@ -186,8 +192,7 @@ export default class Cytoscape {
       });
 
       cy.on("mouseout", "node", (event) => {
-        zoneStore.ColorNodesInZones(zoneStore.Zones);
-        // zoneStore.ColorNodesInZones(zoneStore.TmpZones);
+        zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
         z = undefined;
       });
 

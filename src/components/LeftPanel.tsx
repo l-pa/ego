@@ -1,6 +1,6 @@
 import { Button, Heading, Stack } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
-import { settingsStore } from "..";
+import { networkStore, settingsStore } from "..";
 
 export const LeftPanel: React.FunctionComponent = () => {
   
@@ -8,6 +8,16 @@ export const LeftPanel: React.FunctionComponent = () => {
 
   return (
     <Stack p={5} w={"10em"}>
+      <Button
+        isFullWidth={true}
+        colorScheme="primary"
+        variant="ghost"
+        onClick={() => {
+          networkStore.Network = undefined;
+        }}
+      >
+        ❌
+      </Button>
       <Heading as="h5" size="sm">
         Basic
       </Heading>
@@ -18,7 +28,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         variant="ghost"
         onClick={() => {
           setActiveButton("basicZones");
-          settingsStore.SelectedOption = "basicZones"
+          settingsStore.SelectedOption = "basicZones";
         }}
       >
         Zones
@@ -29,8 +39,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         variant="ghost"
         onClick={() => {
           setActiveButton("basicNodes");
-          settingsStore.SelectedOption = "basicNodes"
-
+          settingsStore.SelectedOption = "basicNodes";
         }}
       >
         Nodes
@@ -41,8 +50,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         variant="ghost"
         onClick={() => {
           setActiveButton("basicEdges");
-          settingsStore.SelectedOption = "basicEdges"
-
+          settingsStore.SelectedOption = "basicEdges";
         }}
       >
         Edges
@@ -53,8 +61,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         variant="ghost"
         onClick={() => {
           setActiveButton("basicLayout");
-          settingsStore.SelectedOption = "basicLayout"
-
+          settingsStore.SelectedOption = "basicLayout";
         }}
       >
         Layout
@@ -69,8 +76,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         variant="ghost"
         onClick={() => {
           setActiveButton("zonesMax");
-          settingsStore.SelectedOption = "zonesMax"
-
+          settingsStore.SelectedOption = "zonesMax";
         }}
       >
         Max
@@ -82,8 +88,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         variant="ghost"
         onClick={() => {
           setActiveButton("zonesSubzone");
-          settingsStore.SelectedOption = "zonesSubzone"
-
+          settingsStore.SelectedOption = "zonesSubzone";
         }}
       >
         Subzone
@@ -94,8 +99,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         variant="ghost"
         onClick={() => {
           setActiveButton("zonesSuperzone");
-          settingsStore.SelectedOption = "zonesSuperzone"
-
+          settingsStore.SelectedOption = "zonesSuperzone";
         }}
       >
         Superzone
@@ -106,8 +110,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         variant="ghost"
         onClick={() => {
           setActiveButton("zonesIntersect");
-          settingsStore.SelectedOption = "zonesIntersect"
-
+          settingsStore.SelectedOption = "zonesIntersect";
         }}
       >
         Intersect

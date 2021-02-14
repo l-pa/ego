@@ -1,4 +1,4 @@
-import { settingsStore } from "../..";
+import { settingsStore, zoneStore } from "../..";
 import EgoZone from "./EgoZone";
 import Zone from "./Zone";
 
@@ -54,7 +54,7 @@ export class DuplicatesByEgo implements IFilter {
     return handler;
   }
   Filter(zones: Zone[]): Zone[] {
-    const zonesToReturn: Zone[] = [];
+    let zonesToReturn: Zone[] = [];
     if (settingsStore.Duplicates === "all") {
       if (this.next) {
         return this.next.Filter(zones);
@@ -113,6 +113,10 @@ export class DuplicatesByEgo implements IFilter {
         }
       }
     }
+    
+    zonesToReturn = zones.filter(
+      (x) => !zonesToReturn.some((y) => y.GetId() === x.GetId())
+    );
 
     if (this.next) {
       return this.next.Filter(zonesToReturn);
@@ -131,7 +135,7 @@ export class DuplicatesByZoneProperties implements IFilter {
   }
 
   Filter(zones: Zone[]): Zone[] {
-    const zonesToReturn: Zone[] = [];
+    let zonesToReturn: Zone[] = [];
 
     if (settingsStore.ZonesIdk === "all") {
       if (this.next) {

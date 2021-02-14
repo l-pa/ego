@@ -78,7 +78,11 @@ export const ZoneItemCustom: React.FunctionComponent<{
             <Checkbox
               defaultIsChecked={true}
               onChange={(e) => {
-                zone.SetIsZoneShown(e.target.checked);
+                if (e.target.checked) {
+                  zone.DrawZone()
+                } else {
+                  zone.ClearZone()
+                }
               }}
             >
               Zone

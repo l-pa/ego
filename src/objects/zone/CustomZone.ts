@@ -39,7 +39,7 @@ export default class CustomZone extends Zone {
     if (settingsStore.HideOutsideZones) {
       super.AllCollection().removeClass("hide");
     }
-    if (!super.IsDrawn()) {
+    if (!super.GetIsDrawn()) {
       if (super.AllCollection.length > settingsStore.MinNodesZoneShow) {
         return;
       }

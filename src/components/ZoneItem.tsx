@@ -19,6 +19,7 @@ import { settingsStore, zoneStore } from "..";
 import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
+import Zone from "../objects/zone/Zone";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
@@ -35,6 +36,49 @@ export const ZoneItem: React.FunctionComponent<{
     ? "black"
     : "white";
 
+  const activeZones: Zone[] = []
+
+  const mouseLeaveFunction = () => {
+    console.log(activeZones);
+
+    zone.ClearZone()
+    activeZones.forEach((z) => z.DrawZone())
+
+    cy.nodes()
+      .difference(zone.AllCollection().nodes())
+      .removeClass("tmpHide");
+
+    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
+  }
+
+  const mouseEnterFunction = () => {
+    activeZones.length = 0
+
+
+
+    zoneStore.TmpZones.forEach((z) => {
+      if (z.GetIsDrawn()) {
+        activeZones.push(z)
+      }
+      z.ClearZone()
+    })
+
+    zoneStore.Zones.forEach((z) => {
+      if (z.GetIsDrawn()) {
+        activeZones.push(z)
+      }
+      z.ClearZone()
+    })
+
+    zone.DrawZone()
+
+    zoneStore.ColorNodesInZone(zone)
+
+    cy.nodes()
+      .difference(zone.AllCollection().nodes())
+      .addClass("tmpHide");
+  }
+
   return (
     <Box zIndex={1} bg={!greyed ? zone.Color : "grey"} p={4}>
       <Box display={"flex"}>
@@ -44,23 +88,41 @@ export const ZoneItem: React.FunctionComponent<{
             backgroundColor={!greyed ? "red.400" : "grey"}
             colorScheme={"primary"}
             outline=""
+            onMouseEnter={(e) => {
+              mouseEnterFunction()
+            }}
+            onMouseLeave={(e) => {
+              mouseLeaveFunction()
+            }}
           />
         ) : // <Heading color={"red.400"} textAlign={"center"}>
-        //   {zone.GetId()}
-        // </Heading>
-        zone.Ego.isProminent() === 1 ? (
-          <Avatar
-            name={zone.GetId().split("").join(" ")}
-            backgroundColor={!greyed ? "yellow.400" : "grey"}
-            colorScheme={"primary"}
-          />
-        ) : (
-          <Avatar
-            name={zone.GetId().split("").join(" ")}
-            backgroundColor={!greyed ? "green.400" : "grey"}
-            colorScheme={"primary"}
-          />
-        )}
+          //   {zone.GetId()}
+          // </Heading>
+          zone.Ego.isProminent() === 1 ? (
+            <Avatar
+              name={zone.GetId().split("").join(" ")}
+              backgroundColor={!greyed ? "yellow.400" : "grey"}
+              colorScheme={"primary"}
+              onMouseEnter={(e) => {
+                mouseEnterFunction()
+              }}
+              onMouseLeave={(e) => {
+                mouseLeaveFunction()
+              }}
+            />
+          ) : (
+              <Avatar
+                name={zone.GetId().split("").join(" ")}
+                backgroundColor={!greyed ? "green.400" : "grey"}
+                colorScheme={"primary"}
+                onMouseEnter={(e) => {
+                  mouseEnterFunction()
+                }}
+                onMouseLeave={(e) => {
+                  mouseLeaveFunction()
+                }}
+              />
+            )}
         <Stack ml="2">
           <Box
             color={color}
@@ -117,16 +179,6 @@ export const ZoneItem: React.FunctionComponent<{
                 </Stack>
               </Tooltip>
 
-              {/* <Tooltip
-                zIndex={2}
-                aria-label="inside"
-                label={"mod"}
-                placement="bottom"
-              >
-                <Stack>
-                  <Text className="itemRight">-</Text>
-                </Stack>
-              </Tooltip> */}
             </Box>
             <Box>
               <Tooltip
@@ -170,16 +222,6 @@ export const ZoneItem: React.FunctionComponent<{
                   <span className="itemDeps">Emb</span>
                 </Text>
               </Tooltip>
-              {/* <Tooltip
-                zIndex={2}
-                aria-label="emb"
-                label={""}
-                placement="bottom"
-              >
-                <Text className="itemRight">
-                  <span className="itemDeps">Modularity</span>
-                </Text>
-              </Tooltip> */}
             </Box>
 
             <Box>
@@ -251,14 +293,6 @@ export const ZoneItem: React.FunctionComponent<{
           </Box>
         </Stack>
       </Box>
-
-      {/* <Input
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          zone.SetLabel(e.target.value);
-        }}
-        style={{ color: "black" }}
-        placeholder="Label"
-      /> */}
       <Divider mb={1} mt={1} />
       <Heading color={color} size="sm">
         Opacity
@@ -284,10 +318,14 @@ export const ZoneItem: React.FunctionComponent<{
       >
         <Checkbox
           onChange={(e) => {
-            zone.SetIsZoneShown(e.target.checked);
+            if (e.target.checked) {
+              zone.DrawZone()
+            } else {
+              zone.ClearZone()
+            }
           }}
           size="lg"
-          defaultIsChecked={zone.IsDrawn()}
+          defaultIsChecked={zone.GetIsDrawn()}
         ></Checkbox>
         {!addButton && (
           <Button
@@ -301,16 +339,6 @@ export const ZoneItem: React.FunctionComponent<{
           >
             Remove
           </Button>
-
-          // <Button
-          //   size="xs"
-          //   colorScheme="teal"
-          //   onClick={() => {
-          //     zoneStore.RemoveZone(zone);
-          //   }}
-          // >
-          //   Delete
-          // </Button>
         )}
         {addButton && (
           <Button

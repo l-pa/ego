@@ -81,6 +81,7 @@ export function ZonesIntersect() {
       {zoneStore.Zones.map((z, i) => {
         return (
           <Checkbox
+            borderColor={z instanceof EgoZone ? z.Color : ""}
             key={z.GetId()}
             value={z.GetId()}
             onChange={(v) => {
@@ -104,17 +105,17 @@ export function ZonesIntersect() {
                 customZone = new CustomZone(intersect, `i${id.join("_")}`);
                 customZone.DrawZone();
                 zoneStore.ColorNodesInZone(customZone);
-                zoneStore.AddTmpZone(customZone);
+                zoneStore.AddTmpZone([customZone]);
               }
             }}
           >
-            {z.IsDrawn() && (
+            {z.GetIsDrawn() && (
               <Heading as="h5" size="sm">
                 {z.GetId()}
               </Heading>
             )}
 
-            {!z.IsDrawn() && z.GetId()}
+            {!z.GetIsDrawn() && z.GetId()}
           </Checkbox>
         );
       })}

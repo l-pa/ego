@@ -14,10 +14,11 @@ import CustomZone from "../../objects/zone/CustomZone";
 import { ZoneItemCustom } from "../../components/ZoneItemCustom";
 
 export const BasicZones: React.FunctionComponent = () => {
+
   const Zones = observer(() => (
     <Stack>
-      {zoneStore.Zones.filter((z) => z instanceof EgoZone).map((z, i) => {
-        return <ZoneItem zone={z as EgoZone} key={i}></ZoneItem>;
+      {zoneStore.Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[0].map((z, i) => {
+        return <ZoneItem greyed={!z.GetIsDrawn()} zone={z as EgoZone} key={i}></ZoneItem>;
       })}
     </Stack>
   ));
