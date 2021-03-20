@@ -1,4 +1,5 @@
-import { IPoint, Point } from "../zone/Zone";
+import { IPoint } from "../zone/IPoints";
+import { Point } from "../zone/Point";
 
 export class Vector {
   public static NormalizeDirection(
@@ -12,7 +13,7 @@ export class Vector {
   }
 }
 
-export function Subtract(p1: IPoint, p2: Point) {
+export function Subtract(p1: IPoint, p2: IPoint) {
   return new Point(-p2.x + p1.x, -p2.y + p1.y);
 }
 
