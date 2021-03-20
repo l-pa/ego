@@ -133,7 +133,7 @@ export class SettingsStore {
 
   public set Duplicates(v: string) {
     this.duplicates = v;
-    this.filterChanged = !this.filterChanged;;;
+    this.filterChanged = !this.filterChanged;
     zoneStore.Update();
   }
 
@@ -143,7 +143,7 @@ export class SettingsStore {
 
   public set ZonesIdk(v: string) {
     this.zonesIdk = v;
-    this.filterChanged = !this.filterChanged;;;
+    this.filterChanged = !this.filterChanged;
     zoneStore.Update();
   }
 

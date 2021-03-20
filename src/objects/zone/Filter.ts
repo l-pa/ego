@@ -1,4 +1,4 @@
-import { settingsStore, zoneStore } from "../..";
+import { settingsStore } from "../..";
 import EgoZone from "./EgoZone";
 import Zone from "./Zone";
 
@@ -208,7 +208,7 @@ export class DuplicatesByZoneProperties implements IFilter {
         }
       }
     }
-
+    
     if (this.next) {
       return this.next.Filter(zonesToReturn);
     } else {

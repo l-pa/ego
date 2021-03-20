@@ -106,11 +106,11 @@ export function ZonesSuperzone() {
           return <option value={z.GetId()}>{z.GetId()}</option>;
         })}
       </Select>
-      {zoneStore.TmpZones.length > 0 && (
+      {zoneStore.Filter(zoneStore.TmpZones)[0].length > 0 && (
         <Button
           isFullWidth={true}
           onClick={() => {
-            zoneStore.TmpZones.forEach((z) => zoneStore.AddZone(z));
+            zoneStore.Filter(zoneStore.TmpZones)[0].forEach((z) => zoneStore.AddZone(z));
             zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
           }}
         >

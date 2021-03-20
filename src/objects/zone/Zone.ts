@@ -11,21 +11,9 @@ import {
   vecScaleTo,
   unitNormal,
 } from "../utility/Vector";
+import { IPoint } from "./IPoints";
+import { Point } from "./Point";
 
-export interface IPoint {
-  x: number;
-  y: number;
-}
-
-export class Point implements IPoint {
-  public x: number;
-  public y: number;
-
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-}
 
 export default abstract class Zone {
   private isZoneShown: boolean = true;

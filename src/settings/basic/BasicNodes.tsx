@@ -90,7 +90,7 @@ export function BasicNodes() {
           })}
         </Stack>
         <Button isDisabled={localObserverable.zonesForNodes?.length === 0} onClick={() => {
-          zoneStore.TmpZones.forEach((z) => {
+          localObserverable.zonesForNodes.forEach((z) => {
             zoneStore.AddZone(z)
           })
         }}>Add</Button>
@@ -107,15 +107,18 @@ export function BasicNodes() {
       if (localObserverable.nodes.length > 0) {
         localObserverable.zonesForNodes = zoneStore.Filter(zoneStore.ZonesForNodes(localObserverable.nodes))[0]
       }
+
     })
     reaction(() => localObserverable.zonesForNodes, () => {
-
+      
       let nodesAvailable = cy.collection()
       if (localObserverable.nodes.length > 0) {
         localObserverable.zonesForNodes?.forEach(z => nodesAvailable = nodesAvailable.union(z.AllCollection()))
         localObserverable.nodesAvailable = nodesAvailable
       }
+
       zoneStore.AddTmpZone(localObserverable.zonesForNodes, true)
+
     })
 
     reaction(() => localObserverable.nodes, () => {
@@ -126,6 +129,12 @@ export function BasicNodes() {
         localObserverable.zonesForNodes = []
       }
     });
+    return (() => {
+      action(() => {
+        localObserverable.nodes = []
+        localObserverable.zonesForNodes = []
+      }).call([])
+    })
   }, [])
 
   const addNode = action((node: NodeSingular) => {
@@ -187,7 +196,7 @@ export function BasicNodes() {
 
       <Divider />
       <Heading as="h4" size="md" pt={5}>
-        Nodes in same zone
+        Same zones
       </Heading>
       <Input
         //value={localObserverable.search}

@@ -120,8 +120,6 @@ export default class EgoZone extends Zone {
     }
     if (this.automove) this.automove.destroy();
 
-    console.log(zoneStore.TmpZones);
-    
     super.ClearZone();
   }
 

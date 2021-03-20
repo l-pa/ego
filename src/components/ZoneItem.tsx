@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Stack,
   Box,
@@ -35,6 +35,11 @@ export const ZoneItem: React.FunctionComponent<{
   const color = settingsStore.DetermineTextColor(zone.Color)
     ? "black"
     : "white";
+
+  const [isDrawn, setIsDrawn] = useState(zone.GetIsDrawn())
+  greyed = !isDrawn
+  console.log("rerender");
+
 
   const activeZones: Zone[] = []
 
@@ -323,6 +328,7 @@ export const ZoneItem: React.FunctionComponent<{
             } else {
               zone.ClearZone()
             }
+            setIsDrawn(e.target.checked)
           }}
           size="lg"
           defaultIsChecked={zone.GetIsDrawn()}

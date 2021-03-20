@@ -35,33 +35,35 @@ export class ZoneStore {
    */
 
   public AddTmpZone(zonesToAdd: Zone[], draw: boolean = false) {
-    
-    this.tmpZones.forEach((z) => {
-      z.ClearZone()
-    })
-    
-    zonesToAdd = zonesToAdd.filter((x) =>
-    !zoneStore.tmpZones.some((y) => y.GetId() === x.GetId())
-    );
 
-    zonesToAdd.filter(
-      (x) => !this.tmpZones.some((y) => y.GetId() === x.GetId())
-    ).forEach((zone) => {      
-      this.tmpZones.push(zone);
+    this.tmpZones.forEach((z) => {
+      z.ClearZone();
     });
 
-    // if (zoneStore.TmpZones.length > 0) {
-    //   zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-    // } else {
-    //   zoneStore.ColorNodesInZones(zoneStore.Zones);
-    // }
+    zonesToAdd = zonesToAdd.filter(
+      (x) => !zoneStore.tmpZones.some((y) => y.GetId() === x.GetId())
+    );
+
+    zonesToAdd
+      .filter((x) => !this.tmpZones.some((y) => y.GetId() === x.GetId()))
+      .forEach((zone) => {
+        this.tmpZones.push(zone);
+      });
+
+    if (zoneStore.TmpZones.length > 0) {
+      zoneStore.ColorNodesInZones(zoneStore.TmpZones);
+    } else {
+      zoneStore.ColorNodesInZones(zoneStore.Zones);
+    }
 
     zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
 
     if (draw) {
-      this.tmpZones.filter((x) => !zoneStore.Zones.some((y)=> x.GetId() === y.GetId())).forEach((z) => {
-        z.DrawZone();
-      });
+      this.tmpZones
+        .filter((x) => !zoneStore.Zones.some((y) => x.GetId() === y.GetId()))
+        .forEach((z) => {
+          z.DrawZone();
+        });
     }
   }
 
@@ -120,6 +122,8 @@ export class ZoneStore {
   public Update() {
     zoneStore.zones.forEach((z) => z.ClearZone());
     zoneStore.tmpZones.forEach((z) => z.ClearZone());
+
+    console.log(zoneStore.tmpZones);
 
     const filter: Zone[] = zoneStore.Filter(this.zones)[0];
     const filter2: Zone[] = zoneStore.Filter(this.tmpZones)[0];
@@ -529,7 +533,7 @@ export class ZoneStore {
     filter
       .LinkNext(duplicatesByEgo)
       .LinkNext(duplicatedBySize)
-      .LinkNext(duplicatesByProperties)
+      .LinkNext(duplicatesByProperties);
 
     const returnFilter = filter.Filter(zones).map((a) => a);
 
@@ -541,7 +545,12 @@ export class ZoneStore {
       }
     });
     if (exceptExisting) {
-      return [Array.from(new Set(returnFilter.concat(include))).filter((x) => !zoneStore.Zones.some((y) => y.GetId() === x.GetId())), difference];
+      return [
+        Array.from(new Set(returnFilter.concat(include))).filter(
+          (x) => !zoneStore.Zones.some((y) => y.GetId() === x.GetId())
+        ),
+        difference,
+      ];
     }
 
     if (settingsStore.FilterExistingZones) {
