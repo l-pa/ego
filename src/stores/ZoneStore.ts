@@ -20,7 +20,7 @@ export class ZoneStore {
   private tmpZones: Zone[] = [];
 
   public duplicates: Zone[] = [];
-  public zonesIdk: Zone[] = [];
+  public zonesWithSelectedSize: Zone[] = [];
 
   get Zones(): Zone[] {
     return this.zones;
@@ -35,7 +35,6 @@ export class ZoneStore {
    */
 
   public AddTmpZone(zonesToAdd: Zone[], draw: boolean = false) {
-
     this.tmpZones.forEach((z) => {
       z.ClearZone();
     });
@@ -181,7 +180,7 @@ export class ZoneStore {
     this.zones.forEach((zone) => {
       if (zone instanceof EgoZone) {
         nodesInZones = nodesInZones.union(
-          zone.InsideCollection.union(zone.OutsideCollection)
+          zone.InnerCollection.union(zone.OutsideCollection)
         );
       }
       if (zone instanceof CustomZone) {
@@ -359,11 +358,11 @@ export class ZoneStore {
     cy.nodes().not(".hide").classes("");
     cy.edges().not(".hide").classes("");
     if (z instanceof EgoZone) {
-      z.InsideCollection.not(".hide").forEach((n) => {
+      z.InnerCollection.not(".hide").forEach((n) => {
         n.classes("weaklyProminent");
       });
 
-      z.InsideCollection[0].addClass("stronglyProminent");
+      z.InnerCollection[0].addClass("stronglyProminent");
 
       if (networkStore.Network) {
         z.OutsideNodes[0].forEach((n) => {

@@ -5,14 +5,14 @@ import { settingsStore, zoneStore } from "../..";
 
 import { cy } from "../graph/Cytoscape";
 import Zone from "./Zone";
-import CustomZone from "./CustomZone";
 
 export default class EgoZone extends Zone {
   private ego: Node;
+  
   private innerZoneNodes: Node[];
   private outerZoneNodes: Node[][];
 
-  private insideCollection: Collection = cytoscape().collection();
+  private innerCollection: Collection = cytoscape().collection();
   private outsideCollection: Collection = cytoscape().collection();
 
   private color: string =
@@ -34,11 +34,11 @@ export default class EgoZone extends Zone {
     this.innerZone(ego);
     this.outerZone(this.innerZoneNodes);
 
-    this.insideCollection = cy.collection();
+    this.innerCollection = cy.collection();
     this.outsideCollection = cy.collection();
 
     this.innerZoneNodes.forEach((node) => {
-      this.insideCollection = this.insideCollection.union(
+      this.innerCollection = this.innerCollection.union(
         cy.nodes(`[id ='${node.Id.toString()}']`)[0]
       );
     });
@@ -58,15 +58,15 @@ export default class EgoZone extends Zone {
     super.Points(super.CollectionPoints(this.AllCollection()));
   }
 
-  public get InsideCollection() {
-    return this.insideCollection;
+  public get InnerCollection() {
+    return this.innerCollection;
   }
 
   public get OutsideCollection() {
     return this.outsideCollection;
   }
 
-  public get InsideNodes(): Node[] {
+  public get InnerNodes(): Node[] {
     return this.innerZoneNodes;
   }
 
@@ -75,7 +75,7 @@ export default class EgoZone extends Zone {
   }
 
   public AllCollection() {
-    return this.outsideCollection.union(this.insideCollection);
+    return this.outsideCollection.union(this.innerCollection);
   }
 
   public get Ego(): Node {
@@ -108,7 +108,7 @@ export default class EgoZone extends Zone {
       let nodesInZonesExceptZ: Collection = cy.collection();
       zoneStore.Zones.filter((zone) => zone.GetId() !== this.GetId()).forEach(
         (element) => {
-          if (element instanceof EgoZone || element instanceof CustomZone)
+          if (element instanceof EgoZone)
             nodesInZonesExceptZ = nodesInZonesExceptZ.union(
               element.AllCollection()
             );
@@ -136,13 +136,13 @@ export default class EgoZone extends Zone {
       }
 
       this.automove = (cy as any).automove({
-        nodesMatching: this.insideCollection
-          .subtract(this.insideCollection[0])
+        nodesMatching: this.innerCollection
+          .subtract(this.innerCollection[0])
           .union(this.outsideCollection),
 
         reposition: "drag",
 
-        dragWith: this.insideCollection[0],
+        dragWith: this.innerCollection[0],
       });
       this.automove.disable();
       if (settingsStore.Automove) {

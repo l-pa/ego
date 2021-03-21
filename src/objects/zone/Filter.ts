@@ -71,11 +71,11 @@ export class DuplicatesByEgo implements IFilter {
           const z2 = zones[j];
           if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
             if (
-              z1.InsideCollection.union(z1.OutsideCollection).difference(
-                z2.InsideCollection.union(z2.OutsideCollection)
+              z1.InnerCollection.union(z1.OutsideCollection).difference(
+                z2.InnerCollection.union(z2.OutsideCollection)
               ).length === 0 &&
-              z2.InsideCollection.union(z2.OutsideCollection).difference(
-                z1.InsideCollection.union(z1.OutsideCollection)
+              z2.InnerCollection.union(z2.OutsideCollection).difference(
+                z1.InnerCollection.union(z1.OutsideCollection)
               ).length === 0
             ) {
               if (
@@ -99,8 +99,8 @@ export class DuplicatesByEgo implements IFilter {
             if (
               z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.GetId())
                 .length === 1 &&
-              z1.InsideCollection.subtract(z2.InsideCollection).length === 0 &&
-              z2.InsideCollection.subtract(z1.InsideCollection).length === 0
+              z1.InnerCollection.subtract(z2.InnerCollection).length === 0 &&
+              z2.InnerCollection.subtract(z1.InnerCollection).length === 0
             ) {
               if (
                 zonesToReturn.filter((z) => z.GetId() === z2.GetId()).length ===
@@ -137,7 +137,7 @@ export class DuplicatesByZoneProperties implements IFilter {
   Filter(zones: Zone[]): Zone[] {
     let zonesToReturn: Zone[] = [];
 
-    if (settingsStore.ZonesIdk === "all") {
+    if (settingsStore.ZoneSizes === "all") {
       if (this.next) {
         return this.next.Filter(zones);
       } else {
@@ -145,12 +145,12 @@ export class DuplicatesByZoneProperties implements IFilter {
       }
     }
 
-    if (settingsStore.ZonesIdk === "moreInner") {
+    if (settingsStore.ZoneSizes === "moreInner") {
       for (let i = 0; i < zones.length; i++) {
         const z1 = zones[i];
 
         if (z1 instanceof EgoZone) {
-          if (z1.InsideNodes.length > z1.OutsideNodes.length) {
+          if (z1.InnerCollection.length > z1.OutsideCollection.length) {
             if (
               zonesToReturn.filter((z) => z.GetId() === z1.GetId()).length === 0
             ) {
@@ -161,12 +161,12 @@ export class DuplicatesByZoneProperties implements IFilter {
       }
     }
 
-    if (settingsStore.ZonesIdk === "moreOuter") {
+    if (settingsStore.ZoneSizes === "moreOuter") {
       for (let i = 0; i < zones.length; i++) {
         const z1 = zones[i];
 
         if (z1 instanceof EgoZone) {
-          if (z1.InsideNodes.length < z1.OutsideNodes.length) {
+          if (z1.InnerCollection.length < z1.OutsideCollection.length) {
             if (
               zonesToReturn.filter((z) => z.GetId() === z1.GetId()).length === 0
             ) {
@@ -177,12 +177,12 @@ export class DuplicatesByZoneProperties implements IFilter {
       }
     }
 
-    if (settingsStore.ZonesIdk === "sameBoth") {
+    if (settingsStore.ZoneSizes === "sameBoth") {
       for (let i = 0; i < zones.length; i++) {
         const z1 = zones[i];
 
         if (z1 instanceof EgoZone) {
-          if (z1.InsideNodes.length === z1.OutsideNodes.length) {
+          if (z1.InnerCollection.length === z1.OutsideCollection.length) {
             if (
               zonesToReturn.filter((z) => z.GetId() === z1.GetId()).length === 0
             ) {
@@ -193,12 +193,13 @@ export class DuplicatesByZoneProperties implements IFilter {
       }
     }
 
-    if (settingsStore.ZonesIdk === "withoutOuter") {
+    if (settingsStore.ZoneSizes === "withoutOuter") {
       for (let i = 0; i < zones.length; i++) {
         const z1 = zones[i];
+        console.log(z1);
 
         if (z1 instanceof EgoZone) {
-          if (z1.OutsideNodes.length === 0) {
+          if (z1.OutsideCollection.length === 0) {
             if (
               zonesToReturn.filter((z) => z.GetId() === z1.GetId()).length === 0
             ) {

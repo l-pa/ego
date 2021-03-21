@@ -137,11 +137,11 @@ export class SettingsStore {
     zoneStore.Update();
   }
 
-  public get ZonesIdk(): string {
+  public get ZoneSizes(): string {
     return this.zonesIdk;
   }
 
-  public set ZonesIdk(v: string) {
+  public set ZoneSizes(v: string) {
     this.zonesIdk = v;
     this.filterChanged = !this.filterChanged;
     zoneStore.Update();

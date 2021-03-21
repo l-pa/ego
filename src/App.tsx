@@ -62,7 +62,7 @@ function App() {
                     console.log(fileInfo);
                     for (let i = 0; i < data.length; i++) {
                       const element: Array<string> = data[i];
-                      if (element.length > 1 || element[0] !== "Source") {
+                      if ((element.length > 1 && element[0] !== "Source")) {
                         network.addEdge(
                           new Node(element[0]),
                           new Node(element[1]),

@@ -38,7 +38,7 @@ export default abstract class Zone {
 
   private duplicate: string = "";
 
-  private isDrawn = false
+  private isDrawn = false;
 
   constructor(id: string) {
     this.id = id;
@@ -85,14 +85,6 @@ export default abstract class Zone {
 
   public GetId() {
     return this.id;
-  }
-
-  public SetDuplicate(s: string) {
-    this.duplicate = s;
-  }
-
-  public GetDuplicate() {
-    return this.duplicate;
   }
 
   public SetLabel(label: string) {
@@ -182,7 +174,7 @@ export default abstract class Zone {
     return a;
   }
 
-  // private SetIsDrawn = action((v: boolean) => {    
+  // private SetIsDrawn = action((v: boolean) => {
   //    this.isDrawn = v;
   // });
 
@@ -190,13 +182,13 @@ export default abstract class Zone {
   //   return this.isDrawn;
   // }
 
-  private SetIsDrawn = (v: boolean) => {    
-    this.isDrawn = v
- };
+  private SetIsDrawn = (v: boolean) => {
+    this.isDrawn = v;
+  };
 
- public GetIsDrawn(): boolean {
-   return this.isDrawn;
- }
+  public GetIsDrawn(): boolean {
+    return this.isDrawn;
+  }
 
   public DrawZone() {
     if (!this.isDrawn) {
@@ -207,12 +199,11 @@ export default abstract class Zone {
       this.ctx.fillStyle = this.ctxStyle;
 
       this.SetIsDrawn(true);
-      
+
       this.Update();
     }
 
     zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
-
   }
 
   private hullPadding = 60;

@@ -40,6 +40,9 @@ export const ZoneItem: React.FunctionComponent<{
   greyed = !isDrawn
   console.log("rerender");
 
+  console.log(isDrawn);
+  
+
 
   const activeZones: Zone[] = []
 
@@ -138,7 +141,7 @@ export const ZoneItem: React.FunctionComponent<{
             display={"flex"}
             alignItems="center"
           >
-            {(zone.GetDuplicate() === "de" || zone.GetDuplicate() === "me") && (
+            {(settingsStore.Duplicates === "de" || settingsStore.Duplicates === "me") && (
               <WarningIcon />
             )}
             <Box>
@@ -163,11 +166,11 @@ export const ZoneItem: React.FunctionComponent<{
               <Tooltip
                 zIndex={2}
                 aria-label="inside"
-                label={zone.InsideNodes.map((n) => n.Id).toString()}
+                label={zone.InnerNodes.map((n) => n.Id).toString()}
                 placement="bottom"
               >
                 <Stack>
-                  <Text className="itemRight">{zone.InsideNodes.length}</Text>
+                  <Text className="itemRight">{zone.InnerNodes.length}</Text>
                 </Stack>
               </Tooltip>
 
@@ -210,7 +213,7 @@ export const ZoneItem: React.FunctionComponent<{
               <Tooltip
                 zIndex={2}
                 aria-label="inside"
-                label={zone.InsideNodes.map((n) => n.Id).toString()}
+                label={zone.InnerNodes.map((n) => n.Id).toString()}
                 placement="bottom"
               >
                 <Text className="itemRight">

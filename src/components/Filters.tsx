@@ -66,18 +66,21 @@ export const Filters: FunctionComponent = () => {
       </Select>
 
       <Divider />
+      <Heading as="h4" size="md">
+        Zone sizes
+      </Heading>
       <Select
-        defaultValue={settingsStore.ZonesIdk}
+        defaultValue={settingsStore.ZoneSizes}
         isFullWidth={true}
         onChange={(e) => {
-          settingsStore.ZonesIdk = e.target.value;
+          settingsStore.ZoneSizes = e.target.value;
         }}
       >
         <option value="all">All</option>
-        <option value="moreInner"> inner {">"} outer</option>
-        <option value="moreOuter">outer {">"} inner</option>
-        <option value="sameBoth">inner length same as outer</option>
-        <option value="withoutOuter">zones without outer</option>
+        <option value="moreInner">Inner {">"} outer</option>
+        <option value="moreOuter">Inner {"<"} outer</option>
+        <option value="sameBoth">Inner = outer</option>
+        <option value="withoutOuter">No outer</option>
       </Select>
     </Stack>
   );
