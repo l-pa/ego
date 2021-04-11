@@ -563,4 +563,11 @@ export class ZoneStore {
       ];
     }
   }
+
+  public Desctructor() {
+    this.tmpZones = [];
+    this.zones = [];
+    this.duplicates = [];
+    this.zonesWithSelectedSize = [];
+  }
 }

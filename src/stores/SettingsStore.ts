@@ -10,19 +10,22 @@ export class SettingsStore {
   }
   private automove: boolean = false;
   private hideOutsideZones: boolean = false;
-
+  
   private zIndex: number = -1;
-
+  
   private minNodesZoneShow: number = 1;
-
+  
   private selectedOption: string = "basicZones";
-
+  
   private selectedEdgeBlend: string = "normal";
-
+  
   private nodeSize: string = "fixed";
-
+  
   private filterChanged: boolean = false;
   private filterExistingZones: boolean = true;
+  private duplicates: string = "all";
+
+  private zonesIdk: string = "all";
 
   public get Automove(): boolean {
     return this.automove;
@@ -123,9 +126,6 @@ export class SettingsStore {
     zoneStore.Update();
   }
 
-  private duplicates: string = "all";
-
-  private zonesIdk: string = "all";
 
   public get Duplicates(): string {
     return this.duplicates;
@@ -171,4 +171,21 @@ export class SettingsStore {
       return a < 0.5;
     }
   }
+
+  public Desctructor() {
+    this.automove = false;
+    this.hideOutsideZones = false;
+    this.zIndex = -1;
+    this.minNodesZoneShow = 1;
+    this.selectedOption = "basicZones";
+    this.selectedEdgeBlend = "normal";
+    this.nodeSize = "fixed";
+    this.filterChanged = false;
+    this.filterExistingZones = true;
+    this.duplicates = "all";  
+    this.zonesIdk = "all";
+
+
+  }
+
 }

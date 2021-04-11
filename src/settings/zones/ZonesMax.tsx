@@ -15,7 +15,10 @@ import Zone from "../../objects/zone/Zone";
 
 export function ZonesMax() {
 
-  useEffect(() => {    
+  useEffect(() => {
+
+
+
     return () => {
       clearTmpZone()
       zoneStore.Zones.forEach((z) => {

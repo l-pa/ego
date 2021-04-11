@@ -5,11 +5,13 @@ import Matrix from "./objects/network/DependencyMatrix";
 import { Graph } from "./components/Graph";
 import Node from "./objects/network/Node";
 import Network from "./objects/network/Network";
-import { Context } from ".";
+import { Context, networkStore } from ".";
 import { observer } from "mobx-react-lite";
+import { CSVLoader } from './loaders/CSVLoader'
 
 import {
   Box,
+  Button,
   ChakraProvider,
   Checkbox,
   createStandaloneToast,
@@ -22,11 +24,36 @@ import {
 import { LeftPanel } from "./components/LeftPanel";
 import { RightPanel } from "./components/RightPanel";
 import theme from "./theme";
+import { ArrowForwardIcon } from "@chakra-ui/icons";
+import { JSONLoader } from "./loaders/JSONLoader";
 
 function App() {
   const context = useContext(Context);
   const toast = createStandaloneToast();
   const directed = useRef<HTMLInputElement>(null);
+
+  const loadNetwork = (networkName: string, csvData: any[]) => {
+    const network = new Network([], []);
+
+    if (directed.current?.checked) {
+      network.Directed = true;
+    }
+
+    console.log(networkName, csvData);
+    for (let i = 0; i < csvData.length; i++) {
+      const element: Array<string> = csvData[i];
+      if (element.length > 1 && element[0] !== "Source") {
+        network.addEdge(
+          new Node(element[0]),
+          new Node(element[1]),
+          Number.parseFloat(element[2])
+        );
+      }
+    }
+    new Matrix(network).nodesDependency();
+    context.network.Network = network;
+
+  }
 
   const App = observer(() => {
     return (
@@ -35,11 +62,7 @@ function App() {
           <div className="Background">
             <div className="LandingPage">
               <div>
-                <Text
-                  fontSize="6xl"
-                  fontWeight="extrabold"
-                  pb={10}
-                >
+                <Text fontSize="6xl" fontWeight="extrabold" pb={10}>
                   Ego-zones
                 </Text>
                 <CSVReader
@@ -53,30 +76,34 @@ function App() {
                     });
                   }}
                   onFileLoaded={(data, fileInfo) => {
-                    const network = new Network([], []);
+                    loadNetwork(fileInfo.name, data)
+                  }}
+                />
 
-                    if (directed.current?.checked) {
-                      network.Directed = true;
-                    }
+                <Checkbox pt={3} ref={directed}>
+                  Directed
+                </Checkbox>
 
-                    console.log(fileInfo);
-                    for (let i = 0; i < data.length; i++) {
-                      const element: Array<string> = data[i];
-                      if ((element.length > 1 && element[0] !== "Source")) {
-                        network.addEdge(
-                          new Node(element[0]),
-                          new Node(element[1]),
-                          Number.parseFloat(element[2])
-                        );
-                      }
-                    }
+
+                <Divider mt={5} mb={5} />
+                <Button
+                  isFullWidth
+                  rightIcon={<ArrowForwardIcon />}
+                  variant="outline"
+                  onClick={() => {
+                    const json = new JSONLoader()
+
+
+                    json.SetUrl("https://raw.githubusercontent.com/l-pa/network-app/master/src/networks/karate.json")
+
+                    json.GetNetwork(false).then(network => {
                     new Matrix(network).nodesDependency();
                     console.log(network);
-
+                    
                     context.network.Network = network;
                     toast({
                       title: "Network loaded.",
-                      description: `${fileInfo.name} - ${
+                      description: `${"KARATE"} - ${
                         network.Nodes.length
                       } nodes - ${network.Edges.length} egdes -  ${
                         network.Directed ? "✅" : "❌"
@@ -85,14 +112,44 @@ function App() {
                       duration: 5000,
                       isClosable: true,
                     });
-                  }}
-                />
+                    })
+                }}
+                >
+                  Karate club
+                </Button>
 
-                <Checkbox pt={3} ref={directed}>
-                  Directed
-                </Checkbox>
+                <Button
+                  mt={5}
+                  isFullWidth
+                  rightIcon={<ArrowForwardIcon />}
+                  variant="outline"
+                  onClick={() => {
+                    const csv = new CSVLoader()
+                    csv.SetUrl("https://raw.githubusercontent.com/graphistry/pygraphistry/master/demos/data/lesmiserables.csv")
+
+                    csv.GetNetwork(false).then(network => {
+                      new Matrix(network).nodesDependency();
+                      console.log(network);
+                    
+                      context.network.Network = network;
+                      toast({
+                        title: "Network loaded.",
+                        description: `${"KARATE"} - ${network.Nodes.length
+                          } nodes - ${network.Edges.length} egdes -  ${network.Directed ? "✅" : "❌"
+                          } directed`,
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                      });
+                    })
+                  }}
+                >
+                  Lesmiserables
+                </Button>
               </div>
-            </div>
+
+
+                </div>
           </div>
         )}
         {context.network.Network && (

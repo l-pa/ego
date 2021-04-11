@@ -9,21 +9,24 @@ export class NetworkStore {
   private network: Network | undefined = undefined;
   private loaded: boolean = false;
 
-
   public get Network(): Network | undefined {
     return this.network;
+  }
+
+  public Desctructor() {
+    this.network = undefined;
   }
 
   public set Network(v: Network | undefined) {
     this.network = v;
     if (v) settingsStore.MinNodesZoneShow = 0;
   }
-  
-  public get Loaded() : boolean {
-    return this.loaded
+
+  public get Loaded(): boolean {
+    return this.loaded;
   }
 
-  public set Loaded(v : boolean) {
+  public set Loaded(v: boolean) {
     this.loaded = v;
   }
 }

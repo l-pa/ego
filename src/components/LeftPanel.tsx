@@ -1,6 +1,6 @@
 import { Button, Heading, Stack } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
-import { networkStore, settingsStore } from "..";
+import { networkStore, settingsStore, zoneStore } from "..";
 
 export const LeftPanel: React.FunctionComponent = () => {
   
@@ -13,7 +13,9 @@ export const LeftPanel: React.FunctionComponent = () => {
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          networkStore.Network = undefined;
+          networkStore.Desctructor()
+          zoneStore.Desctructor()
+          settingsStore.Desctructor()
         }}
       >
         ❌
