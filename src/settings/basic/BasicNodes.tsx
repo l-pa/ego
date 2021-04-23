@@ -20,7 +20,7 @@ export function BasicNodes() {
   useEffect(() => {
     return (() => {
       zoneStore.ClearTmpZones()
-      zoneStore.Zones.forEach((z) => z.DrawZone());
+      // zoneStore.Zones.forEach((z) => z.DrawZone());
     })
   })
 
@@ -101,7 +101,7 @@ export function BasicNodes() {
 
   useEffect(() => {
 
-    zoneStore.HideAllZones()
+    // zoneStore.HideAllZones()
 
     reaction(() => settingsStore.GetFilterChanged(), () => {
       if (localObserverable.nodes.length > 0) {
@@ -169,12 +169,14 @@ export function BasicNodes() {
       <Heading as="h4" size="md" pb={5}>
         Properties
       </Heading>
-      <Checkbox
+      {/* <Checkbox
         defaultIsChecked={settingsStore.HideOutsideZones}
-        onChange={(e) => { }}
+        onChange={(e) => {
+          cy.elements().toggleClass('hasLabel');
+        }}
       >
         Hide labels
-      </Checkbox>
+      </Checkbox> */}
       <Text mt={5} fontSize="md">
         Size
       </Text>

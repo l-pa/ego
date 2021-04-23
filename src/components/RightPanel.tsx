@@ -16,22 +16,22 @@ export const RightPanel: React.FunctionComponent = () => {
   const Settings = observer(() => (
     <Stack height={"90%"} overflowY={"scroll"} zIndex={1} mt={5}>
       {(() => {
-        switch (settingsStore.SelectedOption) {
-          case "basicZones":
+        switch (settingsStore.ActiveCategory) {
+          case 0:
             return <BasicZones />;
-          case "basicNodes":
+          case 1:
             return <BasicNodes />;
-          case "basicEdges":
+          case 2:
             return <BasicEdges />;
-          case "basicLayout":
+          case 3:
             return <BasicLayout />;
-          case "zonesMax":
+          case 4:
             return <ZonesMax />;
-          case "zonesSubzone":
+          case 5:
             return <ZonesSubzone />;
-          case "zonesSuperzone":
+          case 6:
             return <ZonesSuperzone />;
-          case "zonesIntersect":
+          case 7:
             return <ZonesIntersect />;
           default:
             return <p>None</p>;

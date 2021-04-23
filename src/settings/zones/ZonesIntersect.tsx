@@ -60,18 +60,18 @@ export function ZonesIntersect() {
   });
 
   useEffect(() => {
-    zoneStore.Zones.forEach((z) => {
-      z.ClearZone();
-    });
+    // zoneStore.Zones.forEach((z) => {
+    //   z.ClearZone();
+    // });
 
     return () => {
-      zonesToIntersert.forEach((z) => z.ClearZone());
+      // zonesToIntersert.forEach((z) => z.ClearZone());
       if (customZone) {
         customZone.ClearZone();
       }
-      zoneStore.Zones.forEach((z) => {
-        z.DrawZone();
-      });
+      // zoneStore.Zones.forEach((z) => {
+      //   z.DrawZone();
+      // });
 
       r();
     };
@@ -146,9 +146,9 @@ export function ZonesIntersect() {
                 </Heading>
               </Stack>
             ) : (
-              <Stack>
-                <Heading p={5} as="h4" size="md" pb={5}>
-                  {intersect.length} node
+                    <Stack p={5}>
+                      <Heading as="h4" size="md" pb={5}>
+                        {intersect.length} nodes
                 </Heading>
                 <UnorderedList>
                   {intersect.nodes().map((e) => {
@@ -156,7 +156,7 @@ export function ZonesIntersect() {
                   })}
                 </UnorderedList>
 
-                <Button
+                      {/* <Button
                   isFullWidth={true}
                   onClick={() => {
                     id = [];
@@ -164,7 +164,7 @@ export function ZonesIntersect() {
                   }}
                 >
                   Add intersect
-                </Button>
+                </Button> */}
               </Stack>
             )}
           </Stack>

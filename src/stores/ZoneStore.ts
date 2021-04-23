@@ -31,7 +31,10 @@ export class ZoneStore {
   }
 
   /**
-   * AddTmpZone
+   * Adds temporarily zone
+   * @public
+   * @param zonesToAdd Array of zones to add
+   * @param draw If the zones from zonesToAdd should be drawn.
    */
 
   public AddTmpZone(zonesToAdd: Zone[], draw: boolean = false) {
@@ -67,22 +70,29 @@ export class ZoneStore {
   }
 
   /**
-   * FindZone by ID
+   * Finds zone by id
+   * @public
+   * @param id Zone id (Ego node ID)
+   * @returns Specified zone | undefined
    */
   public FindZone(id: string) {
     return this.zones.filter((z) => z.GetId() === id)[0];
   }
 
   /**
-   * RemoveTmpZone
+   * Removes temporarily zone
+   * @public
+   * @param z Zone to be removed
    */
+
   public RemoveTmpZone(z: Zone) {
     z.ClearZone();
     this.tmpZones.splice(this.tmpZones.indexOf(z), 1);
   }
 
   /**
-   * ClearTmpZone
+   * Removes ALL temporarily zones
+   * @public
    */
   public ClearTmpZones() {
     this.tmpZones.forEach((z) => {
@@ -92,11 +102,13 @@ export class ZoneStore {
   }
 
   /**
-   * AddZone
+   * Adds new zone
+   * @param zone Zone to be added
    */
   public AddZone(zone: Zone) {
     if (this.zones.filter((z) => z.GetId() === zone.GetId()).length === 0) {
       this.zones.push(zone);
+      zone.DrawZone();
 
       if (zone instanceof EgoZone) {
         zone.AllCollection().removeClass("hide");
@@ -116,32 +128,22 @@ export class ZoneStore {
   }
 
   /**
-   * Update
+   * Redraws zones (including temporarily) and apply filter
    */
+
   public Update() {
-    zoneStore.zones.forEach((z) => z.ClearZone());
-    zoneStore.tmpZones.forEach((z) => z.ClearZone());
+    
+    const filter: Zone[][] = zoneStore.Filter(this.zones);
+        
+    filter[0].forEach((z) => z.DrawZone());
 
-    console.log(zoneStore.tmpZones);
+    filter[1].forEach((z) => z.ClearZone());
 
-    const filter: Zone[] = zoneStore.Filter(this.zones)[0];
-    const filter2: Zone[] = zoneStore.Filter(this.tmpZones)[0];
-
-    filter.forEach((z) => z.DrawZone());
-    filter2.forEach((z) => z.DrawZone());
-
-    this.ColorNodesInZones(filter);
-    this.ColorNodesInZones(filter2);
-
-    if (zoneStore.TmpZones.length > 0) {
-      zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-    } else {
-      zoneStore.ColorNodesInZones(zoneStore.Zones);
-    }
+    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));    
   }
 
   /**
-   * ClearZones
+   * Removes all zones
    */
   public ClearZones() {
     this.zones.forEach((z) => {
@@ -163,7 +165,8 @@ export class ZoneStore {
   }
 
   /**
-   * RemoveZone
+   * Removes specified zone
+   * @param z Zone to be removed
    */
   public RemoveZone(z: Zone) {
     this.zones = this.zones.filter((zone) => zone.GetId() !== z.GetId());
@@ -173,8 +176,9 @@ export class ZoneStore {
   }
 
   /**
-   * NodesInZones
+   * Return nodes in all existing zones (wo tmp)
    */
+
   public NodesInZones(): cytoscape.Collection {
     let nodesInZones = cy.collection();
     this.zones.forEach((zone) => {

@@ -17,13 +17,11 @@ export function ZonesMax() {
 
   useEffect(() => {
 
-
-
     return () => {
       clearTmpZone()
-      zoneStore.Zones.forEach((z) => {
-        z.DrawZone();
-      });
+      // zoneStore.Zones.forEach((z) => {
+      //   z.DrawZone();
+      // });
 
     };
   }, []);
@@ -40,7 +38,7 @@ export function ZonesMax() {
 
   const clearTmpZone = action(()=> {
     zoneStore.ClearTmpZones()
-    zoneStore.HideAllZones()
+    // zoneStore.HideAllZones()
   })
 
   const color = action(() => {

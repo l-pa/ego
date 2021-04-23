@@ -4,7 +4,11 @@ import { networkStore, settingsStore, zoneStore } from "..";
 
 export const LeftPanel: React.FunctionComponent = () => {
   
-  const [activeButton, setActiveButton] = useState<string>("basicZones");
+  const [activeButton, setActiveButton] = useState<number>(0);
+
+  useEffect(() => {
+    settingsStore.ActiveCategory = activeButton
+  }, [activeButton])
 
   return (
     <Stack p={5} w={"10em"}>
@@ -24,46 +28,42 @@ export const LeftPanel: React.FunctionComponent = () => {
         Basic
       </Heading>
       <Button
-        isActive={activeButton === "basicZones"}
+        isActive={activeButton === 0}
         isFullWidth={true}
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          setActiveButton("basicZones");
-          settingsStore.SelectedOption = "basicZones";
+          setActiveButton(0);
         }}
       >
         Zones
       </Button>
       <Button
-        isActive={activeButton === "basicNodes"}
+        isActive={activeButton === 1}
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          setActiveButton("basicNodes");
-          settingsStore.SelectedOption = "basicNodes";
+          setActiveButton(1);
         }}
       >
         Nodes
       </Button>
       <Button
-        isActive={activeButton === "basicEdges"}
+        isActive={activeButton === 2}
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          setActiveButton("basicEdges");
-          settingsStore.SelectedOption = "basicEdges";
+          setActiveButton(2);
         }}
       >
         Edges
       </Button>
       <Button
-        isActive={activeButton === "basicLayout"}
+        isActive={activeButton === 3}
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          setActiveButton("basicLayout");
-          settingsStore.SelectedOption = "basicLayout";
+          setActiveButton(3);
         }}
       >
         Layout
@@ -73,46 +73,42 @@ export const LeftPanel: React.FunctionComponent = () => {
         Set operations
       </Heading>
       <Button
-        isActive={activeButton === "zonesMax"}
+        isActive={activeButton === 4}
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          setActiveButton("zonesMax");
-          settingsStore.SelectedOption = "zonesMax";
+          setActiveButton(4);
         }}
       >
         Max
       </Button>
 
       <Button
-        isActive={activeButton === "zonesSubzone"}
+        isActive={activeButton === 5}
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          setActiveButton("zonesSubzone");
-          settingsStore.SelectedOption = "zonesSubzone";
+          setActiveButton(5);
         }}
       >
         Subzone
       </Button>
       <Button
-        isActive={activeButton === "zonesSuperzone"}
+        isActive={activeButton === 6}
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          setActiveButton("zonesSuperzone");
-          settingsStore.SelectedOption = "zonesSuperzone";
+          setActiveButton(6);
         }}
       >
         Superzone
       </Button>
       <Button
-        isActive={activeButton === "zonesIntersect"}
+        isActive={activeButton === 7}
         colorScheme="primary"
         variant="ghost"
         onClick={() => {
-          setActiveButton("zonesIntersect");
-          settingsStore.SelectedOption = "zonesIntersect";
+          setActiveButton(7);
         }}
       >
         Intersect
