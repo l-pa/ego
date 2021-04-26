@@ -20,6 +20,7 @@ import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
 import Zone from "../objects/zone/Zone";
+import { NodeCircle } from "./NodeCircle";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
@@ -57,8 +58,6 @@ export const ZoneItem: React.FunctionComponent<{
 
   const mouseEnterFunction = () => {
     activeZones.length = 0
-
-
 
     zoneStore.TmpZones.forEach((z) => {
       if (z.GetIsDrawn()) {
@@ -99,9 +98,7 @@ export const ZoneItem: React.FunctionComponent<{
               mouseLeaveFunction()
             }}
           />
-        ) : // <Heading color={"red.400"} textAlign={"center"}>
-          //   {zone.GetId()}
-          // </Heading>
+        ) :
           zone.Ego.isProminent() === 1 ? (
             <Avatar
               name={zone.GetId().split("").join(" ")}

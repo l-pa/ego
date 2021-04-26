@@ -125,7 +125,7 @@ function App() {
                   variant="outline"
                   onClick={() => {
                     const csv = new CSVLoader()
-                    csv.SetUrl("https://homel.vsb.cz/~pap0081/lesmis.csv")
+                    csv.SetUrl("https://rawcdn.githack.com/l-pa/ego/6ae5ceea64938bd7637826e4f2f917eda3dee752/src/networks/lesmis.csv")
 
                     csv.GetNetwork(directed.current?.checked).then(network => {
                       new Matrix(network).nodesDependency();
