@@ -9,20 +9,31 @@ export class CSVLoader extends Loader {
 
     await fetch(super.GetUrl()).then(
       (res) =>
-        res.text().then((text) => {
+        res.text().then((text) => {          
           const parsed = parse(text, {
-            delimiter: ",",
-            columns: true,
+            delimiter: ";",
+            columns: false,
             skip_empty_lines: true,
           });
-
-          parsed.forEach((element: any) => {
-            network.addEdge(
-              new Node(element.source),
-              new Node(element.target),
-              element.value
-            );
-          });
+          console.log(parsed);
+          if (parsed[2]) {
+            
+            parsed.forEach((element: any) => {
+              network.addEdge(
+                new Node(element[0]),
+                new Node(element[1]),
+                Number.parseFloat(element[2])
+              );
+            });
+          } else {            
+              parsed.forEach((element: any) => {
+                network.addEdge(
+                  new Node(element[0]),
+                  new Node(element[1]),
+                  1
+                );
+              });
+            }
         })
       /*
       res.json().then((data) => {
