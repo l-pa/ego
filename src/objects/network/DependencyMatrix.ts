@@ -82,6 +82,7 @@ export default class Matrix {
 
   public nodesDependency() {
     const dependencyMatrix = this.dependencyMatrix();
+
     dependencyMatrix.forEach(
       (
         value: {
@@ -188,10 +189,20 @@ export default class Matrix {
    *
    */
   private weight(nodeA: Node, nodeB: Node): number {
-    const r = this.network.Edges.filter(
-      (e) => e.GetNodeA().Id === nodeA.Id && e.GetNodeB().Id === nodeB.Id
-    )[0];
-    return r ? r.GetWeight() : 1;
+    if (this.network.Directed) {
+      const r = this.network.Edges.filter(
+        (e) =>
+          (e.GetNodeA().Id === nodeA.Id && e.GetNodeB().Id === nodeB.Id)
+      )[0];
+      return r ? r.GetWeight() : 1;
+    } else {
+      const r = this.network.Edges.filter(
+        (e) =>
+          (e.GetNodeA().Id === nodeA.Id && e.GetNodeB().Id === nodeB.Id) ||
+          (e.GetNodeB().Id === nodeA.Id && e.GetNodeA().Id === nodeB.Id)
+      )[0];
+      return r ? r.GetWeight() : 1;
+    }
   }
 
   /**
