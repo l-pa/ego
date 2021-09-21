@@ -1,122 +1,166 @@
-import { Button, Heading, Stack } from "@chakra-ui/react";
+import {
+  Button,
+  ButtonGroup,
+  Divider,
+  Heading,
+  IconButton,
+  Stack,
+} from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import { networkStore, settingsStore, zoneStore } from "..";
+import { ArrowBackIcon, ArrowForwardIcon } from "@chakra-ui/icons";
+import { observer } from "mobx-react-lite";
 
 export const LeftPanel: React.FunctionComponent = () => {
-  
-  const [activeButton, setActiveButton] = useState<string>("basicZones");
+  const [activeButton, setActiveButton] = useState<number>(0);
+
+  useEffect(() => {
+    settingsStore.ActiveCategory = activeButton;
+  }, [activeButton]);
+
+  const LatestRedo = observer(() => (
+    <ButtonGroup>
+      <IconButton
+        aria-label="Undo"
+        onClick={() => {
+          settingsStore.IsLatestRedo = !settingsStore.IsLatestRedo;
+        }}
+        icon={<ArrowBackIcon />}
+      />
+      <IconButton
+        isDisabled={settingsStore.IsLatestRedo}
+        aria-label="Redo"
+        icon={<ArrowForwardIcon />}
+      />
+    </ButtonGroup>
+  ));
 
   return (
-    <Stack p={5} w={"10em"}>
-      <Button
-        isFullWidth={true}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          networkStore.Desctructor()
-          zoneStore.Desctructor()
-          settingsStore.Desctructor()
-        }}
-      >
-        ❌
-      </Button>
-      <Heading as="h5" size="sm">
-        Basic
-      </Heading>
-      <Button
-        isActive={activeButton === "basicZones"}
-        isFullWidth={true}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          setActiveButton("basicZones");
-          settingsStore.SelectedOption = "basicZones";
-        }}
-      >
-        Zones
-      </Button>
-      <Button
-        isActive={activeButton === "basicNodes"}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          setActiveButton("basicNodes");
-          settingsStore.SelectedOption = "basicNodes";
-        }}
-      >
-        Nodes
-      </Button>
-      <Button
-        isActive={activeButton === "basicEdges"}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          setActiveButton("basicEdges");
-          settingsStore.SelectedOption = "basicEdges";
-        }}
-      >
-        Edges
-      </Button>
-      <Button
-        isActive={activeButton === "basicLayout"}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          setActiveButton("basicLayout");
-          settingsStore.SelectedOption = "basicLayout";
-        }}
-      >
-        Layout
-      </Button>
+    <Stack w={"10em"}>
+      <Stack p={5}>
+        <Button
+          isFullWidth={true}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            networkStore.Desctructor();
+            zoneStore.Desctructor();
+            settingsStore.Desctructor();
+          }}
+        >
+          ❌
+        </Button>
+        <Heading as="h5" size="sm">
+          Basic
+        </Heading>
+        <Button
+          isActive={activeButton === 0}
+          isFullWidth={true}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(0);
+          }}
+        >
+          Zones
+        </Button>
+        <Button
+          isActive={activeButton === 1}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(1);
+          }}
+        >
+          Nodes
+        </Button>
+        <Button
+          isActive={activeButton === 2}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(2);
+          }}
+        >
+          Edges
+        </Button>
+        <Button
+          isActive={activeButton === 3}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(3);
+          }}
+        >
+          Layout
+        </Button>
 
-      <Heading as="h5" size="sm">
-        Set operations
-      </Heading>
-      <Button
-        isActive={activeButton === "zonesMax"}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          setActiveButton("zonesMax");
-          settingsStore.SelectedOption = "zonesMax";
-        }}
-      >
-        Max
-      </Button>
+        <Heading as="h5" size="sm">
+          Set operations
+        </Heading>
+        <Button
+          isActive={activeButton === 4}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(4);
+          }}
+        >
+          Max
+        </Button>
 
-      <Button
-        isActive={activeButton === "zonesSubzone"}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          setActiveButton("zonesSubzone");
-          settingsStore.SelectedOption = "zonesSubzone";
-        }}
+        <Button
+          isActive={activeButton === 5}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(5);
+          }}
+        >
+          Subzone
+        </Button>
+        <Button
+          isActive={activeButton === 6}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(6);
+          }}
+        >
+          Superzone
+        </Button>
+        <Button
+          isActive={activeButton === 7}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(7);
+          }}
+        >
+          Intersect
+        </Button>
+
+        <Divider />
+
+        <Button
+          isActive={activeButton === 8}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(8);
+          }}
+        >
+          Export
+        </Button>
+      </Stack>
+      <Stack
+        display="flex"
+        flexDirection="row"
+        justifyContent="space-around"
+        alignItems="center"
       >
-        Subzone
-      </Button>
-      <Button
-        isActive={activeButton === "zonesSuperzone"}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          setActiveButton("zonesSuperzone");
-          settingsStore.SelectedOption = "zonesSuperzone";
-        }}
-      >
-        Superzone
-      </Button>
-      <Button
-        isActive={activeButton === "zonesIntersect"}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
-          setActiveButton("zonesIntersect");
-          settingsStore.SelectedOption = "zonesIntersect";
-        }}
-      >
-        Intersect
-      </Button>
+        <LatestRedo />
+      </Stack>
     </Stack>
   );
 };

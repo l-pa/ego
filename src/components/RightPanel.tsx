@@ -10,7 +10,7 @@ import { ZonesMax } from "../settings/zones/ZonesMax";
 import { ZonesSubzone } from "../settings/zones/ZonesSubzone";
 import { ZonesSuperzone } from "../settings/zones/ZonesSuperzone";
 import { Filters } from "../components/Filters";
-
+import { Export } from "../settings/utils/Export";
 
 export const RightPanel: React.FunctionComponent = () => {
   const Settings = observer(() => (
@@ -33,13 +33,15 @@ export const RightPanel: React.FunctionComponent = () => {
             return <ZonesSuperzone />;
           case "zonesIntersect":
             return <ZonesIntersect />;
+          case 8:
+            return <Export />;
           default:
             return <p>None</p>;
         }
       })()}
     </Stack>
   ));
-  
+
   return (
     <Stack overflowY={"scroll"} height={"100vh"} width={"25vw"}>
       <Settings />

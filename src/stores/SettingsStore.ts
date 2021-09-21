@@ -26,6 +26,7 @@ export class SettingsStore {
   private duplicates: string = "all";
 
   private zonesIdk: string = "all";
+  private isLatestRedo:boolean = true;
 
   public get Automove(): boolean {
     return this.automove;
@@ -39,14 +40,23 @@ export class SettingsStore {
     });
   }
 
-  public get SelectedOption(): string {
-    return this.selectedOption;
+
+  public get IsLatestRedo(): boolean {
+    return this.isLatestRedo;
   }
 
-  public set SelectedOption(v: string) {
-    // data-active
-    this.selectedOption = v;
+  public set IsLatestRedo(v: boolean) {
+    this.isLatestRedo = v;
   }
+
+
+  /**
+   * Enable automove
+   * @public
+   * @category Store
+   * @param v Boolean value
+   *
+   */
 
   public get FilterExistingZones(): boolean {
     return this.filterExistingZones
