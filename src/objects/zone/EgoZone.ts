@@ -130,9 +130,12 @@ export default class EgoZone extends Zone {
     if (settingsStore.HideOutsideZones) {
       this.AllCollection().removeClass("hide");
     }
+
     if (!super.GetIsDrawn()) {
+
       if (this.AllCollection().length < settingsStore.MinNodesZoneShow) {
-        return;
+        
+        // return;
       }
 
       this.automove = (cy as any).automove({
@@ -148,7 +151,7 @@ export default class EgoZone extends Zone {
       if (settingsStore.Automove) {
         this.automove.enable();
       }
-
+      
       super.DrawZone();
       super.CTXStyle(this.color);
     }

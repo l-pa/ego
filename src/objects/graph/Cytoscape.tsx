@@ -18,6 +18,9 @@ export default class Cytoscape {
           ...networkStore.Network.Nodes.map((e) => e.PlainObject()),
           ...networkStore.Network.Edges.map((e) => e.PlainObject()),
         ],
+
+        wheelSensitivity: 0.15,
+
         layout: {
           // @ts-ignore
           name: "cose-bilkent",

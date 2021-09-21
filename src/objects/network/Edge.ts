@@ -11,10 +11,10 @@ export default class Edge implements ElementDefinition {
   data: EdgeDataDefinition;
   classes = "";
 
-  constructor(nodeA: Node, nodeB: Node, id: string | number, weight?: number) {
+  constructor(nodeA: Node, nodeB: Node, id: string, weight: number) {
     this.NodeA = nodeA;
     this.NodeB = nodeB;
-    this.Id = id.toString();
+    this.Id = id;
 
     this.data = {
       source: this.NodeA.Id,
@@ -22,9 +22,8 @@ export default class Edge implements ElementDefinition {
       edgeType: "",
     };
 
-    if (weight) {
-      this.Weight = weight;
-    }
+    this.Weight = weight;
+    
   }
 
   public GetNodeA() {

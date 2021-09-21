@@ -9,11 +9,11 @@ import { ZoneItem } from "../../components/ZoneItem";
 
 export function ZonesSubzone() {
   useEffect(() => {
-    zoneStore.Zones.forEach((z) => z.ClearZone());
+    // zoneStore.Zones.forEach((z) => z.ClearZone());
     return () => {
       clearZone()
-      zoneStore.Zones.forEach((z) => z.DrawZone());
-      zoneStore.ColorNodesInZones(zoneStore.Zones);
+      // zoneStore.Zones.forEach((z) => z.DrawZone());
+      // zoneStore.ColorNodesInZones(zoneStore.Zones);
     };
   }, []);
 
@@ -68,7 +68,7 @@ export function ZonesSubzone() {
 
   const clearZone = action(() => {
 
-    zoneStore.Zones.forEach((z) => z.ClearZone());
+    // zoneStore.Zones.forEach((z) => z.ClearZone());
 
     zoneStore.TmpZones.forEach((z) => z.ClearZone());
     zoneStore.TmpZones.length = 0;
@@ -94,7 +94,7 @@ export function ZonesSubzone() {
                 const filtered = zoneStore.Filter(res)
                 if (res.length > 0) {
                   addZone(filtered[0])
-                //  addZone(filtered[1])
+                  addZone(filtered[1])
                 }
               });
           }

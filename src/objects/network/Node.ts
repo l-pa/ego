@@ -12,51 +12,33 @@ export default class Node implements ElementDefinition {
   private twDep: Node[] = [];
   private twInDep: Node[] = [];
 
-  public set OwDep(nodes: Node[]) {
-    this.owDep = [...nodes];
-    this.data.nodeType =
+  private updateClass() {
+    this.classes = this.data.nodeType =
       this.isProminent() !== -1
         ? this.isProminent() === 1
           ? "weaklyProminent"
           : "stronglyProminent"
         : "nonProminent";
-    this.classes = this.data.nodeType;
+  }
+
+  public set OwDep(nodes: Node[]) {
+    this.owDep = [...nodes];
+    this.updateClass();
   }
 
   public set OwInDep(nodes: Node[]) {
     this.owInDep = [...nodes];
-
-    this.data.nodeType =
-      this.isProminent() !== -1
-        ? this.isProminent() === 1
-          ? "weaklyProminent"
-          : "stronglyProminent"
-        : "nonProminent";
-    this.classes = this.data.nodeType;
+    this.updateClass();
   }
 
   public set TwDep(nodes: Node[]) {
     this.twDep = [...nodes];
-
-    this.data.nodeType =
-      this.isProminent() !== -1
-        ? this.isProminent() === 1
-          ? "weaklyProminent"
-          : "stronglyProminent"
-        : "nonProminent";
-    this.classes = this.data.nodeType;
+    this.updateClass();
   }
 
   public set TwInDep(nodes: Node[]) {
     this.twInDep = [...nodes];
-
-    this.data.nodeType =
-      this.isProminent() !== -1
-        ? this.isProminent() === 1
-          ? "weaklyProminent"
-          : "stronglyProminent"
-        : "nonProminent";
-    this.classes = this.data.nodeType;
+    this.updateClass();
   }
 
   public get OwDep() {

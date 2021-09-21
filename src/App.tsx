@@ -1,11 +1,11 @@
-import React, { useContext, useRef } from "react";
+import { useContext, useRef } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
 import Matrix from "./objects/network/DependencyMatrix";
 import { Graph } from "./components/Graph";
 import Node from "./objects/network/Node";
 import Network from "./objects/network/Network";
-import { Context, networkStore } from ".";
+import { Context } from ".";
 import { observer } from "mobx-react-lite";
 import { CSVLoader } from './loaders/CSVLoader'
 
@@ -96,7 +96,7 @@ function App() {
 
                     json.SetUrl("https://raw.githubusercontent.com/l-pa/network-app/master/src/networks/karate.json")
 
-                    json.GetNetwork(false).then(network => {
+                    json.GetNetwork(directed.current?.checked).then(network => {
                     new Matrix(network).nodesDependency();
                     console.log(network);
                     
@@ -125,9 +125,9 @@ function App() {
                   variant="outline"
                   onClick={() => {
                     const csv = new CSVLoader()
-                    csv.SetUrl("https://raw.githubusercontent.com/graphistry/pygraphistry/master/demos/data/lesmiserables.csv")
+                    csv.SetUrl("https://raw.githubusercontent.com/l-pa/ego/master/src/networks/lesmis.csv")
 
-                    csv.GetNetwork(false).then(network => {
+                    csv.GetNetwork(directed.current?.checked).then(network => {
                       new Matrix(network).nodesDependency();
                       console.log(network);
                     

@@ -56,6 +56,8 @@ export default class Network {
     this.addNode(nodeA);
     this.addNode(nodeB);
 
-    this.Edges.push(new Edge(nodeA, nodeB, this.Edges.length, weight));
+    this.Edges.push(
+      new Edge(nodeA, nodeB, this.Edges.length.toString(), weight ? weight : 1)
+    );
   }
 }

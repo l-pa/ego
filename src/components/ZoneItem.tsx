@@ -20,12 +20,14 @@ import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
 import Zone from "../objects/zone/Zone";
+import { NodeCircle } from "./NodeCircle";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
   addButton?: boolean;
   greyed?: boolean;
-}> = ({ zone, addButton = false, greyed = false }) => {
+  filter?: boolean
+}> = ({ zone, addButton = false, greyed = false, filter = false }) => {
   const innerE =
     zone.AllCollection().edgesWith(zone.AllCollection()).length * 2;
   const outerE =
@@ -38,11 +40,6 @@ export const ZoneItem: React.FunctionComponent<{
 
   const [isDrawn, setIsDrawn] = useState(zone.GetIsDrawn())
   greyed = !isDrawn
-  console.log("rerender");
-
-  console.log(isDrawn);
-  
-
 
   const activeZones: Zone[] = []
 
@@ -61,8 +58,6 @@ export const ZoneItem: React.FunctionComponent<{
 
   const mouseEnterFunction = () => {
     activeZones.length = 0
-
-
 
     zoneStore.TmpZones.forEach((z) => {
       if (z.GetIsDrawn()) {
@@ -103,9 +98,7 @@ export const ZoneItem: React.FunctionComponent<{
               mouseLeaveFunction()
             }}
           />
-        ) : // <Heading color={"red.400"} textAlign={"center"}>
-          //   {zone.GetId()}
-          // </Heading>
+        ) :
           zone.Ego.isProminent() === 1 ? (
             <Avatar
               name={zone.GetId().split("").join(" ")}
@@ -141,7 +134,7 @@ export const ZoneItem: React.FunctionComponent<{
             display={"flex"}
             alignItems="center"
           >
-            {(settingsStore.Duplicates === "de" || settingsStore.Duplicates === "me") && (
+            {filter && (
               <WarningIcon />
             )}
             <Box>
@@ -328,6 +321,7 @@ export const ZoneItem: React.FunctionComponent<{
           onChange={(e) => {
             if (e.target.checked) {
               zone.DrawZone()
+
             } else {
               zone.ClearZone()
             }
@@ -355,8 +349,8 @@ export const ZoneItem: React.FunctionComponent<{
             size="sm"
             aria-label="Add zone"
             onClick={() => {
-              zoneStore.AddZone(zone);
               zoneStore.RemoveTmpZone(zone);
+              zoneStore.AddZone(zone);
             }}
           >
             Add zone

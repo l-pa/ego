@@ -4,23 +4,28 @@ import CustomZone from "../objects/zone/CustomZone";
 import EgoZone from "../objects/zone/EgoZone";
 import { cy } from "../objects/graph/Cytoscape";
 
+  /**
+   * Stores app settings, reacting on changes. 
+   *
+   */
+
 export class SettingsStore {
   constructor() {
     makeAutoObservable(this);
   }
   private automove: boolean = false;
   private hideOutsideZones: boolean = false;
-  
+
+  private activeCategory: number = 0;
+
   private zIndex: number = -1;
-  
+
   private minNodesZoneShow: number = 1;
-  
-  private selectedOption: string = "basicZones";
-  
+
   private selectedEdgeBlend: string = "normal";
-  
+
   private nodeSize: string = "fixed";
-  
+
   private filterChanged: boolean = false;
   private filterExistingZones: boolean = true;
   private duplicates: string = "all";
@@ -28,9 +33,24 @@ export class SettingsStore {
   private zonesIdk: string = "all";
   private isLatestRedo:boolean = true;
 
+  /**
+   * @public
+   * @category Store
+   * @returns If automove is enabled.
+   *
+   */
+
   public get Automove(): boolean {
     return this.automove;
   }
+
+  /**
+   * Enable automove
+   * @public
+   * @category Store
+   * @param v Boolean value
+   *
+   */
 
   public set Automove(v: boolean) {
     this.automove = v;
@@ -59,13 +79,20 @@ export class SettingsStore {
    */
 
   public get FilterExistingZones(): boolean {
-    return this.filterExistingZones
+    return this.filterExistingZones;
   }
 
   public set FilterExistingZones(v: boolean) {
     this.filterExistingZones = v;
   }
 
+  public get ActiveCategory(): number {
+    return this.activeCategory;
+  }
+
+  public set ActiveCategory(v: number) {
+    this.activeCategory = v;
+  }
 
   public GetNodeSize(): string {
     return this.nodeSize;
@@ -73,6 +100,7 @@ export class SettingsStore {
 
   /**
    * GetFilterChanged
+   * @event
    */
   public GetFilterChanged() {
     return this.filterChanged;
@@ -132,10 +160,9 @@ export class SettingsStore {
 
   public set MinNodesZoneShow(v: number) {
     this.minNodesZoneShow = v;
-    this.filterChanged = !this.filterChanged;;;
+    this.filterChanged = !this.filterChanged;
     zoneStore.Update();
   }
-
 
   public get Duplicates(): string {
     return this.duplicates;
@@ -159,7 +186,10 @@ export class SettingsStore {
 
   /**
    *  Converts hex format to rgb
+   *  @param hex Hex color string
+   *  @returns rgb object | undefined
    */
+  
   public HexToRgb(hex: string) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
@@ -173,6 +203,7 @@ export class SettingsStore {
 
   /**
    * DetermineTextColor, depends on the brightness of a background returns true if a text should have black or false if white color.
+   * @param hex Hex color string
    */
   public DetermineTextColor(hex: string) {
     const rgb = this.HexToRgb(hex);
@@ -182,20 +213,16 @@ export class SettingsStore {
     }
   }
 
-  public Desctructor() {
+   Desctructor() {
     this.automove = false;
     this.hideOutsideZones = false;
     this.zIndex = -1;
     this.minNodesZoneShow = 1;
-    this.selectedOption = "basicZones";
     this.selectedEdgeBlend = "normal";
     this.nodeSize = "fixed";
     this.filterChanged = false;
     this.filterExistingZones = true;
-    this.duplicates = "all";  
+    this.duplicates = "all";
     this.zonesIdk = "all";
-
-
   }
-
 }

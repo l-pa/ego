@@ -12,6 +12,7 @@ import { observer } from "mobx-react-lite";
 import EgoZone from "../../objects/zone/EgoZone";
 import CustomZone from "../../objects/zone/CustomZone";
 import { ZoneItemCustom } from "../../components/ZoneItemCustom";
+import { reaction } from "mobx";
 
 export const BasicZones: React.FunctionComponent = () => {
 
@@ -34,6 +35,14 @@ export const BasicZones: React.FunctionComponent = () => {
       })}
     </div>
   ));
+
+  console.log(Zones);
+
+
+  reaction(
+    () => zoneStore.Zones,
+    zones => console.log(zones)
+  )
 
   return (
     <Stack>

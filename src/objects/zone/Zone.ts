@@ -191,14 +191,13 @@ export default abstract class Zone {
   }
 
   public DrawZone() {
-    if (!this.isDrawn) {
+    if (!this.isDrawn) {console.log("draw, ", this.id); 
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
 
-      this.ctx.fillStyle = this.ctxStyle;
-
       this.SetIsDrawn(true);
+      this.ctx.fillStyle = this.ctxStyle;
 
       this.Update();
     }

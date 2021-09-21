@@ -19,4 +19,32 @@
 }
 
 
-  
+.circle {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  background-color: #48BB78;
+  border-radius: 50%;
+}
+
+.circleRed {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  background-color: #ff6262;
+  border-radius: 50%;
+}
+
+
+.circleYellow {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  background-color: #ECC94B;
+  border-radius: 50%;
+}
+
+
+.text {
+  margin: auto;
+}
