@@ -4,10 +4,10 @@ import CustomZone from "../objects/zone/CustomZone";
 import EgoZone from "../objects/zone/EgoZone";
 import { cy } from "../objects/graph/Cytoscape";
 
-  /**
-   * Stores app settings, reacting on changes. 
-   *
-   */
+/**
+ * Stores app settings, reacting on changes.
+ *
+ */
 
 export class SettingsStore {
   constructor() {
@@ -31,7 +31,17 @@ export class SettingsStore {
   private duplicates: string = "all";
 
   private zonesIdk: string = "all";
-  private isLatestRedo:boolean = true;
+  private isLatestRedo: boolean = true;
+
+  private trackZonesExport: boolean = false;
+
+  public get TrackZonesExport(): boolean {
+    return this.trackZonesExport;
+  }
+
+  public set TrackZonesExport(v: boolean) {
+    this.trackZonesExport = v;
+  }
 
   /**
    * @public
@@ -60,7 +70,6 @@ export class SettingsStore {
     });
   }
 
-
   public get IsLatestRedo(): boolean {
     return this.isLatestRedo;
   }
@@ -68,7 +77,6 @@ export class SettingsStore {
   public set IsLatestRedo(v: boolean) {
     this.isLatestRedo = v;
   }
-
 
   /**
    * Enable automove
@@ -189,7 +197,7 @@ export class SettingsStore {
    *  @param hex Hex color string
    *  @returns rgb object | undefined
    */
-  
+
   public HexToRgb(hex: string) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
@@ -213,7 +221,7 @@ export class SettingsStore {
     }
   }
 
-   Desctructor() {
+  Desctructor() {
     this.automove = false;
     this.hideOutsideZones = false;
     this.zIndex = -1;

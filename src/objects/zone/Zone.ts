@@ -14,7 +14,6 @@ import {
 import { IPoint } from "./IPoints";
 import { Point } from "./Point";
 
-
 export default abstract class Zone {
   private isZoneShown: boolean = true;
   private areShownNodes: boolean = false;
@@ -77,6 +76,14 @@ export default abstract class Zone {
         this.Update();
       }
     }
+  }
+
+  public get Canvas() {
+    return this.canvas;
+  }
+
+  public get Ctx() {
+    return this.ctx;
   }
 
   public GetLabel() {
@@ -191,7 +198,8 @@ export default abstract class Zone {
   }
 
   public DrawZone() {
-    if (!this.isDrawn) {console.log("draw, ", this.id); 
+    if (!this.isDrawn) {
+      console.log("draw, ", this.id);
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");

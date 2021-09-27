@@ -1,5 +1,7 @@
-import { Button, Divider, Heading, Stack } from "@chakra-ui/react";
+import { Button, Checkbox, Divider, Heading, Stack } from "@chakra-ui/react";
 import React from "react";
+import { zoneStore } from "../..";
+import { mergeCanvas } from "../../objects/export/Export";
 import { cy } from "../../objects/graph/Cytoscape";
 
 export function Export() {
@@ -9,10 +11,12 @@ export function Export() {
         Export
       </Heading>
       <Divider />
+      <Checkbox>Track zones</Checkbox>
       <Button
         isFullWidth={true}
         onClick={() => {
-          document.write('<img src="' + cy.png({}) + '"/>');
+          mergeCanvas();
+          // document.write('<img src="' + cy.png({}) + '"/>');
         }}
       >
         PNG
