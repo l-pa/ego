@@ -20,7 +20,6 @@ import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
 import Zone from "../objects/zone/Zone";
-import { NodeCircle } from "./NodeCircle";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;

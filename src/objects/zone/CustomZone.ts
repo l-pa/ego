@@ -81,7 +81,7 @@ export default class CustomZone extends Zone {
       }
       const pattern = super.CTX().createPattern(patternCanvas, "repeat");
 
-      super.CTXStyle(pattern);
+      super.CTXStyle(pattern, this.CTX());
     }
   }
 

@@ -11,9 +11,9 @@ import { Collection, NodeSingular } from "cytoscape";
 import { action, reaction } from "mobx";
 import { observer, useLocalObservable } from "mobx-react-lite";
 import React, { useEffect } from "react";
-import { networkStore, settingsStore, zoneStore } from "../..";
-import { cy } from "../../objects/graph/Cytoscape";
-import Zone from "../../objects/zone/Zone";
+import { networkStore, settingsStore, zoneStore } from "../../..";
+import { cy } from "../../../objects/graph/Cytoscape";
+import Zone from "../../../objects/zone/Zone";
 
 export function BasicNodes() {
 
@@ -110,7 +110,7 @@ export function BasicNodes() {
 
     })
     reaction(() => localObserverable.zonesForNodes, () => {
-      
+
       let nodesAvailable = cy.collection()
       if (localObserverable.nodes.length > 0) {
         localObserverable.zonesForNodes?.forEach(z => nodesAvailable = nodesAvailable.union(z.AllCollection()))

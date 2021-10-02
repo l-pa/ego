@@ -6,13 +6,13 @@ import {
   IconButton,
   Stack,
 } from "@chakra-ui/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { ArrowBackIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 import { observer } from "mobx-react-lite";
 
 export const LeftPanel: React.FunctionComponent = () => {
-  const [activeButton, setActiveButton] = useState<number>(0);
+  const [activeButton, setActiveButton] = useState<number>(8);
 
   useEffect(() => {
     settingsStore.ActiveCategory = activeButton;

@@ -14,6 +14,9 @@ import cola from "cytoscape-cola";
 import coseBilkent from "cytoscape-cose-bilkent";
 
 // @ts-ignore
+import svg from 'cytoscape-svg';
+
+// @ts-ignore
 import contextMenus from "cytoscape-context-menus";
 
 interface IStore {
@@ -34,7 +37,7 @@ cytoscape.use(cycanvas);
 cytoscape.use(cola);
 cytoscape.use(coseBilkent);
 cytoscape.use(contextMenus);
-
+cytoscape.use(svg);
 
 export const Context = React.createContext<IStore>({zones: zoneStore, settings: settingsStore, network:networkStore});
 ReactDOM.render(

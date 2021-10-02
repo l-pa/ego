@@ -6,12 +6,12 @@ import {
   Divider,
   Heading,
 } from "@chakra-ui/react";
-import { ZoneItem } from "../../components/ZoneItem";
-import { networkStore, settingsStore, zoneStore } from "../../.";
+import { ZoneItem } from "../../ZoneItem";
+import { networkStore, settingsStore, zoneStore } from "../../..";
 import { observer } from "mobx-react-lite";
-import EgoZone from "../../objects/zone/EgoZone";
-import CustomZone from "../../objects/zone/CustomZone";
-import { ZoneItemCustom } from "../../components/ZoneItemCustom";
+import EgoZone from "../../../objects/zone/EgoZone";
+import CustomZone from "../../../objects/zone/CustomZone";
+import { ZoneItemCustom } from "../../ZoneItemCustom";
 import { reaction } from "mobx";
 
 export const BasicZones: React.FunctionComponent = () => {
@@ -116,9 +116,9 @@ export const BasicZones: React.FunctionComponent = () => {
       </Stack>
       <Zones />
       <Divider />
-      <Heading p={5} as="h4" size="md" pb={5} pt={5}>
+      {/* <Heading p={5} as="h4" size="md" pb={5} pt={5}>
         Custom zones
-      </Heading>
+      </Heading> */}
       <CustomZones />
     </Stack>
   );

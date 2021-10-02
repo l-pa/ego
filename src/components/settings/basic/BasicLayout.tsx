@@ -1,6 +1,6 @@
 import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
 import React, { useRef } from "react";
-import { cy } from "../../objects/graph/Cytoscape";
+import { cy } from "../../../objects/graph/Cytoscape";
 
 export function BasicLayout() {
   const layoutRef = useRef<HTMLSelectElement>(null);

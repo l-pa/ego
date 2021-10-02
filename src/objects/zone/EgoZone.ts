@@ -84,7 +84,7 @@ export default class EgoZone extends Zone {
 
   public set Color(color: string) {
     this.color = color;
-    super.CTXStyle(this.color);
+    super.CTXStyle(this.color, this.CTX());
     this.Update();
   }
 

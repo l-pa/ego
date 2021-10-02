@@ -1,4 +1,4 @@
-import { action, observable } from "mobx";
+import { observable } from "mobx";
 import { zoneStore } from "../..";
 import { cy } from "../graph/Cytoscape";
 import {
@@ -35,22 +35,28 @@ export default abstract class Zone {
 
   private id: string;
 
-  private duplicate: string = "";
-
   private isDrawn = false;
+
+  public static hullPadding = 70;
 
   constructor(id: string) {
     this.id = id;
   }
 
   private Observerable = observable({
-    variables: {
-      isDrawn: false,
-    },
+    isDrawn: false,
   });
 
   public Points(v: IPoint[]) {
     this.points = v;
+  }
+
+  public get HullPadding(): number {
+    return Zone.hullPadding;
+  }
+
+  public get Color(): string {
+    return this.ctxStyle;
   }
 
   public SetZindex(index: number) {
@@ -82,10 +88,6 @@ export default abstract class Zone {
     return this.canvas;
   }
 
-  public get Ctx() {
-    return this.ctx;
-  }
-
   public GetLabel() {
     return this.label;
   }
@@ -115,19 +117,8 @@ export default abstract class Zone {
     this.areShownNodes = show;
   }
 
-  // public SetIsZoneShown(show: boolean) {
-  //   this.isZoneShown = show;
-
-  //   if (this.isZoneShown) {
-  //     this.DrawZone();
-  //   } else {
-  //     this.ClearZone();
-  //   }
-  // }
-
   public Update() {
     if (this.isDrawn) {
-      this.CTXStyle(this.ctxStyle);
       this.calc();
     }
   }
@@ -155,14 +146,15 @@ export default abstract class Zone {
     return this.ctx;
   }
 
-  public CTXStyle(style: string | CanvasPattern) {
-    if (this.ctx) {
-      this.ctxStyle = style.toString();
-      if (style instanceof CanvasPattern) {
-        this.ctx.fillStyle = style;
-      } else {
-        this.ctx.fillStyle = style + this.alpha;
-      }
+  public CTXStyle(
+    style: string | CanvasPattern,
+    ctx: CanvasRenderingContext2D = this.ctx
+  ) {
+    this.ctxStyle = style.toString();
+    if (style instanceof CanvasPattern) {
+      ctx.fillStyle = style;
+    } else {
+      ctx.fillStyle = style + this.alpha;
     }
   }
 
@@ -205,15 +197,12 @@ export default abstract class Zone {
       this.ctx = this.canvas.getContext("2d");
 
       this.SetIsDrawn(true);
-      this.ctx.fillStyle = this.ctxStyle;
 
       this.Update();
     }
 
     zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
   }
-
-  private hullPadding = 60;
 
   private line(
     a: {
@@ -251,15 +240,15 @@ export default abstract class Zone {
     SOFTWARE.imitations under the License.
 */
 
-  private smoothHull(polyPoints: Array<IPoint>) {
+  private smoothHull(polyPoints: Array<IPoint>, ctx: CanvasRenderingContext2D) {
     // Returns the SVG path data string representing the polygon, expanded and smoothed.
 
     var pointCount = polyPoints.length;
 
     // Handle special cases
     // if (!polyPoints || pointCount < 1) return undefined;
-    if (pointCount === 1) this.smoothHull1(polyPoints);
-    if (pointCount === 2) this.smoothHull2(polyPoints);
+    if (pointCount === 1) this.smoothHull1(polyPoints, ctx);
+    if (pointCount === 2) this.smoothHull2(polyPoints, ctx);
 
     var hullPoints = polyPoints.map(function (point, index) {
       var pNext = polyPoints[(index + 1) % pointCount];
@@ -277,40 +266,46 @@ export default abstract class Zone {
       );
       hullPoints[i].p = vecSum(
         hullPoints[i].p,
-        vecScale(extensionVec, this.hullPadding)
+        vecScale(extensionVec, Zone.hullPadding)
       );
     }
 
     return this.line(hullPoints);
   }
 
-  private smoothHull1(polyPoints: Array<IPoint>) {
+  private smoothHull1(
+    polyPoints: Array<IPoint>,
+    ctx: CanvasRenderingContext2D
+  ) {
     // Returns the path for a circular hull around a single point.
 
-    this.ctx.beginPath();
-    this.ctx.ellipse(
+    ctx.beginPath();
+    ctx.ellipse(
       polyPoints[0].x,
       polyPoints[0].y,
-      this.hullPadding,
-      this.hullPadding,
+      Zone.hullPadding,
+      Zone.hullPadding,
       Math.PI / 4,
       0,
       2 * Math.PI
     );
-    this.ctx.closePath();
-    this.ctx.fill();
+    ctx.closePath();
+    ctx.fill();
   }
 
-  private smoothHull2(polyPoints: Array<IPoint>) {
+  private smoothHull2(
+    polyPoints: Array<IPoint>,
+    ctx: CanvasRenderingContext2D
+  ) {
     // Returns the path for a rounded hull around two points.
 
     var v = vecFrom(polyPoints[0], polyPoints[1]);
-    var extensionVec = vecScaleTo(v, this.hullPadding);
+    var extensionVec = vecScaleTo(v, Zone.hullPadding);
 
     var extension0 = vecSum(polyPoints[0], vecScale(extensionVec, -1));
     var extension1 = vecSum(polyPoints[1], extensionVec);
 
-    var tangentHalfLength = 1.2 * this.hullPadding;
+    var tangentHalfLength = 1.2 * Zone.hullPadding;
     var controlDelta = vecScaleTo(unitNormal(v, undefined), tangentHalfLength);
     var invControlDelta = vecScale(controlDelta, -1);
 
@@ -319,9 +314,9 @@ export default abstract class Zone {
     var control3 = vecSum(extension0, controlDelta);
     var control4 = vecSum(extension1, controlDelta);
 
-    this.ctx.beginPath();
-    this.ctx.moveTo(extension0.x, extension0.y);
-    this.ctx.bezierCurveTo(
+    ctx.beginPath();
+    ctx.moveTo(extension0.x, extension0.y);
+    ctx.bezierCurveTo(
       control0.x,
       control0.y,
       control1.x,
@@ -329,7 +324,7 @@ export default abstract class Zone {
       extension1.x,
       extension1.y
     );
-    this.ctx.bezierCurveTo(
+    ctx.bezierCurveTo(
       control4.x,
       control4.y,
       control3.x,
@@ -338,8 +333,8 @@ export default abstract class Zone {
       extension0.y
     );
 
-    this.ctx.closePath();
-    this.ctx.fill();
+    ctx.closePath();
+    ctx.fill();
   }
 
   private convexHullPoints(): Array<IPoint> {
@@ -395,18 +390,13 @@ export default abstract class Zone {
     return hull;
   }
 
-  private calc() {
-    this.layer.resetTransform(this.ctx);
-    this.layer.clear(this.ctx);
-    this.layer.setTransform(this.ctx);
-
-    let a;
+  public getNewContext(ctx: CanvasRenderingContext2D) {
+    this.CTXStyle(this.ctxStyle, ctx);
     if (this.points.length > 2) {
-      a = this.smoothHull(this.convexHullPoints());
-      // a.push(a[a.length - 1]);
-      this.ctx.save();
-      this.ctx.beginPath();
-      this.ctx.moveTo(a[0].p.x, a[0].p.y);
+      const a = this.smoothHull(this.convexHullPoints(), ctx);
+
+      ctx.beginPath();
+      ctx.moveTo(a[0].p.x, a[0].p.y);
 
       const x: Array<number> = [];
 
@@ -414,12 +404,22 @@ export default abstract class Zone {
         x.push(element.p.x);
         x.push(element.p.y);
       });
-      this.ctx.curve(x, 0.5, 25, true); // add cardinal spline to path
 
-      this.ctx.closePath();
-      this.ctx.fill();
+      // @ts-ignore: lib
+      ctx.curve(x, 0.5, 25, true); // add cardinal spline to path
+
+      ctx.closePath();
+      ctx.fill();
     } else {
-      a = this.smoothHull(this.points);
+      this.smoothHull(this.points, ctx);
     }
+  }
+
+  private calc() {
+    // this.layer.resetTransform(this.ctx);
+    this.layer.clear(this.ctx);
+    this.layer.setTransform(this.ctx);
+
+    this.getNewContext(this.ctx);
   }
 }

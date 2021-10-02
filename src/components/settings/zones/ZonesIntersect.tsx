@@ -1,5 +1,4 @@
 import {
-  Button,
   Checkbox,
   Divider,
   Heading,
@@ -10,11 +9,11 @@ import {
 import { action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
-import { zoneStore } from "../..";
-import { cy } from "../../objects/graph/Cytoscape";
-import CustomZone from "../../objects/zone/CustomZone";
-import Zone from "../../objects/zone/Zone";
-import EgoZone from "../../objects/zone/EgoZone";
+import { zoneStore } from "../../..";
+import { cy } from "../../../objects/graph/Cytoscape";
+import CustomZone from "../../../objects/zone/CustomZone";
+import Zone from "../../../objects/zone/Zone";
+import EgoZone from "../../../objects/zone/EgoZone";
 
 export function ZonesIntersect() {
   const zonesToIntersert: Zone[] = observable([]);
@@ -146,9 +145,9 @@ export function ZonesIntersect() {
                 </Heading>
               </Stack>
             ) : (
-                    <Stack p={5}>
-                      <Heading as="h4" size="md" pb={5}>
-                        {intersect.length} nodes
+              <Stack p={5}>
+                <Heading as="h4" size="md" pb={5}>
+                  {intersect.length} nodes
                 </Heading>
                 <UnorderedList>
                   {intersect.nodes().map((e) => {
@@ -156,7 +155,7 @@ export function ZonesIntersect() {
                   })}
                 </UnorderedList>
 
-                      {/* <Button
+                {/* <Button
                   isFullWidth={true}
                   onClick={() => {
                     id = [];

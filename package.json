@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@bokeh/canvas2svg": "^1.0.22",
     "@chakra-ui/icons": "^1.0.15",
     "@chakra-ui/react": "^1.6.7",
     "@emotion/react": "^11.4.1",
@@ -24,6 +25,7 @@
     "cytoscape-cola": "^2.5.0",
     "cytoscape-context-menus": "^4.1.0",
     "cytoscape-cose-bilkent": "^4.1.0",
+    "cytoscape-svg": "^0.3.1",
     "framer-motion": "^4.1.17",
     "mobx": "^6.3.3",
     "mobx-react-lite": "^3.2.1",

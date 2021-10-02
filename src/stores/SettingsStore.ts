@@ -3,6 +3,8 @@ import { zoneStore } from "..";
 import CustomZone from "../objects/zone/CustomZone";
 import EgoZone from "../objects/zone/EgoZone";
 import { cy } from "../objects/graph/Cytoscape";
+import Export, { ImageType } from "../objects/export/ExportImage";
+import { IExportSettings } from "./IExportSettings";
 
 /**
  * Stores app settings, reacting on changes.
@@ -12,35 +14,43 @@ import { cy } from "../objects/graph/Cytoscape";
 export class SettingsStore {
   constructor() {
     makeAutoObservable(this);
+
+    this.snapshots = new Export();
   }
+
   private automove: boolean = false;
   private hideOutsideZones: boolean = false;
-
   private activeCategory: number = 0;
-
   private zIndex: number = -1;
-
   private minNodesZoneShow: number = 1;
-
   private selectedEdgeBlend: string = "normal";
-
   private nodeSize: string = "fixed";
-
   private filterChanged: boolean = false;
   private filterExistingZones: boolean = true;
   private duplicates: string = "all";
-
   private zonesIdk: string = "all";
   private isLatestRedo: boolean = true;
-
   private trackZonesExport: boolean = false;
+  private snapshots: Export;
+
+  private exportOptions: IExportSettings = {
+    imageFormat: ImageType.PNG,
+  };
 
   public get TrackZonesExport(): boolean {
     return this.trackZonesExport;
   }
 
   public set TrackZonesExport(v: boolean) {
-    this.trackZonesExport = v;
+    if (v === false) {
+      if (this.snapshots.Snapshots.length > 0) {
+      } else {
+        this.trackZonesExport = v;
+      }
+    } else {
+      this.snapshots.TakeSnapshot();
+      this.trackZonesExport = v;
+    }
   }
 
   /**
@@ -85,6 +95,10 @@ export class SettingsStore {
    * @param v Boolean value
    *
    */
+
+  public get ExportSnapshot(): Export {
+    return this.snapshots;
+  }
 
   public get FilterExistingZones(): boolean {
     return this.filterExistingZones;
@@ -219,6 +233,14 @@ export class SettingsStore {
       var a = 1 - (0.299 * rgb?.r + 0.587 * rgb?.g + 0.114 * rgb?.b) / 255;
       return a < 0.5;
     }
+  }
+
+  public get ExportOptions(): IExportSettings {
+    return this.exportOptions;
+  }
+
+  public set ExportOptions(v: IExportSettings) {
+    this.exportOptions = v;
   }
 
   Desctructor() {

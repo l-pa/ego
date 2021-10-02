@@ -7,11 +7,11 @@ import {
 } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
-import { networkStore, zoneStore } from "../..";
-import EgoZone from "../../objects/zone/EgoZone";
-import { ZoneItem } from "../../components/ZoneItem";
+import { networkStore, zoneStore } from "../../..";
+import EgoZone from "../../../objects/zone/EgoZone";
+import { ZoneItem } from "../../ZoneItem";
 import { action, observable } from "mobx";
-import Zone from "../../objects/zone/Zone";
+import Zone from "../../../objects/zone/Zone";
 
 export function ZonesMax() {
 
@@ -29,14 +29,14 @@ export function ZonesMax() {
   let onlyExistingZones = observable({ idk: true });
   let largestEgoZone: EgoZone;
 
-  const addTmpZone = action((z:Zone)=> {
-    if (zoneStore.Zones.some(zo=> zo.GetId() === z.GetId())) {    
-    } else { 
+  const addTmpZone = action((z: Zone) => {
+    if (zoneStore.Zones.some(zo => zo.GetId() === z.GetId())) {
+    } else {
       zoneStore.AddTmpZone([z], true)
     }
   })
 
-  const clearTmpZone = action(()=> {
+  const clearTmpZone = action(() => {
     zoneStore.ClearTmpZones()
     // zoneStore.HideAllZones()
   })
@@ -45,7 +45,7 @@ export function ZonesMax() {
     zoneStore.ColorNodesInZones(zoneStore.TmpZones);
   });
 
-  const LargestZone = observer(() => {    
+  const LargestZone = observer(() => {
     clearTmpZone()
 
     if (onlyExistingZones.idk) {
@@ -62,7 +62,7 @@ export function ZonesMax() {
           (z) =>
             z.AllCollection().length === largestZone[0].AllCollection().length
         );
-          
+
         tmp.forEach(z => {
           addTmpZone(z)
         })
