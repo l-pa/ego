@@ -1,5 +1,14 @@
-import { observable } from "mobx";
+import {
+  action,
+  autorun,
+  computed,
+  makeAutoObservable,
+  makeObservable,
+  observable,
+  observe,
+} from "mobx";
 import { zoneStore } from "../..";
+import { ZoneStore } from "../../stores/ZoneStore";
 import { cy } from "../graph/Cytoscape";
 import {
   Subtract,
@@ -41,11 +50,10 @@ export default abstract class Zone {
 
   constructor(id: string) {
     this.id = id;
-  }
 
-  private Observerable = observable({
-    isDrawn: false,
-  });
+    makeObservable<this, "isDrawn">(this, { isDrawn: observable });
+    makeObservable(this, { IsDrawn: computed });
+  }
 
   public Points(v: IPoint[]) {
     this.points = v;
@@ -125,7 +133,7 @@ export default abstract class Zone {
 
   public ClearZone() {
     if (this.isDrawn) {
-      this.SetIsDrawn(false);
+      this.IsDrawn = false;
       this.layer.clear(this.ctx);
       this.canvas.remove();
     } else {
@@ -173,21 +181,22 @@ export default abstract class Zone {
     return a;
   }
 
-  // private SetIsDrawn = action((v: boolean) => {
-  //    this.isDrawn = v;
-  // });
+  public set IsDrawn(v: boolean) {
+    this.isDrawn = v;
+  }
+
+  public get IsDrawn(): boolean {
+    return this.isDrawn;
+  }
+
+  // public SetIsDrawn = (v: boolean) => {
+  //   this.isDrawn = v;
+  //   action(() => {});
+  // };
 
   // public GetIsDrawn(): boolean {
   //   return this.isDrawn;
   // }
-
-  private SetIsDrawn = (v: boolean) => {
-    this.isDrawn = v;
-  };
-
-  public GetIsDrawn(): boolean {
-    return this.isDrawn;
-  }
 
   public DrawZone() {
     if (!this.isDrawn) {
@@ -196,7 +205,7 @@ export default abstract class Zone {
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
 
-      this.SetIsDrawn(true);
+      this.IsDrawn = true;
 
       this.Update();
     }

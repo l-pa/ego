@@ -19,11 +19,11 @@ export const BasicZones: React.FunctionComponent = () => {
   const Zones = observer(() => (
     <Stack>
       {zoneStore.Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[0].map((z, i) => {
-        return <ZoneItem greyed={!z.GetIsDrawn()} zone={z as EgoZone} key={i}></ZoneItem>;
+        return <ZoneItem greyed={!z.IsDrawn} zone={z as EgoZone} key={i}></ZoneItem>;
       })}
 
       {zoneStore.Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[1].map((z, i) => {
-        return <ZoneItem greyed={!z.GetIsDrawn()} zone={z as EgoZone} key={i}></ZoneItem>;
+        return <ZoneItem greyed={!z.IsDrawn} zone={z as EgoZone} key={i}></ZoneItem>;
       })}
     </Stack>
   ));

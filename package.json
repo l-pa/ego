@@ -27,6 +27,7 @@
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-svg": "^0.3.1",
     "framer-motion": "^4.1.17",
+    "jspdf": "^2.4.0",
     "mobx": "^6.3.3",
     "mobx-react-lite": "^3.2.1",
     "react": "^17.0.2",

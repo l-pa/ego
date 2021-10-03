@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable, reaction } from "mobx";
 import { zoneStore } from "..";
 import CustomZone from "../objects/zone/CustomZone";
 import EgoZone from "../objects/zone/EgoZone";
@@ -48,7 +48,12 @@ export class SettingsStore {
         this.trackZonesExport = v;
       }
     } else {
-      this.snapshots.TakeSnapshot();
+      if (this.snapshots.Snapshots.length === 0) {
+        this.snapshots.initSnapshots();
+      }
+      if (zoneStore.Zones.length > 0) {
+        this.snapshots.TakeSnapshot();
+      }
       this.trackZonesExport = v;
     }
   }

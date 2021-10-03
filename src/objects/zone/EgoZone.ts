@@ -8,7 +8,7 @@ import Zone from "./Zone";
 
 export default class EgoZone extends Zone {
   private ego: Node;
-  
+
   private innerZoneNodes: Node[];
   private outerZoneNodes: Node[][];
 
@@ -131,10 +131,8 @@ export default class EgoZone extends Zone {
       this.AllCollection().removeClass("hide");
     }
 
-    if (!super.GetIsDrawn()) {
-
+    if (!this.IsDrawn) {
       if (this.AllCollection().length < settingsStore.MinNodesZoneShow) {
-        
         // return;
       }
 
@@ -151,12 +149,12 @@ export default class EgoZone extends Zone {
       if (settingsStore.Automove) {
         this.automove.enable();
       }
-      
+
       super.DrawZone();
       super.CTXStyle(this.color);
     }
   }
-  
+
   /**
    * Update
    */

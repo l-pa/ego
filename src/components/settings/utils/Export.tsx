@@ -43,6 +43,17 @@ export function Export() {
       <Checkbox defaultChecked={settingsStore.TrackZonesExport} onChange={(v) => {
         settingsStore.TrackZonesExport = v.target.checked
       }}>Track zones</Checkbox>
+
+      <Button
+        isFullWidth={true}
+        onClick={() => {
+          settingsStore.ExportSnapshot.getPdf()
+        }}
+      >
+        PDF
+      </Button>
+
+      <Divider />
       <Heading as="h4" size="md" pt={5}>
         Options
       </Heading>

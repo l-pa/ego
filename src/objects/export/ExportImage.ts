@@ -3,9 +3,12 @@ import { settingsStore, zoneStore } from "../..";
 import { cy } from "../graph/Cytoscape";
 import Zone from "../zone/Zone";
 import C2S from "@bokeh/canvas2svg";
+import { jsPDF } from "jspdf";
 interface ISnapshot {
   imageType: ImageType;
   imageData: string;
+  imageWidth: number;
+  imageHeight: number;
   dateTime: Date;
   activeZones?: IActiveZone[];
 }
@@ -22,15 +25,34 @@ interface IActiveZone {
 }
 
 class Snapshot implements ISnapshot {
-  constructor(imageType: ImageType, imageData: string, dateTime: Date) {
+  constructor(
+    imageType: ImageType,
+    imageData: string,
+    dateTime: Date,
+    imageWidth?: number,
+    imageHeight?: number
+  ) {
     this.imageData = imageData;
     this.dateTime = dateTime;
     this.activeZones = [];
 
     this.imageType = imageType;
 
+    const boundingBox = cy.elements().boundingBox({});
+
+    this.imageWidth = boundingBox.w;
+    this.imageHeight = boundingBox.h;
+
+    if (imageWidth) {
+      this.imageWidth = imageWidth;
+    }
+
+    if (imageHeight) {
+      this.imageHeight = imageHeight;
+    }
+
     zoneStore.Zones.forEach((z) => {
-      if (z.GetIsDrawn()) {
+      if (z.IsDrawn) {
         this.activeZones?.push({
           id: z.GetId(),
           color: z.Color,
@@ -41,6 +63,8 @@ class Snapshot implements ISnapshot {
   }
   imageType: ImageType;
   imageData: string;
+  imageHeight: number;
+  imageWidth: number;
   dateTime: Date;
   activeZones?: IActiveZone[] | undefined;
 }
@@ -53,7 +77,7 @@ export default class ExportImage {
   }
 
   public TakeSnapshot() {
-    this.getImageData(ImageType.PNG).then((data) => {
+    this.getImageData(settingsStore.ExportOptions.imageFormat).then((data) => {
       this.snapshots.push(
         new Snapshot(settingsStore.ExportOptions.imageFormat, data, new Date())
       );
@@ -77,11 +101,14 @@ export default class ExportImage {
     return newCanvas;
   }
 
-  private async getImageData(imageType: ImageType): Promise<string> {
+  private async getImageData(
+    imageType: ImageType,
+    addCy = true
+  ): Promise<string> {
     return new Promise<string>((resolve) => {
       switch (imageType) {
         case ImageType.PNG:
-          this.getMergedCanvas().then((res) => {
+          this.getMergedCanvas(addCy).then((res) => {
             const image = document.createElement("img");
             image.src = res
               .toDataURL("image/png")
@@ -94,7 +121,7 @@ export default class ExportImage {
 
           break;
         case ImageType.SVG:
-          const svg = this.getSvg();
+          const svg = this.getSvg(addCy);
           svg.setAttribute("style", `width:100%; height: 100%;`);
 
           resolve(new XMLSerializer().serializeToString(svg));
@@ -103,6 +130,38 @@ export default class ExportImage {
           break;
       }
     });
+  }
+
+  public getPdf() {
+    const doc = new jsPDF();
+
+    this.snapshots.forEach((snapshot) => {
+      switch (snapshot.imageType) {
+        case ImageType.PNG:
+          doc.addImage(
+            snapshot.imageData,
+            "PNG",
+            0,
+            0,
+            snapshot.imageWidth,
+            snapshot.imageHeight
+          );
+          break;
+        case ImageType.SVG:
+          doc.addSvgAsImage(
+            snapshot.imageData,
+            0,
+            0,
+            snapshot.imageWidth,
+            snapshot.imageHeight
+          );
+          break;
+        default:
+          break;
+      }
+      doc.addPage();
+    });
+    doc.save(`Ego_report_${new Date().toLocaleString()}.pdf`);
   }
 
   public getImageToNewTab(imageType: ImageType) {
@@ -152,6 +211,9 @@ export default class ExportImage {
   }
 
   private getCySvg(): string {
+    const canvas = ExportImage.emptyCanvas();
+    const ctx = canvas.getContext("2d");
+
     const a = this.getSVGContents((cy as any).svg({ full: true }));
     a.getElementsByTagName("g")[0].setAttribute(
       "transform",
@@ -164,7 +226,28 @@ export default class ExportImage {
     return cy.png({ full: true, scale: 1 });
   }
 
-  private getSvg(): HTMLElement {
+  public initSnapshots() {
+    this.snapshots.length = 0;
+    switch (settingsStore.ExportOptions.imageFormat) {
+      case ImageType.PNG:
+        settingsStore.ExportSnapshot.Snapshots.push(
+          new Snapshot(ImageType.PNG, this.getCyCanvas(), new Date())
+        );
+
+        break;
+      case ImageType.SVG:
+        settingsStore.ExportSnapshot.Snapshots.push(
+          new Snapshot(ImageType.SVG, this.getCySvg(), new Date())
+        );
+
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  private getSvg(addCy = true): HTMLElement {
     const cyBBox = cy.elements().boundingBox({});
 
     const w = Math.ceil(cyBBox.w);
@@ -184,13 +267,14 @@ export default class ExportImage {
       }
       layers.push(copySvgCtx.getSerializedSvg(true));
     });
-
-    layers.push(this.getCySvg());
+    if (addCy) {
+      layers.push(this.getCySvg());
+    }
 
     return this.addSVGs(layers);
   }
 
-  private async getMergedCanvas(): Promise<HTMLCanvasElement> {
+  private async getMergedCanvas(addCy = true): Promise<HTMLCanvasElement> {
     const merger = document.createElement("canvas");
     const ctx = merger.getContext("2d");
 
@@ -228,7 +312,10 @@ export default class ExportImage {
         });
         ctx?.translate(Zone.hullPadding, Zone.hullPadding);
 
-        ctx?.drawImage(img, 0, 0);
+        if (addCy) {
+          ctx?.drawImage(img, 0, 0);
+        }
+
         resolve(merger);
       };
     });

@@ -108,13 +108,13 @@ export function ZonesIntersect() {
               }
             }}
           >
-            {z.GetIsDrawn() && (
+            {z.IsDrawn && (
               <Heading as="h5" size="sm">
                 {z.GetId()}
               </Heading>
             )}
 
-            {!z.GetIsDrawn() && z.GetId()}
+            {!z.IsDrawn && z.GetId()}
           </Checkbox>
         );
       })}

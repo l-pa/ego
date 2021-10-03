@@ -37,7 +37,7 @@ export const ZoneItem: React.FunctionComponent<{
     ? "black"
     : "white";
 
-  const [isDrawn, setIsDrawn] = useState(zone.GetIsDrawn())
+  const [isDrawn, setIsDrawn] = useState(zone.IsDrawn)
   greyed = !isDrawn
 
   const activeZones: Zone[] = []
@@ -59,14 +59,14 @@ export const ZoneItem: React.FunctionComponent<{
     activeZones.length = 0
 
     zoneStore.TmpZones.forEach((z) => {
-      if (z.GetIsDrawn()) {
+      if (z.IsDrawn) {
         activeZones.push(z)
       }
       z.ClearZone()
     })
 
     zoneStore.Zones.forEach((z) => {
-      if (z.GetIsDrawn()) {
+      if (z.IsDrawn) {
         activeZones.push(z)
       }
       z.ClearZone()
@@ -327,7 +327,7 @@ export const ZoneItem: React.FunctionComponent<{
             setIsDrawn(e.target.checked)
           }}
           size="lg"
-          defaultIsChecked={zone.GetIsDrawn()}
+          defaultIsChecked={zone.IsDrawn}
         ></Checkbox>
         {!addButton && (
           <Button

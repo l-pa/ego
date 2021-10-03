@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable } from "mobx";
 import EgoZone from "../objects/zone/EgoZone";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { cy } from "../objects/graph/Cytoscape";
@@ -15,7 +15,12 @@ import Filter, {
 export class ZoneStore {
   constructor() {
     makeAutoObservable(this);
+
+    autorun(() => {
+      console.log(this);
+    });
   }
+
   private zones: Zone[] = [];
   private tmpZones: Zone[] = [];
 
@@ -108,6 +113,7 @@ export class ZoneStore {
   public AddZone(zone: Zone) {
     if (this.zones.filter((z) => z.GetId() === zone.GetId()).length === 0) {
       this.zones.push(zone);
+
       zone.DrawZone();
 
       if (zone instanceof EgoZone) {
@@ -132,14 +138,13 @@ export class ZoneStore {
    */
 
   public Update() {
-    
     const filter: Zone[][] = zoneStore.Filter(this.zones);
-        
+
     filter[0].forEach((z) => z.DrawZone());
 
     filter[1].forEach((z) => z.ClearZone());
 
-    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));    
+    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
   }
 
   /**
@@ -241,11 +246,11 @@ export class ZoneStore {
 
       this.zones.forEach((z) => {
         if (z instanceof EgoZone || z instanceof CustomZone)
-          if (z.GetIsDrawn()) nodes = nodes.union(z.AllCollection());
+          if (z.IsDrawn) nodes = nodes.union(z.AllCollection());
       });
       this.TmpZones.forEach((z) => {
         if (z instanceof EgoZone || z instanceof CustomZone)
-          if (z.GetIsDrawn()) nodes = nodes.union(z.AllCollection());
+          if (z.IsDrawn) nodes = nodes.union(z.AllCollection());
       });
 
       // nodes.forEach((x, i) => {
@@ -302,7 +307,7 @@ export class ZoneStore {
       } else {
         zones.forEach((element) => {
           if (
-            element.GetIsDrawn() &&
+            element.IsDrawn &&
             (element instanceof EgoZone || element instanceof CustomZone)
           ) {
             element
@@ -408,7 +413,7 @@ export class ZoneStore {
 
       zoneStore.Zones.forEach((zone) => {
         if (
-          zone.GetIsDrawn() &&
+          zone.IsDrawn &&
           (zone instanceof EgoZone || zone instanceof CustomZone)
         )
           nodesInZones = nodesInZones.union(zone.AllCollection());
