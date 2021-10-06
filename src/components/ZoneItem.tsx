@@ -25,7 +25,7 @@ export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
   addButton?: boolean;
   greyed?: boolean;
-  filter?: boolean
+  filter?: boolean;
 }> = ({ zone, addButton = false, greyed = false, filter = false }) => {
   const innerE =
     zone.AllCollection().edgesWith(zone.AllCollection()).length * 2;
@@ -37,49 +37,45 @@ export const ZoneItem: React.FunctionComponent<{
     ? "black"
     : "white";
 
-  const [isDrawn, setIsDrawn] = useState(zone.IsDrawn)
-  greyed = !isDrawn
+  const [isDrawn, setIsDrawn] = useState(zone.IsDrawn);
+  greyed = !isDrawn;
 
-  const activeZones: Zone[] = []
+  const activeZones: Zone[] = [];
 
   const mouseLeaveFunction = () => {
     console.log(activeZones);
 
-    zone.ClearZone()
-    activeZones.forEach((z) => z.DrawZone())
+    zone.ClearZone();
+    activeZones.forEach((z) => z.DrawZone());
 
-    cy.nodes()
-      .difference(zone.AllCollection().nodes())
-      .removeClass("tmpHide");
+    cy.nodes().difference(zone.AllCollection().nodes()).removeClass("tmpHide");
 
     zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
-  }
+  };
 
   const mouseEnterFunction = () => {
-    activeZones.length = 0
+    activeZones.length = 0;
 
     zoneStore.TmpZones.forEach((z) => {
       if (z.IsDrawn) {
-        activeZones.push(z)
+        activeZones.push(z);
       }
-      z.ClearZone()
-    })
+      z.ClearZone();
+    });
 
     zoneStore.Zones.forEach((z) => {
       if (z.IsDrawn) {
-        activeZones.push(z)
+        activeZones.push(z);
       }
-      z.ClearZone()
-    })
+      z.ClearZone();
+    });
 
-    zone.DrawZone()
+    zone.DrawZone();
 
-    zoneStore.ColorNodesInZone(zone)
+    zoneStore.ColorNodesInZone(zone);
 
-    cy.nodes()
-      .difference(zone.AllCollection().nodes())
-      .addClass("tmpHide");
-  }
+    cy.nodes().difference(zone.AllCollection().nodes()).addClass("tmpHide");
+  };
 
   return (
     <Box zIndex={1} bg={!greyed ? zone.Color : "grey"} p={4}>
@@ -91,38 +87,37 @@ export const ZoneItem: React.FunctionComponent<{
             colorScheme={"primary"}
             outline=""
             onMouseEnter={(e) => {
-              mouseEnterFunction()
+              mouseEnterFunction();
             }}
             onMouseLeave={(e) => {
-              mouseLeaveFunction()
+              mouseLeaveFunction();
             }}
           />
-        ) :
-          zone.Ego.isProminent() === 1 ? (
-            <Avatar
-              name={zone.GetId().split("").join(" ")}
-              backgroundColor={!greyed ? "yellow.400" : "grey"}
-              colorScheme={"primary"}
-              onMouseEnter={(e) => {
-                mouseEnterFunction()
-              }}
-              onMouseLeave={(e) => {
-                mouseLeaveFunction()
-              }}
-            />
-          ) : (
-              <Avatar
-                name={zone.GetId().split("").join(" ")}
-                backgroundColor={!greyed ? "green.400" : "grey"}
-                colorScheme={"primary"}
-                onMouseEnter={(e) => {
-                  mouseEnterFunction()
-                }}
-                onMouseLeave={(e) => {
-                  mouseLeaveFunction()
-                }}
-              />
-            )}
+        ) : zone.Ego.isProminent() === 1 ? (
+          <Avatar
+            name={zone.GetId().split("").join(" ")}
+            backgroundColor={!greyed ? "yellow.400" : "grey"}
+            colorScheme={"primary"}
+            onMouseEnter={(e) => {
+              mouseEnterFunction();
+            }}
+            onMouseLeave={(e) => {
+              mouseLeaveFunction();
+            }}
+          />
+        ) : (
+          <Avatar
+            name={zone.GetId().split("").join(" ")}
+            backgroundColor={!greyed ? "green.400" : "grey"}
+            colorScheme={"primary"}
+            onMouseEnter={(e) => {
+              mouseEnterFunction();
+            }}
+            onMouseLeave={(e) => {
+              mouseLeaveFunction();
+            }}
+          />
+        )}
         <Stack ml="2">
           <Box
             color={color}
@@ -133,9 +128,7 @@ export const ZoneItem: React.FunctionComponent<{
             display={"flex"}
             alignItems="center"
           >
-            {filter && (
-              <WarningIcon />
-            )}
+            {filter && <WarningIcon />}
             <Box>
               <Tooltip
                 zIndex={2}
@@ -178,7 +171,6 @@ export const ZoneItem: React.FunctionComponent<{
                   </Text>
                 </Stack>
               </Tooltip>
-
             </Box>
             <Box>
               <Tooltip
@@ -319,12 +311,11 @@ export const ZoneItem: React.FunctionComponent<{
         <Checkbox
           onChange={(e) => {
             if (e.target.checked) {
-              zone.DrawZone()
-
+              zone.DrawZone();
             } else {
-              zone.ClearZone()
+              zone.ClearZone();
             }
-            setIsDrawn(e.target.checked)
+            setIsDrawn(e.target.checked);
           }}
           size="lg"
           defaultIsChecked={zone.IsDrawn}
@@ -349,7 +340,7 @@ export const ZoneItem: React.FunctionComponent<{
             aria-label="Add zone"
             onClick={() => {
               zoneStore.RemoveTmpZone(zone);
-              zoneStore.AddZone(zone);
+              zoneStore.AddZones([zone]);
             }}
           >
             Add zone

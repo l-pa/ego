@@ -9,6 +9,7 @@ interface ISnapshot {
   imageData: string;
   imageWidth: number;
   imageHeight: number;
+  filtered: number;
   dateTime: Date;
   activeZones?: IActiveZone[];
 }
@@ -60,7 +61,10 @@ class Snapshot implements ISnapshot {
         });
       }
     });
+
+    console.log("New snapshot " + new Date().toLocaleString());
   }
+  filtered: number = zoneStore.FilteredZonesCount;
   imageType: ImageType;
   imageData: string;
   imageHeight: number;
@@ -77,11 +81,19 @@ export default class ExportImage {
   }
 
   public TakeSnapshot() {
-    this.getImageData(settingsStore.ExportOptions.imageFormat).then((data) => {
-      this.snapshots.push(
-        new Snapshot(settingsStore.ExportOptions.imageFormat, data, new Date())
+    if (settingsStore.TrackZonesExport)
+      this.getImageData(settingsStore.ExportOptions.imageFormat).then(
+        (data) => {
+          this.snapshots.push(
+            new Snapshot(
+              settingsStore.ExportOptions.imageFormat,
+              data,
+              new Date()
+            )
+          );
+        }
       );
-    });
+    console.log(this.snapshots);
   }
 
   static cloneCanvas(oldCanvas: HTMLCanvasElement) {
@@ -133,32 +145,33 @@ export default class ExportImage {
   }
 
   public getPdf() {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
 
+    const max = { height: 300, width: 210 };
+    const margin = 50;
     this.snapshots.forEach((snapshot) => {
-      switch (snapshot.imageType) {
-        case ImageType.PNG:
-          doc.addImage(
-            snapshot.imageData,
-            "PNG",
-            0,
-            0,
-            snapshot.imageWidth,
-            snapshot.imageHeight
-          );
-          break;
-        case ImageType.SVG:
-          doc.addSvgAsImage(
-            snapshot.imageData,
-            0,
-            0,
-            snapshot.imageWidth,
-            snapshot.imageHeight
-          );
-          break;
-        default:
-          break;
-      }
+      const pdfHeight =
+        (snapshot.imageHeight * max.width) / snapshot.imageWidth - margin;
+
+      const svgDOM = new DOMParser().parseFromString(
+        snapshot.imageData,
+        "text/html"
+      );
+
+      this.saveSvg(
+        svgDOM.documentElement.getElementsByTagName("body")[0].innerHTML,
+        "aaa.svg"
+      );
+
+      doc.addSvgAsImage(
+        '<svg height="100" width="100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />        Sorry, your browser does not support inline SVG.  </svg> ',
+        0,
+        0,
+        snapshot.imageWidth - margin,
+        snapshot.imageHeight
+      );
+
+      doc.text(snapshot.dateTime.toLocaleString(), 5, 5);
       doc.addPage();
     });
     doc.save(`Ego_report_${new Date().toLocaleString()}.pdf`);
@@ -175,6 +188,7 @@ export default class ExportImage {
         break;
       case ImageType.SVG:
         this.getImageData(imageType).then((res) => {
+          this.saveSvg(res, "xd.svg");
           var newTab = window.open("");
           newTab?.document.write(res);
         });
@@ -193,15 +207,21 @@ export default class ExportImage {
     return svgDOM;
   }
   private addSVGs(inputStrings: string[]) {
-    let svgMain = document.createElement("svg");
-    svgMain.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    // svgMain.setAttribute("transform", "translate(70 70)");
+    let svgMain = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    // svgMain.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgMain.setAttribute(
+      "transform",
+      `scale(1 1) translate(${-Zone.hullPadding / 2} ${-Zone.hullPadding / 2})`
+    );
     for (let stringI = 0; stringI < inputStrings.length; stringI++) {
       let domParser = new DOMParser();
       let svgDOM = domParser
         .parseFromString(inputStrings[stringI], "text/xml")
         .getElementsByTagName("svg")[0];
-      svgDOM.setAttribute("transform", "translate(70 70)");
+      svgDOM.setAttribute(
+        "transform",
+        `translate(${Zone.hullPadding} ${Zone.hullPadding})`
+      );
       if (svgDOM)
         while (svgDOM.childNodes.length > 0) {
           svgMain.appendChild(svgDOM.childNodes[0]);
@@ -217,7 +237,7 @@ export default class ExportImage {
     const a = this.getSVGContents((cy as any).svg({ full: true }));
     a.getElementsByTagName("g")[0].setAttribute(
       "transform",
-      "translate(70 70)"
+      `translate(${Zone.hullPadding} ${Zone.hullPadding})`
     );
     return new XMLSerializer().serializeToString(a);
   }
@@ -247,31 +267,44 @@ export default class ExportImage {
     }
   }
 
-  private getSvg(addCy = true): HTMLElement {
+  private getSvg(addCy = true): SVGSVGElement {
     const cyBBox = cy.elements().boundingBox({});
 
     const w = Math.ceil(cyBBox.w);
     const h = Math.ceil(cyBBox.h);
+    const hullPadding = Zone.hullPadding;
 
     const layers: string[] = [];
 
-    zoneStore.Zones.forEach((z) => {
+    zoneStore.Zones.filter((z) => z.IsDrawn).forEach((z) => {
       const copySvgCtx = new C2S({
-        height: h + 2 * Zone.hullPadding,
-        width: w + 2 * Zone.hullPadding,
+        height: h + 2 * hullPadding,
+        width: w + 2 * hullPadding,
       });
 
       if (copySvgCtx) {
-        copySvgCtx?.translate(Zone.hullPadding, Zone.hullPadding);
+        copySvgCtx?.translate(hullPadding, hullPadding);
         z.getNewContext(copySvgCtx);
       }
       layers.push(copySvgCtx.getSerializedSvg(true));
     });
+
     if (addCy) {
       layers.push(this.getCySvg());
     }
 
     return this.addSVGs(layers);
+  }
+
+  saveSvg(svgEl: string, name: string) {
+    const svg = svgEl;
+    const blob = new Blob([svg.toString()]);
+    const element = document.createElement("a");
+
+    element.download = name;
+    element.href = window.URL.createObjectURL(blob);
+    element.click();
+    element.remove();
   }
 
   private async getMergedCanvas(addCy = true): Promise<HTMLCanvasElement> {
@@ -280,19 +313,23 @@ export default class ExportImage {
 
     const cyBBox = cy.elements().boundingBox({});
 
-    const w = Math.ceil(cyBBox.w);
-    const h = Math.ceil(cyBBox.h);
+    const w = Math.ceil(cyBBox.w) * window.devicePixelRatio;
+    const h = Math.ceil(cyBBox.h) * window.devicePixelRatio;
 
     const img = new Image(w, h);
 
-    merger.width = w + 2 * Zone.hullPadding;
-    merger.height = h + 2 * Zone.hullPadding;
+    const hullPadding = Zone.hullPadding * window.devicePixelRatio;
+
+    merger.width = w + 2 * hullPadding;
+    merger.height = h + 2 * hullPadding;
+
+    ctx?.scale(window.devicePixelRatio, window.devicePixelRatio);
 
     img.src = this.getCyCanvas();
 
     return new Promise((resolve) => {
       img.onload = function () {
-        zoneStore.Zones.forEach((z) => {
+        zoneStore.Zones.filter((z) => z.IsDrawn).forEach((z) => {
           const copy = ExportImage.emptyCanvas();
 
           copy.width = merger.width;
@@ -301,8 +338,8 @@ export default class ExportImage {
           const ctxCopy = copy.getContext("2d");
           if (ctxCopy) {
             ctxCopy?.translate(
-              -cyBBox.x1 + Zone.hullPadding,
-              -cyBBox.y1 + Zone.hullPadding
+              -cyBBox.x1 * window.devicePixelRatio + hullPadding,
+              -cyBBox.y1 * window.devicePixelRatio + hullPadding
             );
 
             z.getNewContext(ctxCopy);
@@ -310,7 +347,10 @@ export default class ExportImage {
 
           ctx?.drawImage(copy, 0, 0);
         });
-        ctx?.translate(Zone.hullPadding, Zone.hullPadding);
+
+        ctx?.scale(1 / window.devicePixelRatio, 1 / window.devicePixelRatio);
+
+        ctx?.translate(hullPadding, hullPadding);
 
         if (addCy) {
           ctx?.drawImage(img, 0, 0);

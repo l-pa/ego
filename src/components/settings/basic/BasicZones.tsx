@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Stack,
-  Button,
-  Checkbox,
-  Divider,
-  Heading,
-} from "@chakra-ui/react";
+import { Stack, Button, Checkbox, Divider, Heading } from "@chakra-ui/react";
 import { ZoneItem } from "../../ZoneItem";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import { observer } from "mobx-react-lite";
@@ -15,16 +9,31 @@ import { ZoneItemCustom } from "../../ZoneItemCustom";
 import { reaction } from "mobx";
 
 export const BasicZones: React.FunctionComponent = () => {
-
   const Zones = observer(() => (
     <Stack>
-      {zoneStore.Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[0].map((z, i) => {
-        return <ZoneItem greyed={!z.IsDrawn} zone={z as EgoZone} key={i}></ZoneItem>;
-      })}
+      {zoneStore
+        .Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[0]
+        .map((z, i) => {
+          return (
+            <ZoneItem
+              greyed={!z.IsDrawn}
+              zone={z as EgoZone}
+              key={i}
+            ></ZoneItem>
+          );
+        })}
 
-      {zoneStore.Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[1].map((z, i) => {
-        return <ZoneItem greyed={!z.IsDrawn} zone={z as EgoZone} key={i}></ZoneItem>;
-      })}
+      {zoneStore
+        .Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[1]
+        .map((z, i) => {
+          return (
+            <ZoneItem
+              greyed={!z.IsDrawn}
+              zone={z as EgoZone}
+              key={i}
+            ></ZoneItem>
+          );
+        })}
     </Stack>
   ));
 
@@ -38,11 +47,10 @@ export const BasicZones: React.FunctionComponent = () => {
 
   console.log(Zones);
 
-
   reaction(
     () => zoneStore.Zones,
-    zones => console.log(zones)
-  )
+    (zones) => console.log(zones)
+  );
 
   return (
     <Stack>
@@ -53,11 +61,13 @@ export const BasicZones: React.FunctionComponent = () => {
 
         <Button
           onClick={() => {
+            const zones: EgoZone[] = [];
             networkStore.Network?.Nodes.forEach((n) => {
               if (n.isProminent() === 0) {
-                zoneStore.AddZone(new EgoZone(n));
+                zones.push(new EgoZone(n));
               }
             });
+            zoneStore.AddZones(zones);
           }}
         >
           Strongly prominent
@@ -65,11 +75,13 @@ export const BasicZones: React.FunctionComponent = () => {
 
         <Button
           onClick={() => {
+            const zones: EgoZone[] = [];
             networkStore.Network?.Nodes.forEach((n) => {
               if (n.isProminent() === 1) {
-                zoneStore.AddZone(new EgoZone(n));
+                zones.push(new EgoZone(n));
               }
             });
+            zoneStore.AddZones(zones);
           }}
         >
           Weakly prominent
@@ -80,7 +92,7 @@ export const BasicZones: React.FunctionComponent = () => {
         <Button
           colorScheme={"red"}
           onClick={() => {
-            zoneStore.ClearZones();
+            zoneStore.RemoveAllZones();
           }}
         >
           All zones

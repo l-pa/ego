@@ -1,12 +1,14 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import {ZoneStore} from './stores/ZoneStore'
-import { SettingsStore } from './stores/SettingsStore';
-import { NetworkStore } from './stores/NetworkStore';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { ZoneStore } from "./stores/ZoneStore";
+import { SettingsStore } from "./stores/SettingsStore";
+import { NetworkStore } from "./stores/NetworkStore";
 import cytoscape from "cytoscape";
+
+import C2S from "@bokeh/canvas2svg";
 
 // @ts-ignore
 import cola from "cytoscape-cola";
@@ -14,20 +16,20 @@ import cola from "cytoscape-cola";
 import coseBilkent from "cytoscape-cose-bilkent";
 
 // @ts-ignore
-import svg from 'cytoscape-svg';
+import svg from "cytoscape-svg";
 
 // @ts-ignore
 import contextMenus from "cytoscape-context-menus";
 
 interface IStore {
-  zones: ZoneStore,
-  settings:SettingsStore,
-  network:NetworkStore
+  zones: ZoneStore;
+  settings: SettingsStore;
+  network: NetworkStore;
 }
 
-export const zoneStore = new ZoneStore()
-export const settingsStore = new SettingsStore()
-export const networkStore = new NetworkStore()
+export const zoneStore = new ZoneStore();
+export const settingsStore = new SettingsStore();
+export const networkStore = new NetworkStore();
 
 const automove = require("cytoscape-automove");
 const cycanvas = require("cytoscape-canvas");
@@ -39,13 +41,25 @@ cytoscape.use(coseBilkent);
 cytoscape.use(contextMenus);
 cytoscape.use(svg);
 
-export const Context = React.createContext<IStore>({zones: zoneStore, settings: settingsStore, network:networkStore});
+// @ts-ignore
+C2S.prototype.curve = CanvasRenderingContext2D.prototype.curve;
+
+export const Context = React.createContext<IStore>({
+  zones: zoneStore,
+  settings: settingsStore,
+  network: networkStore,
+});
 ReactDOM.render(
-  
   <React.StrictMode>
-    <Context.Provider value={{zones: zoneStore, settings: settingsStore, network:networkStore}}>
-    <App />
-  </Context.Provider>
+    <Context.Provider
+      value={{
+        zones: zoneStore,
+        settings: settingsStore,
+        network: networkStore,
+      }}
+    >
+      <App />
+    </Context.Provider>
   </React.StrictMode>,
   document.getElementById("root")
 );

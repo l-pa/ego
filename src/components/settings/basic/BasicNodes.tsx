@@ -16,41 +16,52 @@ import { cy } from "../../../objects/graph/Cytoscape";
 import Zone from "../../../objects/zone/Zone";
 
 export function BasicNodes() {
-
   useEffect(() => {
-    return (() => {
-      zoneStore.ClearTmpZones()
+    return () => {
+      zoneStore.ClearTmpZones();
       // zoneStore.Zones.forEach((z) => z.DrawZone());
-    })
-  })
+    };
+  });
 
   const localObserverable = useLocalObservable(() => ({
     search: "",
     nodes: [] as NodeSingular[],
     zonesForNodes: [] as Zone[],
-    nodesAvailable: cy.collection() as Collection
-  }
-  ))
+    nodesAvailable: cy.collection() as Collection,
+  }));
 
   const Nodes = observer(() => {
-    const tmpCheckedItems: JSX.Element[] = []
+    const tmpCheckedItems: JSX.Element[] = [];
 
     return (
       <Stack>
-        <Text>Selected: {localObserverable.nodes.map(n => n.id() + " ")}</Text>
+        <Text>
+          Selected: {localObserverable.nodes.map((n) => n.id() + " ")}
+        </Text>
         <Stack height="10em" width={"100%"} overflow="scroll">
           {cy
             .nodes()
             .filter((n) => n.id().includes(localObserverable.search))
             .map((n) => {
-              if (!(localObserverable.nodes.length > 0 && !localObserverable.nodesAvailable?.nodes().some((node) => node[0].id() === n.id()))) {
+              if (
+                !(
+                  localObserverable.nodes.length > 0 &&
+                  !localObserverable.nodesAvailable
+                    ?.nodes()
+                    .some((node) => node[0].id() === n.id())
+                )
+              ) {
                 return (
                   <Checkbox
                     key={n.id()}
                     isDisabled={false}
-                    isChecked={localObserverable.nodes.some((node) => node.id() === n.id())}
+                    isChecked={localObserverable.nodes.some(
+                      (node) => node.id() === n.id()
+                    )}
                     onChange={(e) => {
-                      const node = networkStore.Network?.getNode(e.target.value)[0];
+                      const node = networkStore.Network?.getNode(
+                        e.target.value
+                      )[0];
                       if (node) {
                         if (e.target.checked) {
                           addNode(node);
@@ -62,91 +73,114 @@ export function BasicNodes() {
                     value={n.id()}
                   >
                     {n.id()}
-                  </Checkbox>)
+                  </Checkbox>
+                );
               } else {
-                tmpCheckedItems.push(<Checkbox
-                  key={n.id()}
-                  isDisabled={true}
-                  isChecked={localObserverable.nodes.some((node) => node.id() === n.id())}
-                  onChange={(e) => {
-                    const node = networkStore.Network?.getNode(e.target.value)[0];
-                    if (node) {
-                      if (e.target.checked) {
-                        addNode(node);
-                      } else {
-                        removeNode(node);
+                tmpCheckedItems.push(
+                  <Checkbox
+                    key={n.id()}
+                    isDisabled={true}
+                    isChecked={localObserverable.nodes.some(
+                      (node) => node.id() === n.id()
+                    )}
+                    onChange={(e) => {
+                      const node = networkStore.Network?.getNode(
+                        e.target.value
+                      )[0];
+                      if (node) {
+                        if (e.target.checked) {
+                          addNode(node);
+                        } else {
+                          removeNode(node);
+                        }
                       }
-                    }
-                  }}
-                  value={n.id()}
-                >
-                  {n.id()}
-                </Checkbox>)
+                    }}
+                    value={n.id()}
+                  >
+                    {n.id()}
+                  </Checkbox>
+                );
               }
             })}
 
-          {tmpCheckedItems.map(i => {
-            return (i)
+          {tmpCheckedItems.map((i) => {
+            return i;
           })}
         </Stack>
-        <Button isDisabled={localObserverable.zonesForNodes?.length === 0} onClick={() => {
-          localObserverable.zonesForNodes.forEach((z) => {
-            zoneStore.AddZone(z)
-          })
-        }}>Add</Button>
+        <Button
+          isDisabled={localObserverable.zonesForNodes?.length === 0}
+          onClick={() => {
+            zoneStore.AddZones(localObserverable.zonesForNodes);
+          }}
+        >
+          Add
+        </Button>
         <Text>{localObserverable.zonesForNodes?.length} zones</Text>
       </Stack>
-    )
-  })
+    );
+  });
 
   useEffect(() => {
-
     // zoneStore.HideAllZones()
 
-    reaction(() => settingsStore.GetFilterChanged(), () => {
-      if (localObserverable.nodes.length > 0) {
-        localObserverable.zonesForNodes = zoneStore.Filter(zoneStore.ZonesForNodes(localObserverable.nodes))[0]
+    reaction(
+      () => settingsStore.GetFilterChanged(),
+      () => {
+        if (localObserverable.nodes.length > 0) {
+          localObserverable.zonesForNodes = zoneStore.Filter(
+            zoneStore.ZonesForNodes(localObserverable.nodes)
+          )[0];
+        }
       }
+    );
+    reaction(
+      () => localObserverable.zonesForNodes,
+      () => {
+        let nodesAvailable = cy.collection();
+        if (localObserverable.nodes.length > 0) {
+          localObserverable.zonesForNodes?.forEach(
+            (z) => (nodesAvailable = nodesAvailable.union(z.AllCollection()))
+          );
+          localObserverable.nodesAvailable = nodesAvailable;
+        }
 
-    })
-    reaction(() => localObserverable.zonesForNodes, () => {
-
-      let nodesAvailable = cy.collection()
-      if (localObserverable.nodes.length > 0) {
-        localObserverable.zonesForNodes?.forEach(z => nodesAvailable = nodesAvailable.union(z.AllCollection()))
-        localObserverable.nodesAvailable = nodesAvailable
+        zoneStore.AddTmpZone(localObserverable.zonesForNodes, true);
       }
+    );
 
-      zoneStore.AddTmpZone(localObserverable.zonesForNodes, true)
-
-    })
-
-    reaction(() => localObserverable.nodes, () => {
-      zoneStore.ClearTmpZones()
-      if (localObserverable.nodes.length > 0) {
-        localObserverable.zonesForNodes = zoneStore.Filter(zoneStore.ZonesForNodes(localObserverable.nodes))[0]
-      } else {
-        localObserverable.zonesForNodes = []
+    reaction(
+      () => localObserverable.nodes,
+      () => {
+        zoneStore.ClearTmpZones();
+        if (localObserverable.nodes.length > 0) {
+          localObserverable.zonesForNodes = zoneStore.Filter(
+            zoneStore.ZonesForNodes(localObserverable.nodes)
+          )[0];
+        } else {
+          localObserverable.zonesForNodes = [];
+        }
       }
-    });
-    return (() => {
+    );
+    return () => {
       action(() => {
-        localObserverable.nodes = []
-        localObserverable.zonesForNodes = []
-      }).call([])
-    })
-  }, [])
+        localObserverable.nodes = [];
+        localObserverable.zonesForNodes = [];
+      }).call([]);
+    };
+  }, []);
 
   const addNode = action((node: NodeSingular) => {
-    localObserverable.nodes = [...localObserverable.nodes, node]
+    localObserverable.nodes = [...localObserverable.nodes, node];
   });
 
   const removeNode = action((node: NodeSingular) => {
-    localObserverable.nodes = localObserverable.nodes.filter(n => n.id() !== node.id())
+    localObserverable.nodes = localObserverable.nodes.filter(
+      (n) => n.id() !== node.id()
+    );
   });
 
   const setSearch = action((id: string) => {
-    localObserverable.search = id
+    localObserverable.search = id;
   });
 
   const DegreeSize = observer(() => (
@@ -204,11 +238,10 @@ export function BasicNodes() {
         //value={localObserverable.search}
         placeholder="Search"
         onChange={(e) => {
-          setSearch(e.target.value)
+          setSearch(e.target.value);
         }}
       />
       <Nodes />
-
     </Stack>
   );
 }

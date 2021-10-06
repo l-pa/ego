@@ -23,6 +23,7 @@ export class ZoneStore {
 
   private zones: Zone[] = [];
   private tmpZones: Zone[] = [];
+  private filteredZonesCount: number = 0;
 
   public duplicates: Zone[] = [];
   public zonesWithSelectedSize: Zone[] = [];
@@ -33,6 +34,10 @@ export class ZoneStore {
 
   get TmpZones(): Zone[] {
     return this.tmpZones;
+  }
+
+  public get FilteredZonesCount(): number {
+    return this.filteredZonesCount;
   }
 
   /**
@@ -110,7 +115,7 @@ export class ZoneStore {
    * Adds new zone
    * @param zone Zone to be added
    */
-  public AddZone(zone: Zone) {
+  public AddZone(zone: Zone, addSnapshot = true) {
     if (this.zones.filter((z) => z.GetId() === zone.GetId()).length === 0) {
       this.zones.push(zone);
 
@@ -131,6 +136,19 @@ export class ZoneStore {
         isClosable: true,
       });
     }
+    if (addSnapshot) settingsStore.ExportSnapshot.TakeSnapshot();
+  }
+
+  /**
+   * Adds new zones
+   * @param zone Zones array to be added
+   */
+  public AddZones(zones: Zone[]) {
+    zones.forEach((zone) => {
+      this.AddZone(zone, false);
+    });
+
+    settingsStore.ExportSnapshot.TakeSnapshot();
   }
 
   /**
@@ -150,7 +168,7 @@ export class ZoneStore {
   /**
    * Removes all zones
    */
-  public ClearZones() {
+  public RemoveAllZones() {
     this.zones.forEach((z) => {
       z.ClearZone();
     });
@@ -171,13 +189,27 @@ export class ZoneStore {
 
   /**
    * Removes specified zone
-   * @param z Zone to be removed
+   * @param zone Zone to be removed
    */
-  public RemoveZone(z: Zone) {
-    this.zones = this.zones.filter((zone) => zone.GetId() !== z.GetId());
-    z.ClearZone();
+  public RemoveZone(zone: Zone, addSnapshot = true) {
+    this.zones = this.zones.filter((z) => z.GetId() !== zone.GetId());
+    zone.ClearZone();
 
     this.Update();
+
+    if (addSnapshot) settingsStore.ExportSnapshot.TakeSnapshot();
+  }
+
+  /**
+   * Removes specified zones array
+   * @param zones Zones array to be removed
+   */
+  public RemoveZones(zones: Zone[]) {
+    zones.forEach((zone) => {
+      this.RemoveZone(zone, false);
+    });
+
+    settingsStore.ExportSnapshot.TakeSnapshot();
   }
 
   /**
@@ -552,6 +584,7 @@ export class ZoneStore {
         difference.push(z);
       }
     });
+    this.filteredZonesCount = difference.length;
     if (exceptExisting) {
       return [
         Array.from(new Set(returnFilter.concat(include))).filter(

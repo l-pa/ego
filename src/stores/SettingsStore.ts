@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable, reaction } from "mobx";
+import { autorun, makeAutoObservable } from "mobx";
 import { zoneStore } from "..";
 import CustomZone from "../objects/zone/CustomZone";
 import EgoZone from "../objects/zone/EgoZone";
@@ -34,7 +34,7 @@ export class SettingsStore {
   private snapshots: Export;
 
   private exportOptions: IExportSettings = {
-    imageFormat: ImageType.PNG,
+    imageFormat: ImageType.SVG,
   };
 
   public get TrackZonesExport(): boolean {
@@ -49,11 +49,11 @@ export class SettingsStore {
       }
     } else {
       if (this.snapshots.Snapshots.length === 0) {
+        console.log("init");
+
         this.snapshots.initSnapshots();
       }
-      if (zoneStore.Zones.length > 0) {
-        this.snapshots.TakeSnapshot();
-      }
+      this.snapshots.TakeSnapshot();
       this.trackZonesExport = v;
     }
   }
@@ -107,10 +107,6 @@ export class SettingsStore {
 
   public get FilterExistingZones(): boolean {
     return this.filterExistingZones;
-  }
-
-  public set FilterExistingZones(v: boolean) {
-    this.filterExistingZones = v;
   }
 
   public get ActiveCategory(): number {

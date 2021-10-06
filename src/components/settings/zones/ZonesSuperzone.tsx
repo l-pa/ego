@@ -27,16 +27,14 @@ export function ZonesSuperzone() {
         .sort(
           (b: Zone, a: Zone) =>
             a.AllCollection().length - b.AllCollection().length
-        ).forEach((z) => {
+        )
+        .forEach((z) => {
           z.DrawZone();
           if (zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())) {
           } else {
-            return (
-              <ZoneItem addButton={true} zone={z as EgoZone} ></ZoneItem>
-            );
+            return <ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>;
           }
-        })
-      }
+        })}
 
       {zoneStore
         .Filter(zoneStore.TmpZones)[1]
@@ -44,7 +42,8 @@ export function ZonesSuperzone() {
         .sort(
           (b: Zone, a: Zone) =>
             a.AllCollection().length - b.AllCollection().length
-        ).forEach((z) => {
+        )
+        .forEach((z) => {
           z.ClearZone();
           if (zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())) {
           } else {
@@ -108,7 +107,7 @@ export function ZonesSuperzone() {
         <Button
           isFullWidth={true}
           onClick={() => {
-            zoneStore.Filter(zoneStore.TmpZones)[0].forEach((z) => zoneStore.AddZone(z));
+            zoneStore.AddZones(zoneStore.Filter(zoneStore.TmpZones)[0]);
             zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
           }}
         >
