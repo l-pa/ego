@@ -61,7 +61,7 @@ export function ZonesSuperzone() {
 
   const addZone = action((zone: Zone) => {
     zoneStore.AddTmpZone([zone], true);
-    zone.SetAlpha("25");
+    zone.SetAlpha(0.25);
     zoneStore.ColorNodesInZones(zoneStore.TmpZones);
   });
 

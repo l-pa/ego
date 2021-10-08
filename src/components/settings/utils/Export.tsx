@@ -62,6 +62,7 @@ export function Export() {
         isFullWidth={true}
         onClick={() => {
           settingsStore.ExportSnapshot.getPdf();
+
         }}
       >
         PDF

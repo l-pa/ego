@@ -45,7 +45,7 @@ export const ZoneItemCustom: React.FunctionComponent<{
               let alpha = Number.parseInt(
                 (255 * (val / 100)).toString()
               ).toString(16);
-              zone.SetAlpha(alpha);
+              zone.SetAlpha(0.2);
             }}
           >
             <SliderTrack />

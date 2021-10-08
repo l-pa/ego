@@ -9,6 +9,7 @@ import {
 } from "mobx";
 import { zoneStore } from "../..";
 import { ZoneStore } from "../../stores/ZoneStore";
+import ExportImage from "../export/ExportImage";
 import { cy } from "../graph/Cytoscape";
 import {
   Subtract,
@@ -35,9 +36,9 @@ export default abstract class Zone {
 
   private label: string = "";
 
-  private ctxStyle: string = "#000000";
+  private ctxStyle: string = "#00ff00";
 
-  private alpha: string = "80";
+  private alpha: number = 0.5;
 
   private points: Array<IPoint> = [];
   private collection: cytoscape.Collection = cy.collection();
@@ -82,10 +83,11 @@ export default abstract class Zone {
     return this.alpha;
   }
 
-  public SetAlpha(alpha: string) {
-    this.alpha = alpha.padStart(2, "0");
+  public SetAlpha(alpha: number) {
+    this.alpha = alpha;
     if (this.isDrawn) {
-      this.ctx.fillStyle = this.ctxStyle + this.alpha;
+      // this.ctx.fillStyle = this.ctxStyle; // + this.alpha;
+      // this.ctx.fillStyle = ExportImage.hexToRgb(this.ctxStyle, alpha);
       if (this.isDrawn) {
         this.Update();
       }
@@ -159,11 +161,8 @@ export default abstract class Zone {
     ctx: CanvasRenderingContext2D = this.ctx
   ) {
     this.ctxStyle = style.toString();
-    if (style instanceof CanvasPattern) {
-      ctx.fillStyle = style;
-    } else {
-      ctx.fillStyle = style + this.alpha;
-    }
+
+    ctx.fillStyle = style;
   }
 
   public CollectionPoints(

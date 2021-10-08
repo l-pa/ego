@@ -291,12 +291,9 @@ export const ZoneItem: React.FunctionComponent<{
       </Heading>
       <Slider
         color="pink"
-        defaultValue={(Number.parseInt(zone.GetAlpha(), 16) / 255) * 100}
+        defaultValue={zone.GetAlpha()}
         onChange={(val) => {
-          let alpha = Number.parseInt((255 * (val / 100)).toString()).toString(
-            16
-          );
-          zone.SetAlpha(alpha);
+          zone.SetAlpha(val);
         }}
       >
         <SliderTrack />

@@ -16,9 +16,13 @@
     "@types/node": "^16.9.3",
     "@types/react": "^17.0.21",
     "@types/react-dom": "^17.0.9",
+    "arraybuffer-loader": "^1.0.8",
+    "blob-stream": "^0.1.3",
+    "brfs": "^2.0.2",
     "color-blend": "^3.0.1",
     "consola": "^2.15.3",
     "csv": "^5.5.3",
+    "customize-cra": "^1.0.0",
     "cytoscape": "^3.19.1",
     "cytoscape-automove": "^1.10.2",
     "cytoscape-canvas": "^3.0.1",
@@ -27,21 +31,26 @@
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-svg": "^0.3.1",
     "framer-motion": "^4.1.17",
-    "jspdf": "^2.4.0",
+    "html-webpack-plugin": "^5.3.2",
     "mobx": "^6.3.3",
     "mobx-react-lite": "^3.2.1",
+    "pdfkit": "^0.12.3",
+    "raw-loader": "^4.0.2",
     "react": "^17.0.2",
     "react-csv-reader": "^3.3.1",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "string-replace-webpack-plugin": "^0.1.3",
+    "svg-to-pdfkit": "^0.1.8",
+    "transform-loader": "^0.2.4",
     "typescript": "^4.4.3",
     "uuid": "^8.3.2",
     "web-vitals": "^2.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -63,6 +72,7 @@
     ]
   },
   "devDependencies": {
-    "@types/uuid": "^8.3.1"
+    "@types/uuid": "^8.3.1",
+    "react-app-rewired": "^2.1.8"
   }
 }

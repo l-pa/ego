@@ -5,6 +5,7 @@ import { settingsStore, zoneStore } from "../..";
 
 import { cy } from "../graph/Cytoscape";
 import Zone from "./Zone";
+import { getRandomInt } from "../utility/Vector";
 
 export default class EgoZone extends Zone {
   private ego: Node;
@@ -15,11 +16,16 @@ export default class EgoZone extends Zone {
   private innerCollection: Collection = cytoscape().collection();
   private outsideCollection: Collection = cytoscape().collection();
 
-  private color: string =
-    "#" +
-    Math.floor(Math.random() * 16777215)
-      .toString(16)
-      .padStart(6, "0");
+  // private color: string =
+  //   "#" +
+  //   Math.floor(Math.random() * 16777215)
+  //     .toString(16)
+  //     .padStart(6, "0");
+
+  private color: string = `rgba(${getRandomInt(0, 255)},${getRandomInt(
+    0,
+    255
+  )},${getRandomInt(0, 255)},${this.GetAlpha()})`;
 
   private automove: any = undefined;
 
