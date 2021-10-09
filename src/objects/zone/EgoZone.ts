@@ -22,10 +22,16 @@ export default class EgoZone extends Zone {
   //     .toString(16)
   //     .padStart(6, "0");
 
-  private color: string = `rgba(${getRandomInt(0, 255)},${getRandomInt(
-    0,
-    255
-  )},${getRandomInt(0, 255)},${this.GetAlpha()})`;
+  private colorObject: { r: number; g: number; b: number; a: number } = {
+    r: getRandomInt(0, 255),
+    g: getRandomInt(0, 255),
+    b: getRandomInt(0, 255),
+    a: this.GetAlpha(),
+  };
+
+  private color: string = `rgba(${this.colorObject.r},${this.colorObject.g},${
+    this.colorObject.b
+  },${this.GetAlpha()})`;
 
   private automove: any = undefined;
 
@@ -96,6 +102,10 @@ export default class EgoZone extends Zone {
 
   public get Color() {
     return this.color;
+  }
+
+  public get ColorObject() {
+    return this.colorObject;
   }
 
   public set EnableAutomove(enable: boolean) {

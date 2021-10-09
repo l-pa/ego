@@ -33,7 +33,7 @@ export function Export() {
       <Button
         isFullWidth={true}
         onClick={() => {
-          settingsStore.ExportSnapshot.getImageToNewTab(ImageType.PNG);
+          settingsStore.ExportSnapshot.getImageToNewTab(ImageType.PNG, false);
         }}
       >
         PNG
@@ -42,7 +42,7 @@ export function Export() {
       <Button
         isFullWidth={true}
         onClick={() => {
-          settingsStore.ExportSnapshot.getImageToNewTab(ImageType.SVG);
+          settingsStore.ExportSnapshot.getImageToNewTab(ImageType.SVG, false);
         }}
       >
         SVG
@@ -62,7 +62,6 @@ export function Export() {
         isFullWidth={true}
         onClick={() => {
           settingsStore.ExportSnapshot.getPdf();
-
         }}
       >
         PDF

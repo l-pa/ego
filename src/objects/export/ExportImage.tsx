@@ -4,14 +4,16 @@ import { cy } from "../graph/Cytoscape";
 import Zone from "../zone/Zone";
 import C2S from "@bokeh/canvas2svg";
 
-import "../../register-files"
+import "../../register-files";
+import EgoZone from "../zone/EgoZone";
 
-const PDFDocument = require('pdfkit').default;
-const SVGtoPDF = require('svg-to-pdfkit');
+const PDFDocument = require("pdfkit").default;
+const SVGtoPDF = require("svg-to-pdfkit");
 
-const blobStream = require('blob-stream');
+const blobStream = require("blob-stream");
 
-const a4 = { w: 596, h: 842 }
+const a4 = { w: 596, h: 842 };
+const a4_max_height = a4.h - 150;
 
 interface ISnapshot {
   imageType: ImageType;
@@ -30,7 +32,7 @@ export enum ImageType {
 
 interface IActiveZone {
   id: string;
-  color: string;
+  color: object;
   nodes: cytoscape.Collection;
 }
 
@@ -65,7 +67,7 @@ class Snapshot implements ISnapshot {
       if (z.IsDrawn) {
         this.activeZones?.push({
           id: z.GetId(),
-          color: z.Color,
+          color: (z as EgoZone).ColorObject,
           nodes: z.AllCollection(),
         });
       }
@@ -83,9 +85,13 @@ class Snapshot implements ISnapshot {
 }
 
 export default class ExportImage {
-
   constructor() {
-    PDFDocument.prototype.addSVG = function (svg: string, x: number, y: number, options: object) {
+    PDFDocument.prototype.addSVG = function (
+      svg: string,
+      x: number,
+      y: number,
+      options: object
+    ) {
       return SVGtoPDF(this, svg, x, y, options), this;
     };
   }
@@ -100,13 +106,14 @@ export default class ExportImage {
     if (settingsStore.TrackZonesExport)
       this.getImageData(settingsStore.ExportOptions.imageFormat).then(
         (data) => {
-          this.snapshots.push(
-            new Snapshot(
-              settingsStore.ExportOptions.imageFormat,
-              data,
-              new Date()
-            )
-          );
+          if (data instanceof SVGElement)
+            this.snapshots.push(
+              new Snapshot(
+                settingsStore.ExportOptions.imageFormat,
+                data,
+                new Date()
+              )
+            );
         }
       );
     console.log(this.snapshots);
@@ -119,9 +126,9 @@ export default class ExportImage {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16),
-        a: alpha
-      }
-      return `rgba(${obj.r},${obj.g},${obj.b},${obj.a})`
+        a: alpha,
+      };
+      return `rgba(${obj.r},${obj.g},${obj.b},${obj.a})`;
     }
   }
 
@@ -144,28 +151,29 @@ export default class ExportImage {
 
   private async getImageData(
     imageType: ImageType,
-    addCy = true
-  ): Promise<SVGElement> {
-    return new Promise<SVGElement>((resolve) => {
+    addCy = true,
+    center = true
+  ): Promise<SVGElement | HTMLImageElement> {
+    return new Promise<SVGElement | HTMLImageElement>((resolve) => {
       switch (imageType) {
-        // case ImageType.PNG:
-        //   this.getMergedCanvas(addCy).then((res) => {
-        //     const image = document.createElement("img");
-        //     image.src = res
-        //       .toDataURL("image/png")
-        //       .replace("image/png", "image/octet-stream");
+        case ImageType.PNG:
+          this.getMergedCanvas(addCy).then((res) => {
+            const image = document.createElement("img");
+            image.src = res
+              .toDataURL("image/png")
+              .replace("image/png", "image/octet-stream");
 
-        //     image.onload = function () {
-        //       resolve(image.src);
-        //     };
-        //   });
+            image.onload = function () {
+              resolve(image);
+            };
+          });
 
-        //   break;
+          break;
         case ImageType.SVG:
-          const svg = this.getSvg(addCy);
+          const svg = this.getSvg(addCy, center);
           // svg.setAttribute("style", `width:100%; height: 100%;`);
-
           // resolve(new XMLSerializer().serializeToString(svg));
+
           resolve(svg);
 
           break;
@@ -176,88 +184,120 @@ export default class ExportImage {
   }
 
   /**
-  * Conserve aspect ratio of the original region. Useful when shrinking/enlarging
-  * images to fit into a certain area.
-  *
-  * @param {Number} srcWidth width of source image
-  * @param {Number} srcHeight height of source image
-  * @param {Number} maxWidth maximum available width
-  * @param {Number} maxHeight maximum available height
-  * @return {Object} { width, height }
-  */
-  private calculateAspectRatioFit(srcWidth: number, srcHeight: number, maxWidth: number, maxHeight: number) {
-
+   * Conserve aspect ratio of the original region. Useful when shrinking/enlarging
+   * images to fit into a certain area.
+   *
+   * @param {Number} srcWidth width of source image
+   * @param {Number} srcHeight height of source image
+   * @param {Number} maxWidth maximum available width
+   * @param {Number} maxHeight maximum available height
+   * @return {Object} { width, height }
+   */
+  private calculateAspectRatioFit(
+    srcWidth: number,
+    srcHeight: number,
+    maxWidth: number,
+    maxHeight: number
+  ) {
     var ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
 
     return { width: srcWidth * ratio, height: srcHeight * ratio };
   }
 
   public getPdf() {
-
     // create a document the same way as above
     const doc = new PDFDocument({
-      size: 'A4',
-      margin: 25
-    })
+      size: "A4",
+    });
+
+    doc.fontSize(15);
+    doc
+      .font("Helvetica-Bold")
+      .text("Ego report - " + new Date().toLocaleString(), 25, 25);
     // pipe the document to a blob
     const stream = doc.pipe(blobStream());
+    doc.addSVG(this.snapshots[0].imageData, 35, 35, {
+      assumePt: true,
+      useCSS: true,
+    });
+    doc.addPage({
+      size: "A4",
+    });
+    for (let i = 1; i < this.snapshots.length; i++) {
+      const s = this.snapshots[i];
 
-    this.snapshots.forEach(s => {
-      const hiddenDiv = document.createElement("div")
-      hiddenDiv.style.display = "none"
-      hiddenDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' + new XMLSerializer().serializeToString(s.imageData) + '</svg>';
+      doc.addSVG(s.imageData, 35, 35, { assumePt: true, useCSS: true });
+      doc.fontSize(13);
+      doc
+        .font("Helvetica")
+        .text(
+          `Zones: ${s.activeZones?.length}, Filtered: ${s.filtered}`,
+          25,
+          a4_max_height + 40
+        );
 
-      // if (hiddenDiv.firstChild?.firstChild)
-      //        doc.addSVG(hiddenDiv.firstChild.firstChild, 70, 70, { useCSS: true });
+      s.activeZones?.forEach((z, i) => {
+        // Create a clipping path
+        doc.circle(100, 150, 100).clip();
 
-      doc.addSVG(s.imageData, 0, 0, { assumePt: true, useCSS: true });
-      doc.addPage({
-        size: 'A4',
-        margin: 25
-      })
-    })
+        // Draw a checkerboard pattern
+        for (let row = 0; row < 10; row++) {
+          for (let col = 0; col < 10; col++) {
+            const color =
+              (col % 2) - (row % 2)
+                ? [238, 238, 238]
+                : // @ts-ignore
+                  [z.color.r, z.color.g, z.color.b];
+            doc.rect(row * 20, col * 20, 20, 20).fill(color);
+          }
+        }
+      });
+
+      if (i < this.snapshots.length - 1)
+        doc.addPage({
+          size: "A4",
+        });
+    }
 
     // get a blob when you're done
     doc.end();
-    stream.on('finish', function () {
+    stream.on("finish", function () {
       // get a blob you can do whatever you like with
-      const blob = stream.toBlob('application/pdf');
+      const blob = stream.toBlob("application/pdf");
 
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       // create a blobURI pointing to our Blob
       link.href = URL.createObjectURL(blob);
-      link.download = "fileName.pdf";
+      link.download = `Ego_${new Date().toLocaleString()}.pdf`;
       // some browser needs the anchor to be in the doc
       document.body.append(link);
       link.click();
       link.remove();
       // in case the Blob uses a lot of memory
       setTimeout(() => URL.revokeObjectURL(link.href), 7000);
-
     });
-
   }
 
-  public getImageToNewTab(imageType: ImageType) {
-    switch (imageType) {
-      case ImageType.PNG:
-        this.getImageData(imageType).then((res) => {
-          var newTab = window.open("");
-          newTab?.document.write("<img src='" + res + "' alt='from canvas'/>");
-        });
+  public getImageToNewTab(imageType: ImageType, center: boolean) {
+    const newTab = window.open("");
+    this.getImageData(imageType, true, center).then((res) => {
+      switch (imageType) {
+        case ImageType.PNG:
+          newTab?.document.write(
+            "<img src='" + res.getAttribute("src") + "' alt='from canvas'/>"
+          );
+          break;
 
-        break;
-      case ImageType.SVG:
-        this.getImageData(imageType).then((res) => {
-          this.saveSvg(res, "xd.svg");
-          var newTab = window.open("");
+        case ImageType.SVG:
+          this.saveSvg(res as SVGElement, "xd.svg");
           newTab?.document.write(new XMLSerializer().serializeToString(res));
-        });
 
-        break;
-      default:
-        break;
-    }
+          break;
+
+        default:
+          break;
+      }
+    });
   }
 
   private getSVGContents(inputString: string) {
@@ -272,7 +312,11 @@ export default class ExportImage {
     return b / a;
   }
 
-  private addSVGs(inputStrings: string[], translate: number[]) {
+  private addSVGs(
+    inputStrings: string[],
+    translate: number[],
+    center: boolean
+  ) {
     let cySvg = new DOMParser()
       .parseFromString(inputStrings[0], "text/xml")
 
@@ -280,23 +324,27 @@ export default class ExportImage {
 
     let svgMain = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     //@ts-ignore
-    const cyWidth = Number.parseInt(cySvg.getAttribute("width"))
+    const cyWidth = Number.parseInt(cySvg.getAttribute("width"));
     //@ts-ignore
-    const cyHeight = Number.parseInt(cySvg.getAttribute("height"))
+    const cyHeight = Number.parseInt(cySvg.getAttribute("height"));
 
-    const aaa = this.calculateAspectRatioFit(cyWidth, cyHeight, a4.w, a4.h)
+    const aaa = this.calculateAspectRatioFit(
+      cyWidth,
+      cyHeight,
+      a4.w,
+      a4_max_height
+    );
 
     //@ts-ignore
-    svgMain.setAttribute("width", cySvg.getAttribute("width"))
+    svgMain.setAttribute("width", cySvg.getAttribute("width"));
     //@ts-ignore
-    svgMain.setAttribute("height", cySvg.getAttribute("height"))
+    svgMain.setAttribute("height", cySvg.getAttribute("height"));
 
-    svgMain.setAttribute("transform", `scale(${aaa.width / cyWidth} ${(aaa.height / cyHeight)})`)
-
-    // svgMain.setAttribute(
-    //   "transform",
-    //   `scale(1 1) translate(${Zone.hullPadding * 2} ${Zone.hullPadding * 2})`
-    // );
+    if (center)
+      svgMain.setAttribute(
+        "transform",
+        `scale(${aaa.width / cyWidth} ${aaa.height / cyHeight})`
+      );
 
     for (let stringI = 1; stringI < inputStrings.length; stringI++) {
       let domParser = new DOMParser();
@@ -304,7 +352,14 @@ export default class ExportImage {
         .parseFromString(inputStrings[stringI], "text/xml")
         .getElementsByTagName("svg")[0];
 
-      svgDOM.getElementsByTagName("g")[0].setAttribute("transform", `translate(${translate[0] + Zone.hullPadding},${translate[1] + Zone.hullPadding})`)
+      svgDOM
+        .getElementsByTagName("g")[0]
+        .setAttribute(
+          "transform",
+          `translate(${translate[0] + Zone.hullPadding},${
+            translate[1] + Zone.hullPadding
+          })`
+        );
 
       if (svgDOM)
         while (svgDOM.childNodes.length > 0) {
@@ -319,40 +374,39 @@ export default class ExportImage {
     }
 
     //@ts-ignore
-    const w = Number.parseInt(svgMain.getAttribute("width"))
+    const w = Number.parseInt(svgMain.getAttribute("width"));
     //@ts-ignore
-    const h = Number.parseInt(svgMain.getAttribute("height"))
+    const h = Number.parseInt(svgMain.getAttribute("height"));
 
     if (w && h) {
       console.log(w, h);
 
-      svgMain.setAttribute("width", (w + Zone.hullPadding * 2).toString())
-      svgMain.setAttribute("height", (h + Zone.hullPadding * 2).toString())
-
+      svgMain.setAttribute("width", (w + Zone.hullPadding * 2).toString());
+      svgMain.setAttribute("height", (h + Zone.hullPadding * 2).toString());
     }
     return svgMain;
   }
 
-  private getCySvg(): SVGElement {
-    const canvas = ExportImage.emptyCanvas();
-    const ctx = canvas.getContext("2d");
-
+  private getCySvg(center: boolean): SVGElement {
     const a = this.getSVGContents((cy as any).svg({ full: true }));
     //@ts-ignore
-    const cyWidth = Number.parseInt(a.getAttribute("width"))
+    const cyWidth = Number.parseInt(a.getAttribute("width"));
     //@ts-ignore
-    const cyHeight = Number.parseInt(a.getAttribute("height"))
+    const cyHeight = Number.parseInt(a.getAttribute("height"));
 
-    const ratioS = this.calculateAspectRatioFit(cyWidth, cyHeight, a4.w - 100, a4.h - 100)
+    const ratioS = this.calculateAspectRatioFit(
+      cyWidth,
+      cyHeight,
+      a4.w,
+      a4_max_height
+    );
+    if (center)
+      a.setAttribute(
+        "transform",
+        `scale(${ratioS.width / cyWidth} ${ratioS.height / cyHeight})`
+      );
 
-    a.setAttribute("transform", `scale(${(ratioS.width / cyWidth)} ${(ratioS.height / cyHeight)})`)
-
-    // a.setAttribute(
-    //   "transform",
-    //   `translate(200 200)`
-    // );
     return a;
-
   }
 
   private getCyCanvas() {
@@ -370,7 +424,7 @@ export default class ExportImage {
       //   break;
       case ImageType.SVG:
         settingsStore.ExportSnapshot.Snapshots.push(
-          new Snapshot(ImageType.SVG, this.getCySvg(), new Date())
+          new Snapshot(ImageType.SVG, this.getCySvg(true), new Date())
         );
 
         break;
@@ -380,7 +434,7 @@ export default class ExportImage {
     }
   }
 
-  private getSvg(addCy = true): SVGSVGElement {
+  private getSvg(addCy = true, center = true): SVGSVGElement {
     const cyBBox = cy.elements().boundingBox({});
 
     const w = Math.ceil(cyBBox.w);
@@ -388,16 +442,25 @@ export default class ExportImage {
     const hullPadding = Zone.hullPadding;
 
     const layers: string[] = [];
-    const translate: number[] = []
+    const translate: number[] = [];
 
     if (addCy) {
-      const cy = this.getCySvg()
+      const cy = this.getCySvg(center);
 
-      const t = cy.getElementsByTagName("g")[0].getAttribute("transform")!.split(new RegExp(/\(([^)]+)\)/))[1].split(",")
+      const t = cy
+        .getElementsByTagName("g")[0]
+        .getAttribute("transform")!
+        .split(new RegExp(/\(([^)]+)\)/))[1]
+        .split(",");
 
-      translate.push(Number.parseFloat(t[0]))
-      translate.push(Number.parseFloat(t[1]))
-      cy.getElementsByTagName("g")[0].setAttribute("transform", `translate(${translate[0] + Zone.hullPadding},${translate[1] + Zone.hullPadding})`)
+      translate.push(Number.parseFloat(t[0]));
+      translate.push(Number.parseFloat(t[1]));
+      cy.getElementsByTagName("g")[0].setAttribute(
+        "transform",
+        `translate(${translate[0] + Zone.hullPadding},${
+          translate[1] + Zone.hullPadding
+        })`
+      );
 
       layers.push(new XMLSerializer().serializeToString(cy));
     }
@@ -409,13 +472,12 @@ export default class ExportImage {
       });
 
       if (copySvgCtx) {
-        // copySvgCtx?.translate(hullPadding , hullPadding);
         z.getNewContext(copySvgCtx);
       }
       layers.push(copySvgCtx.getSerializedSvg(true));
     });
 
-    return this.addSVGs(layers, translate);
+    return this.addSVGs(layers, translate, center);
   }
 
   saveSvg(svgEl: SVGElement, name: string) {
