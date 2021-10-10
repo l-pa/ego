@@ -1,5 +1,5 @@
 import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
-import { action } from "mobx";
+import { action, autorun } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { zoneStore } from "../../..";
@@ -9,11 +9,9 @@ import { ZoneItem } from "../../ZoneItem";
 
 export function ZonesSubzone() {
   useEffect(() => {
-    // zoneStore.Zones.forEach((z) => z.ClearZone());
+    zoneStore.HideAllZones()
     return () => {
       clearZone();
-      // zoneStore.Zones.forEach((z) => z.DrawZone());
-      // zoneStore.ColorNodesInZones(zoneStore.Zones);
     };
   }, []);
 
@@ -60,13 +58,9 @@ export function ZonesSubzone() {
 
   const addZone = action((zone: Zone[]) => {
     zoneStore.AddTmpZone(zone, true);
-    // zone.SetAlpha("25");
-    // zoneStore.ColorNodesInZones(zoneStore.TmpZones);
   });
 
   const clearZone = action(() => {
-    // zoneStore.Zones.forEach((z) => z.ClearZone());
-
     zoneStore.TmpZones.forEach((z) => z.ClearZone());
     zoneStore.TmpZones.length = 0;
   });
@@ -78,8 +72,6 @@ export function ZonesSubzone() {
         onChange={(e) => {
           clearZone();
           if (e.target.value) {
-            // zoneStore.FindZone(e.target.value).DrawZone();
-            // zoneStore.FindZone(e.target.value).SetAlpha("ff");
             zoneStore
               .SubzonesOfZone([
                 zoneStore.Zones.filter(
@@ -88,7 +80,7 @@ export function ZonesSubzone() {
               ])
               .then((res) => {
                 console.log(res);
-                const filtered = zoneStore.Filter(res);
+                const filtered = zoneStore.Filter(res, [], true);
                 if (res.length > 0) {
                   addZone(filtered[0]);
                   addZone(filtered[1]);

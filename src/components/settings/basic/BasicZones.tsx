@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Stack, Button, Checkbox, Divider, Heading } from "@chakra-ui/react";
 import { ZoneItem } from "../../ZoneItem";
 import { networkStore, settingsStore, zoneStore } from "../../..";
@@ -9,6 +9,14 @@ import { ZoneItemCustom } from "../../ZoneItemCustom";
 import { reaction } from "mobx";
 
 export const BasicZones: React.FunctionComponent = () => {
+
+  useEffect(() => {
+    console.log("aaa");
+
+    zoneStore.DefaultColors()
+    zoneStore.Update()
+  }, [])
+
   const Zones = observer(() => (
     <Stack>
       {zoneStore

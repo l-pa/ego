@@ -13,7 +13,9 @@ const SVGtoPDF = require("svg-to-pdfkit");
 const blobStream = require("blob-stream");
 
 const a4 = { w: 596, h: 842 };
-const a4_max_height = a4.h - 150;
+const a4_max_height = a4.h - 350;
+const a4_max_width = a4.w - 150;
+
 
 interface ISnapshot {
   imageType: ImageType;
@@ -171,9 +173,6 @@ export default class ExportImage {
           break;
         case ImageType.SVG:
           const svg = this.getSvg(addCy, center);
-          // svg.setAttribute("style", `width:100%; height: 100%;`);
-          // resolve(new XMLSerializer().serializeToString(svg));
-
           resolve(svg);
 
           break;
@@ -204,19 +203,25 @@ export default class ExportImage {
     return { width: srcWidth * ratio, height: srcHeight * ratio };
   }
 
-  public getPdf() {
+  public getPdf(): Promise<void> {
     // create a document the same way as above
     const doc = new PDFDocument({
-      size: "A4",
+      size: [a4.w, a4.h],
     });
 
     doc.fontSize(15);
     doc
       .font("Helvetica-Bold")
       .text("Ego report - " + new Date().toLocaleString(), 25, 25);
+
+    doc.fontSize(13);
+    doc
+      .font("Helvetica")
+      .text(`Nodes - ${cy.nodes().length}; Edges - ${cy.edges().length}`, 25, a4.h - 150);
+
     // pipe the document to a blob
     const stream = doc.pipe(blobStream());
-    doc.addSVG(this.snapshots[0].imageData, 35, 35, {
+    doc.addSVG(this.snapshots[0].imageData, 50, 50, {
       assumePt: true,
       useCSS: true,
     });
@@ -226,32 +231,31 @@ export default class ExportImage {
     for (let i = 1; i < this.snapshots.length; i++) {
       const s = this.snapshots[i];
 
-      doc.addSVG(s.imageData, 35, 35, { assumePt: true, useCSS: true });
+      doc.addSVG(s.imageData, 50, 50, { assumePt: true, useCSS: true });
       doc.fontSize(13);
+
       doc
         .font("Helvetica")
         .text(
           `Zones: ${s.activeZones?.length}, Filtered: ${s.filtered}`,
           25,
-          a4_max_height + 40
+          a4.h - 120
         );
 
-      s.activeZones?.forEach((z, i) => {
-        // Create a clipping path
-        doc.circle(100, 150, 100).clip();
+      let newLine = 0
+      let j = 0
 
-        // Draw a checkerboard pattern
-        for (let row = 0; row < 10; row++) {
-          for (let col = 0; col < 10; col++) {
-            const color =
-              (col % 2) - (row % 2)
-                ? [238, 238, 238]
-                : // @ts-ignore
-                  [z.color.r, z.color.g, z.color.b];
-            doc.rect(row * 20, col * 20, 20, 20).fill(color);
-          }
+      this.snapshots[i].activeZones?.forEach((z) => {
+        j++
+        if (j % 7 === 0) {
+          newLine++
+          j = 0
         }
-      });
+        // @ts-ignore
+        doc.circle(40 + ((j - 1) * 100), a4.h - 90 + 40 * newLine, 15).fill([z.color.r, z.color.g, z.color.b])
+
+
+      })
 
       if (i < this.snapshots.length - 1)
         doc.addPage({
@@ -261,25 +265,30 @@ export default class ExportImage {
 
     // get a blob when you're done
     doc.end();
-    stream.on("finish", function () {
-      // get a blob you can do whatever you like with
-      const blob = stream.toBlob("application/pdf");
+    return new Promise((res) => {
 
-      const link = document.createElement("a");
-      // create a blobURI pointing to our Blob
-      link.href = URL.createObjectURL(blob);
-      link.download = `Ego_${new Date().toLocaleString()}.pdf`;
-      // some browser needs the anchor to be in the doc
-      document.body.append(link);
-      link.click();
-      link.remove();
-      // in case the Blob uses a lot of memory
-      setTimeout(() => URL.revokeObjectURL(link.href), 7000);
-    });
+      stream.on("finish", function () {
+        // get a blob you can do whatever you like with
+        const blob = stream.toBlob("application/pdf");
+
+        const link = document.createElement("a");
+        // create a blobURI pointing to our Blob
+        link.href = URL.createObjectURL(blob);
+        link.download = `Ego_${new Date().toLocaleString()}.pdf`;
+        // some browser needs the anchor to be in the doc
+        document.body.append(link);
+        link.click();
+        link.remove();
+        // in case the Blob uses a lot of memory
+        setTimeout(() => URL.revokeObjectURL(link.href), 7000);
+        res()
+      });
+    })
   }
 
   public getImageToNewTab(imageType: ImageType, center: boolean) {
     const newTab = window.open("");
+    zoneStore.DefaultColors()
     this.getImageData(imageType, true, center).then((res) => {
       switch (imageType) {
         case ImageType.PNG:
@@ -289,8 +298,8 @@ export default class ExportImage {
           break;
 
         case ImageType.SVG:
-          this.saveSvg(res as SVGElement, "xd.svg");
-          newTab?.document.write(new XMLSerializer().serializeToString(res));
+          this.saveSvg(res as SVGElement, "Ego" + new Date().toLocaleString() + ".svg");
+          // newTab?.document.write(new XMLSerializer().serializeToString(res));
 
           break;
 
@@ -298,6 +307,8 @@ export default class ExportImage {
           break;
       }
     });
+    zoneStore.ColorBasedOnZones()
+
   }
 
   private getSVGContents(inputString: string) {
@@ -331,7 +342,7 @@ export default class ExportImage {
     const aaa = this.calculateAspectRatioFit(
       cyWidth,
       cyHeight,
-      a4.w,
+      a4_max_width,
       a4_max_height
     );
 
@@ -340,11 +351,16 @@ export default class ExportImage {
     //@ts-ignore
     svgMain.setAttribute("height", cySvg.getAttribute("height"));
 
-    if (center)
+    if (center && ((cyWidth > a4_max_width) || (cyHeight > a4_max_width))) {
+
       svgMain.setAttribute(
         "transform",
         `scale(${aaa.width / cyWidth} ${aaa.height / cyHeight})`
       );
+      console.log(`scale(${aaa.width / cyWidth} ${aaa.height / cyHeight})`
+      );
+
+    }
 
     for (let stringI = 1; stringI < inputStrings.length; stringI++) {
       let domParser = new DOMParser();
@@ -397,15 +413,19 @@ export default class ExportImage {
     const ratioS = this.calculateAspectRatioFit(
       cyWidth,
       cyHeight,
-      a4.w,
+      a4_max_width,
       a4_max_height
     );
-    if (center)
+    if (center && ((cyWidth > a4_max_width) || (cyHeight > a4_max_width))) {
+
       a.setAttribute(
         "transform",
         `scale(${ratioS.width / cyWidth} ${ratioS.height / cyHeight})`
       );
+      console.log(`scale(${ratioS.width / cyWidth} ${ratioS.height / cyHeight})`)
 
+
+    }
     return a;
   }
 
@@ -414,6 +434,7 @@ export default class ExportImage {
   }
 
   public initSnapshots() {
+    zoneStore.DefaultColors()
     this.snapshots.length = 0;
     switch (settingsStore.ExportOptions.imageFormat) {
       // case ImageType.PNG:
@@ -423,6 +444,7 @@ export default class ExportImage {
 
       //   break;
       case ImageType.SVG:
+
         settingsStore.ExportSnapshot.Snapshots.push(
           new Snapshot(ImageType.SVG, this.getCySvg(true), new Date())
         );
@@ -432,6 +454,9 @@ export default class ExportImage {
       default:
         break;
     }
+
+    zoneStore.ColorBasedOnZones()
+
   }
 
   private getSvg(addCy = true, center = true): SVGSVGElement {

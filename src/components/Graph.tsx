@@ -25,8 +25,6 @@ export const Graph: React.FunctionComponent = () => {
         })
       cy.destroy();
 
-
-
     };
   }, []);
 

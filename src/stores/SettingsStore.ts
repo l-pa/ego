@@ -43,10 +43,8 @@ export class SettingsStore {
 
   public set TrackZonesExport(v: boolean) {
     if (v === false) {
-      if (this.snapshots.Snapshots.length > 0) {
-      } else {
-        this.trackZonesExport = v;
-      }
+      this.snapshots.Snapshots.length = 0;
+      this.trackZonesExport = v;
     } else {
       if (this.snapshots.Snapshots.length === 0) {
         console.log("init");
@@ -255,5 +253,8 @@ export class SettingsStore {
     this.filterExistingZones = true;
     this.duplicates = "all";
     this.zonesIdk = "all";
+    this.snapshots.Snapshots.length = 0
+    this.trackZonesExport = false
+
   }
 }

@@ -62,13 +62,7 @@ export class ZoneStore {
         this.tmpZones.push(zone);
       });
 
-    if (zoneStore.TmpZones.length > 0) {
-      zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-    } else {
-      zoneStore.ColorNodesInZones(zoneStore.Zones);
-    }
-
-    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
+    zoneStore.ColorNodesInZones(zoneStore.TmpZones);
 
     if (draw) {
       this.tmpZones
@@ -152,7 +146,7 @@ export class ZoneStore {
   }
 
   /**
-   * Redraws zones (including temporarily) and apply filter
+   * Redraws active zones and apply filter
    */
 
   public Update() {
@@ -162,7 +156,21 @@ export class ZoneStore {
 
     filter[1].forEach((z) => z.ClearZone());
 
-    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
+    zoneStore.ColorNodesInZones(filter[0]);
+  }
+
+  /**
+   * Redraws active zones and apply filter
+   */
+
+  public UpdateTmp() {
+    const filter: Zone[][] = zoneStore.Filter(this.tmpZones);
+
+    filter[0].forEach((z) => z.DrawZone());
+
+    filter[1].forEach((z) => z.ClearZone());
+
+    zoneStore.ColorNodesInZones(filter[0]);
   }
 
   /**
@@ -172,16 +180,6 @@ export class ZoneStore {
     this.zones.forEach((z) => {
       z.ClearZone();
     });
-
-    // cy.nodes().forEach((n) => {
-    //   n.classes(
-    //     networkStore.Network?.Nodes.filter(
-    //       (node) =>
-    //         node.Id ===
-    //         ((n as { [key: string]: any })["_private"]["data"]["id"] as number)
-    //     )[0].classes
-    //   );
-    // });
 
     this.zones = [];
     this.Update();
@@ -366,6 +364,15 @@ export class ZoneStore {
     }
   }
 
+  public DefaultColors() {
+    this.ColorAllNodes();
+    this.ColorAllEdges();
+  }
+
+  public ColorBasedOnZones() {
+    this.ColorNodesInZones(zoneStore.zones);
+  }
+
   /**
    * ColorAllNodes
    */
@@ -532,6 +539,7 @@ export class ZoneStore {
    */
   public HideAllZones() {
     zoneStore.Zones.forEach((z) => z.ClearZone());
+    zoneStore.TmpZones.forEach((z) => z.ClearZone());
   }
 
   /**

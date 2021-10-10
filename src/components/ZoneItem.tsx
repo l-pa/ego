@@ -20,6 +20,7 @@ import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
 import Zone from "../objects/zone/Zone";
+import { observer } from "mobx-react-lite";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
@@ -43,30 +44,13 @@ export const ZoneItem: React.FunctionComponent<{
   const activeZones: Zone[] = [];
 
   const mouseLeaveFunction = () => {
-    console.log(activeZones);
-
-    zone.ClearZone();
-    activeZones.forEach((z) => z.DrawZone());
-
     cy.nodes().difference(zone.AllCollection().nodes()).removeClass("tmpHide");
 
-    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
+    zoneStore.Update()
   };
 
   const mouseEnterFunction = () => {
-    activeZones.length = 0;
-
-    zoneStore.TmpZones.forEach((z) => {
-      if (z.IsDrawn) {
-        activeZones.push(z);
-      }
-      z.ClearZone();
-    });
-
     zoneStore.Zones.forEach((z) => {
-      if (z.IsDrawn) {
-        activeZones.push(z);
-      }
       z.ClearZone();
     });
 
@@ -76,6 +60,8 @@ export const ZoneItem: React.FunctionComponent<{
 
     cy.nodes().difference(zone.AllCollection().nodes()).addClass("tmpHide");
   };
+
+
 
   return (
     <Box zIndex={1} bg={!greyed ? zone.Color : "grey"} p={4}>

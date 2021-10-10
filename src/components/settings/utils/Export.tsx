@@ -7,6 +7,7 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
+import { useState } from "react";
 import { settingsStore } from "../../..";
 import { ImageType } from "../../../objects/export/ExportImage";
 
@@ -20,6 +21,24 @@ export function Export() {
       <p></p>
     )
   );
+
+  const PdfButton = observer(() => (
+    <Button
+      isLoading={isExportingPdf}
+      isDisabled={!settingsStore.TrackZonesExport}
+      isFullWidth={true}
+      onClick={() => {
+        setSsExportingPdf(true)
+        settingsStore.ExportSnapshot.getPdf().then(() => {
+          setSsExportingPdf(false)
+        })
+      }}
+    >
+      PDF
+    </Button>
+  ))
+
+  const [isExportingPdf, setSsExportingPdf] = useState(false)
 
   return (
     <Stack p={5}>
@@ -58,14 +77,7 @@ export function Export() {
         Track zones
       </Checkbox>
 
-      <Button
-        isFullWidth={true}
-        onClick={() => {
-          settingsStore.ExportSnapshot.getPdf();
-        }}
-      >
-        PDF
-      </Button>
+      <PdfButton />
 
       <Divider />
       <Heading as="h4" size="md" pt={5}>

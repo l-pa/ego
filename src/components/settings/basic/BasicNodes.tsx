@@ -23,6 +23,10 @@ export function BasicNodes() {
     };
   });
 
+  useEffect(() => {
+    zoneStore.HideAllZones()
+  }, [])
+
   const localObserverable = useLocalObservable(() => ({
     search: "",
     nodes: [] as NodeSingular[],
@@ -49,7 +53,7 @@ export function BasicNodes() {
                   !localObserverable.nodesAvailable
                     ?.nodes()
                     .some((node) => node[0].id() === n.id())
-                )
+                ) || localObserverable.nodes.some((node) => node.id() == n.id())
               ) {
                 return (
                   <Checkbox
@@ -154,7 +158,7 @@ export function BasicNodes() {
         zoneStore.ClearTmpZones();
         if (localObserverable.nodes.length > 0) {
           localObserverable.zonesForNodes = zoneStore.Filter(
-            zoneStore.ZonesForNodes(localObserverable.nodes)
+            zoneStore.ZonesForNodes(localObserverable.nodes), [], true
           )[0];
         } else {
           localObserverable.zonesForNodes = [];

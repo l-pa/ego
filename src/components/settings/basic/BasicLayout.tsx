@@ -12,6 +12,7 @@ export function BasicLayout() {
       <Select ref={layoutRef} mb={5} placeholder="Select layout">
         <option value="cola">Cola</option>
         <option value="random">Random</option>
+        <option value="stack">Stack</option>
       </Select>
 
       <Button
@@ -23,6 +24,13 @@ export function BasicLayout() {
               break;
             case "random":
               cy.layout({ name: "random" }).run();
+              break;
+
+            case "stack":
+              cy.nodes().forEach((n, i) => {
+                n.position("x", i)
+                n.position("y", i)
+              })
               break;
 
             default:

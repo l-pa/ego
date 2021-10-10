@@ -10,43 +10,29 @@ import React, { useEffect } from "react";
 import { networkStore, zoneStore } from "../../..";
 import EgoZone from "../../../objects/zone/EgoZone";
 import { ZoneItem } from "../../ZoneItem";
-import { action, observable } from "mobx";
+import { action, observable, reaction } from "mobx";
 import Zone from "../../../objects/zone/Zone";
 
 export function ZonesMax() {
 
   useEffect(() => {
+    zoneStore.HideAllZones()
 
     return () => {
-      clearTmpZone()
-      // zoneStore.Zones.forEach((z) => {
-      //   z.DrawZone();
-      // });
-
+      zoneStore.ClearTmpZones()
     };
   }, []);
+
+
+  const changeSwitch = action((v: boolean) => {
+    onlyExistingZones.idk = v;
+  });
 
   let onlyExistingZones = observable({ idk: true });
   let largestEgoZone: EgoZone;
 
-  const addTmpZone = action((z: Zone) => {
-    if (zoneStore.Zones.some(zo => zo.GetId() === z.GetId())) {
-    } else {
-      zoneStore.AddTmpZone([z], true)
-    }
-  })
-
-  const clearTmpZone = action(() => {
-    zoneStore.ClearTmpZones()
-    // zoneStore.HideAllZones()
-  })
-
-  const color = action(() => {
-    zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-  });
-
   const LargestZone = observer(() => {
-    clearTmpZone()
+    zoneStore.HideAllZones()
 
     if (onlyExistingZones.idk) {
       if (zoneStore.Zones.length > 0) {
@@ -63,14 +49,10 @@ export function ZonesMax() {
             z.AllCollection().length === largestZone[0].AllCollection().length
         );
 
-        tmp.forEach(z => {
-          addTmpZone(z)
-        })
-        color()
-
         return (
           <Stack>
             {tmp.map((z) => {
+              z.DrawZone()
               return <ZoneItem key={z.GetId()} zone={z as EgoZone}></ZoneItem>;
             })}
           </Stack>
@@ -99,10 +81,6 @@ export function ZonesMax() {
           z.AllCollection().length === largestEgoZone.AllCollection().length
       );
 
-      tmp.forEach(z => {
-        addTmpZone(z)
-      })
-      color()
 
       return (
         <Stack>
@@ -135,10 +113,6 @@ export function ZonesMax() {
         </Stack>
       );
     }
-  });
-
-  const changeSwitch = action((v: boolean) => {
-    onlyExistingZones.idk = v;
   });
 
   return (
