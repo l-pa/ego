@@ -11,14 +11,16 @@ import { autorun, reaction } from "mobx";
 export const BasicZones: React.FunctionComponent = () => {
 
   useEffect(() => {
-    zoneStore.DefaultColors()
     zoneStore.Update()
+    return (() => {
+      a()
+    })
   }, [])
 
   const Zones = observer(() => (
     <Stack>
       {zoneStore
-        .Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[0]
+        .Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone)).zones
         .map((z, i) => {
           return (
             <ZoneItem
@@ -30,7 +32,7 @@ export const BasicZones: React.FunctionComponent = () => {
         })}
 
       {zoneStore
-        .Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone))[1]
+        .Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone)).filtered
         .map((z, i) => {
           return (
             <ZoneItem
@@ -53,7 +55,7 @@ export const BasicZones: React.FunctionComponent = () => {
 
   console.log(Zones);
 
-  reaction(
+  const a = reaction(
     () => zoneStore.Zones,
     (zones) => console.log(zones)
   );
@@ -66,13 +68,15 @@ export const BasicZones: React.FunctionComponent = () => {
         </Heading>
 
         <Button
+          colorScheme={"red"}
           onClick={() => {
             const zones: EgoZone[] = [];
-            networkStore.Network?.Nodes.forEach((n) => {
+            Object.keys(networkStore.Network!!.Nodes).forEach(function (key) {
+              const n = networkStore.Network!!.Nodes[key]
               if (n.isProminent() === 0) {
                 zones.push(new EgoZone(n));
               }
-            });
+            })
             zoneStore.AddZones(zones);
           }}
         >
@@ -82,13 +86,15 @@ export const BasicZones: React.FunctionComponent = () => {
         <Button
           onClick={() => {
             const zones: EgoZone[] = [];
-            networkStore.Network?.Nodes.forEach((n) => {
+            Object.keys(networkStore.Network!!.Nodes).forEach(function (key) {
+              const n = networkStore.Network!!.Nodes[key]
               if (n.isProminent() === 1) {
                 zones.push(new EgoZone(n));
               }
             });
             zoneStore.AddZones(zones);
           }}
+          colorScheme={"yellow"}
         >
           Weakly prominent
         </Button>
@@ -107,6 +113,15 @@ export const BasicZones: React.FunctionComponent = () => {
         <Heading as="h4" size="md" pb={5} pt={5}>
           Options
         </Heading>
+        <Checkbox
+          key={"showInZonesCheckbox"}
+          defaultIsChecked={settingsStore.HideOutsideZones}
+          onChange={(e) => {
+            settingsStore.HideOutsideZones = e.target.checked;
+          }}
+        >
+          In zones
+        </Checkbox>
         <Checkbox
           defaultIsChecked={settingsStore.Automove}
           onChange={(e) => {

@@ -29,7 +29,7 @@ export default class CustomZone extends Zone {
     if (settingsStore.HideOutsideZones) {
     }
     this.automove.destroy();
-    super.ClearZone();
+    super.HideZone();
   }
 
   /**

@@ -44,13 +44,12 @@ export const ZoneItem: React.FunctionComponent<{
   };
 
   const mouseEnterFunction = () => {
-    zoneStore.Zones.forEach((z) => {
-      z.ClearZone();
-    });
-
+    zoneStore.HideAllZones()
     zone.DrawZone();
 
-    zoneStore.ColorNodesInZone(zone);
+    // zoneStore.ColorNodesInZones([zone]);
+
+    // zoneStore.Update()
 
     cy.nodes().difference(zone.AllCollection.nodes()).addClass("tmpHide");
   };
@@ -306,6 +305,7 @@ export const ZoneItem: React.FunctionComponent<{
             aria-label="Remove zone"
             onClick={() => {
               zoneStore.RemoveZone(zone);
+
             }}
           >
             Remove
@@ -317,8 +317,8 @@ export const ZoneItem: React.FunctionComponent<{
             size="sm"
             aria-label="Add zone"
             onClick={() => {
-              zoneStore.RemoveTmpZone(zone);
-              zoneStore.AddZones([zone]);
+              zoneStore.RemoveTmpZone(zone)
+              zoneStore.AddZone(zone);
             }}
           >
             Add zone

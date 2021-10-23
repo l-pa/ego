@@ -25,6 +25,8 @@ export class SettingsStore {
   private minNodesZoneShow: number = 1;
   private selectedEdgeBlend: string = "normal";
   private nodeSize: string = "fixed";
+  private nodeLabel: string = "id";
+
   private filterChanged: boolean = false;
   private filterExistingZones: boolean = true;
   private duplicates: string = "all";
@@ -117,6 +119,25 @@ export class SettingsStore {
 
   public GetNodeSize(): string {
     return this.nodeSize;
+  }
+
+  public get NodeLabel(): string {
+    return this.nodeLabel;
+  }
+
+  public set NodeLabel(v: string) {
+    this.nodeLabel = v;
+
+    switch (this.nodeLabel) {
+      case "id":
+        break;
+
+      case "label":
+        break;
+
+      default:
+        break;
+    }
   }
 
   /**

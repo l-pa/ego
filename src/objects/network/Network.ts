@@ -3,14 +3,15 @@ import Edge from "./Edge";
 import { cy } from "../graph/Cytoscape";
 
 export default class Network {
-  public Nodes: Node[];
-  public Edges: Edge[];
+  public Nodes: { [id: string]: Node } = {};
+  public Edges: { [id: string]: Edge } = {};
+
   public Directed: boolean = false;
 
   public StronglyProminent: number = 0;
   public WeaklyProminent: number = 0;
 
-  constructor(nodes: Node[], edges: Edge[], directed?: boolean) {
+  constructor(nodes: {}, edges: {}, directed?: boolean) {
     this.Edges = edges;
     this.Nodes = nodes;
     if (directed) {
@@ -25,13 +26,11 @@ export default class Network {
    *
    */
   public addNode(node: Node) {
-    if (!this.Nodes.some((e) => e.Id === node.Id)) {
-      this.Nodes.push(node);
-    }
+    if (!(node.Id in this.Nodes)) this.Nodes[node.Id] = node;
   }
 
-  public getNode(nodeId: number | string): cytoscape.NodeCollection {
-    return cy.nodes("#" + nodeId.toString());
+  public getNode(nodeId: string): cytoscape.NodeCollection {
+    return cy.getElementById(nodeId);
   }
 
   public getEdge(source: number, target: number): cytoscape.EdgeCollection {
@@ -55,9 +54,7 @@ export default class Network {
   public addEdge(nodeA: Node, nodeB: Node, weight?: number) {
     this.addNode(nodeA);
     this.addNode(nodeB);
-
-    this.Edges.push(
-      new Edge(nodeA, nodeB, this.Edges.length.toString(), weight ? weight : 1)
-    );
+    const e = new Edge(nodeA, nodeB, nodeA.Id + nodeB.Id, weight ? weight : 1);
+    this.Edges[e.GetId()] = e;
   }
 }

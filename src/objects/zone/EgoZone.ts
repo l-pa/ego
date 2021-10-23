@@ -121,17 +121,18 @@ export default class EgoZone extends Zone {
     }
     if (this.automove) this.automove.destroy();
 
-    super.ClearZone();
+    super.HideZone();
   }
 
   /**
    * DrawZone
    */
   public DrawZone() {
+    
     if (settingsStore.HideOutsideZones) {
       this.AllCollection.removeClass("hide");
     }
-
+    
     if (!this.IsDrawn) {
       this.automove = (cy as any).automove({
         nodesMatching: this.innerCollection

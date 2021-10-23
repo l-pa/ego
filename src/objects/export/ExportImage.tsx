@@ -77,7 +77,7 @@ class Snapshot implements ISnapshot {
 
     console.log("New snapshot " + new Date().toLocaleString());
   }
-  filtered: number = zoneStore.FilteredZonesCount;
+  filtered: number = 0;
   imageType: ImageType;
   imageData: SVGElement;
   imageHeight: number;
@@ -288,7 +288,7 @@ export default class ExportImage {
 
   public getImageToNewTab(imageType: ImageType, center: boolean) {
     const newTab = window.open("");
-    zoneStore.DefaultColors()
+    zoneStore.Update()
     this.getImageData(imageType, true, center).then((res) => {
       switch (imageType) {
         case ImageType.PNG:
@@ -307,7 +307,6 @@ export default class ExportImage {
           break;
       }
     });
-    zoneStore.ColorBasedOnZones()
 
   }
 
@@ -431,7 +430,7 @@ export default class ExportImage {
   }
 
   public initSnapshots() {
-    zoneStore.DefaultColors()
+    zoneStore.Update()
     this.snapshots.length = 0;
     switch (settingsStore.ExportOptions.imageFormat) {
       // case ImageType.PNG:
@@ -452,7 +451,7 @@ export default class ExportImage {
         break;
     }
 
-    zoneStore.ColorBasedOnZones()
+    // zoneStore.ColorBasedOnZones()
 
   }
 

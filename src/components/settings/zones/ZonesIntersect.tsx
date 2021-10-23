@@ -27,7 +27,7 @@ export function ZonesIntersect() {
   const r = reaction(
     () => zonesToIntersert.map((a) => a),
     (arr) => {
-      zoneStore.Zones.forEach((z) => z.ClearZone());
+      zoneStore.Zones.forEach((z) => z.HideZone());
       if (arr.length > 1) {
         intersect = cy.collection();
         const firstZone = arr[0];

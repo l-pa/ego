@@ -16,7 +16,16 @@ import cola from "cytoscape-cola";
 import coseBilkent from "cytoscape-cose-bilkent";
 
 // @ts-ignore
+import cise from 'cytoscape-cise';
+
+// @ts-ignore
 import svg from "cytoscape-svg";
+
+// @ts-ignore
+import fcose from 'cytoscape-fcose';
+
+// @ts-ignore
+import euler from 'cytoscape-euler';
 
 // @ts-ignore
 import contextMenus from "cytoscape-context-menus";
@@ -41,6 +50,10 @@ cytoscape.use(cola);
 cytoscape.use(coseBilkent);
 cytoscape.use(contextMenus);
 cytoscape.use(svg);
+cytoscape.use(cise);
+cytoscape.use(fcose);
+cytoscape.use(euler);
+
 
 configure({
   enforceActions: "always",
@@ -50,11 +63,11 @@ configure({
   disableErrorBoundaries: true
 })
 
-spy(event => {
-  if (event.type === "action") {
-    // console.log(`${event.name} with args: ${event.arguments}`)
-  }
-})
+// spy(event => {
+//   if (event.type === "action") {
+//     // console.log(`${event.name} with args: ${event.arguments}`)
+//   }
+// })
 
 // @ts-ignore
 C2S.prototype.curve = CanvasRenderingContext2D.prototype.curve;

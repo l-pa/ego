@@ -38,21 +38,49 @@ export const LeftPanel: React.FunctionComponent = () => {
   return (
     <Stack w={"10em"}>
       <Stack p={5}>
+
         <Button
           isFullWidth={true}
-          colorScheme="primary"
-          variant="ghost"
+          colorScheme="red"
           onClick={() => {
             networkStore.Desctructor();
             zoneStore.Desctructor();
             settingsStore.Desctructor();
           }}
         >
-          ❌
+          Exit
         </Button>
+        <Divider />
+        <Button
+          isDisabled={true}
+          colorScheme={"primary"}
+          isFullWidth={true}
+          onClick={() => {
+          }}
+        >
+          Save
+        </Button>
+        <Divider />
+
+
+        {/* <Heading as="h5" size="sm">
+          View
+        </Heading>
+
+        <Button
+          colorScheme={"primary"}
+          variant="outline"
+          isFullWidth={true}
+          onClick={() => {
+          }}
+        >
+          Zones
+        </Button> */}
+
         <Heading as="h5" size="sm">
           Basic
         </Heading>
+        <Divider />
         <Button
           isActive={activeButton === 0}
           isFullWidth={true}
@@ -96,8 +124,9 @@ export const LeftPanel: React.FunctionComponent = () => {
         </Button>
 
         <Heading as="h5" size="sm">
-          Set operations
+          Operations
         </Heading>
+        <Divider />
         <Button
           isActive={activeButton === 4}
           colorScheme="primary"

@@ -47,12 +47,10 @@ export default class Edge implements ElementDefinition {
   }
 
   public UpdateClasses() {
-    const source: number | undefined = networkStore.Network?.Nodes.filter(
-      (n) => n.Id === this.NodeA.Id
-    )[0].isProminent();
-    const target: number | undefined = networkStore.Network?.Nodes.filter(
-      (n) => n.Id === this.NodeB.Id
-    )[0].isProminent();
+    const source: number | undefined =
+      networkStore.Network?.Nodes[this.NodeA.Id].isProminent();
+    const target: number | undefined =
+      networkStore.Network?.Nodes[this.NodeB.Id].isProminent();
 
     if (source === 0 && target === 0) {
       // this.classes = "sptosp";

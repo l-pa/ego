@@ -26,7 +26,7 @@ export const Filters: FunctionComponent = () => {
           aria-label="slider-ex-1"
           defaultValue={settingsStore.MinNodesZoneShow}
           min={0}
-          max={networkStore.Network?.Nodes.length}
+          max={Object.keys(networkStore.Network!!.Nodes).length}
           onChange={(e) => {
             settingsStore.MinNodesZoneShow = e;
           }}

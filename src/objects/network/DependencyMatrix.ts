@@ -18,21 +18,24 @@ export default class Matrix {
    *
    */
   public dependencyMatrix() {
-    this.network.Edges.forEach((edge) => {
-      if (this.CommonNeighbors.has(edge.GetNodeA().Id)) {
-        this.CommonNeighbors.get(edge.GetNodeA().Id)?.push(edge.GetNodeB());
-      } else {
-        this.CommonNeighbors.set(edge.GetNodeA().Id, [edge.GetNodeB()]);
-      }
-
-      if (!this.network.Directed) {
-        if (this.CommonNeighbors.has(edge.GetNodeB().Id)) {
-          this.CommonNeighbors.get(edge.GetNodeB().Id)?.push(edge.GetNodeA());
+      Object.keys(this.network.Edges).forEach((key) => {
+        const e = this.network.Edges[key];
+        if (this.CommonNeighbors.has(e.GetNodeA().Id)) {
+          this.CommonNeighbors.get(e.GetNodeA().Id)?.push(e.GetNodeB());
         } else {
-          this.CommonNeighbors.set(edge.GetNodeB().Id, [edge.GetNodeA()]);
+          this.CommonNeighbors.set(e.GetNodeA().Id, [e.GetNodeB()]);
         }
-      }
-    });
+
+        if (!this.network.Directed) {
+          if (this.CommonNeighbors.has(e.GetNodeB().Id)) {
+            this.CommonNeighbors.get(e.GetNodeB().Id)?.push(e.GetNodeA());
+          } else {
+            this.CommonNeighbors.set(e.GetNodeB().Id, [e.GetNodeA()]);
+          }
+        }
+      });
+    
+
 
     // const DependencyMatrix: number[][] = new Array(
     //   this.network.Nodes.length + 1
@@ -45,7 +48,11 @@ export default class Matrix {
       { node: Node; dependency: number }[]
     > = new Map();
 
-    this.network.Edges.forEach((edge) => {
+    Object.keys(this.network.Edges).forEach((key) => {
+      const edge = this.network.Edges[key]
+
+
+      
       if (!DependencyMatrix.has(edge.GetNodeA().Id)) {
         DependencyMatrix.set(edge.GetNodeA().Id, [
           {
@@ -59,7 +66,7 @@ export default class Matrix {
           dependency: this.isDependent(edge.GetNodeA(), edge.GetNodeB()),
         });
       }
-
+      
       if (!this.network.Directed) {
         if (!DependencyMatrix.has(edge.GetNodeB().Id)) {
           DependencyMatrix.set(edge.GetNodeB().Id, [
@@ -75,12 +82,12 @@ export default class Matrix {
           });
         }
       }
-    });
-
-    return DependencyMatrix;
-  }
-
-  public nodesDependency() {
+    })
+      
+      return DependencyMatrix;
+    }
+    
+    public nodesDependency() {
     const dependencyMatrix = this.dependencyMatrix();
 
     dependencyMatrix.forEach(
@@ -107,12 +114,12 @@ export default class Matrix {
                 ?.some(
                   (v) =>
                     v.node.Id ===
-                      this.network.Nodes.filter((n) => n.Id === key)[0].Id &&
+                      this.network.Nodes[key].Id &&
                     v.dependency === 0
                 )
             ) {
               owdep.push(
-                this.network.Nodes.filter((n) => n.Id === element.node.Id)[0]
+                this.network.Nodes[element.node.Id]
               );
             }
 
@@ -123,12 +130,12 @@ export default class Matrix {
                 ?.some(
                   (v) =>
                     v.node.Id ===
-                      this.network.Nodes.filter((n) => n.Id === key)[0].Id &&
+                      this.network.Nodes[key].Id &&
                     v.dependency === 1
                 )
             ) {
               owindep.push(
-                this.network.Nodes.filter((n) => n.Id === element.node.Id)[0]
+                this.network.Nodes[element.node.Id]
               );
             }
 
@@ -139,12 +146,12 @@ export default class Matrix {
                 ?.some(
                   (v) =>
                     v.node.Id ===
-                      this.network.Nodes.filter((n) => n.Id === key)[0].Id &&
+                      this.network.Nodes[key].Id &&
                     v.dependency === 1
                 )
             ) {
               twdep.push(
-                this.network.Nodes.filter((n) => n.Id === element.node.Id)[0]
+                this.network.Nodes[element.node.Id]
               );
             }
 
@@ -155,26 +162,26 @@ export default class Matrix {
                 ?.some(
                   (v) =>
                     v.node.Id ===
-                      this.network.Nodes.filter((n) => n.Id === key)[0].Id &&
+                      this.network.Nodes[key].Id &&
                     v.dependency === 0
                 )
             ) {
               twindep.push(
-                this.network.Nodes.filter((n) => n.Id === element.node.Id)[0]
+                this.network.Nodes[element.node.Id]
               );
             }
           }
         });
 
-        this.network.Nodes.filter((n) => n.Id === key)[0].OwDep = owdep;
+        this.network.Nodes[key].OwDep = owdep;
 
-        this.network.Nodes.filter((n) => n.Id === key)[0].OwInDep = owindep;
+        this.network.Nodes[key].OwInDep = owindep;
 
-        this.network.Nodes.filter((n) => n.Id === key)[0].TwDep = twdep;
+        this.network.Nodes[key].TwDep = twdep;
 
-        this.network.Nodes.filter((n) => n.Id === key)[0].TwInDep = twindep;
+        this.network.Nodes[key].TwInDep = twindep;
 
-        this.network.Nodes.filter((n) => n.Id === key)[0].UpdateClass();
+        this.network.Nodes[key].UpdateClass();
       }
     );
   }
@@ -192,18 +199,21 @@ export default class Matrix {
    */
   private weight(nodeA: Node, nodeB: Node): number {
     if (this.network.Directed) {
-      const r = this.network.Edges.filter(
-        (e) =>
-          (e.GetNodeA().Id === nodeA.Id && e.GetNodeB().Id === nodeB.Id)
-      )[0];
+      const r = this.network.Edges[nodeA.Id+nodeB.Id]
+
       return r ? r.GetWeight() : 1;
+
     } else {
-      const r = this.network.Edges.filter(
-        (e) =>
-          (e.GetNodeA().Id === nodeA.Id && e.GetNodeB().Id === nodeB.Id) ||
-          (e.GetNodeB().Id === nodeA.Id && e.GetNodeA().Id === nodeB.Id)
-      )[0];
-      return r ? r.GetWeight() : 1;
+      const a = this.network.Edges[nodeA.Id+nodeB.Id]
+      const b = this.network.Edges[nodeB.Id+nodeA.Id]
+      if (a) {
+        return a.GetWeight()
+      } else {
+        if (b) {
+          return b.GetWeight()
+        }
+        return 1
+      }
     }
   }
 

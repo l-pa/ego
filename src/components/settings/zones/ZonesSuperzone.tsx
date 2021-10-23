@@ -1,5 +1,5 @@
 import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
-import { action } from "mobx";
+import { action, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { zoneStore } from "../../..";
@@ -8,21 +8,32 @@ import Zone from "../../../objects/zone/Zone";
 import { ZoneItem } from "../../ZoneItem";
 
 export function ZonesSuperzone() {
+  // useEffect(() => {
+  //   // zoneStore.Zones.forEach((z) => z.ClearZone());
+  //   return () => {
+  //     // zoneStore.Zones.forEach((z) => z.SetAlpha("80"));
+  //     // zoneStore.Zones.forEach((z) => z.DrawZone());
+  //     // zoneStore.ColorNodesInZones(zoneStore.Zones);
+  //   };
+  // });
+
   useEffect(() => {
-    // zoneStore.Zones.forEach((z) => z.ClearZone());
+    zoneStore.HideAllZones()
+
+    const r = reaction(() => zoneStore.Zones.slice(), () => {
+      zoneStore.HideZones()
+    })
+
     return () => {
-      // zoneStore.Zones.forEach((z) => z.SetAlpha("80"));
-      // zoneStore.Zones.forEach((z) => z.DrawZone());
-      zoneStore.TmpZones.forEach((z) => z.ClearZone());
-      zoneStore.TmpZones.length = 0;
-      // zoneStore.ColorNodesInZones(zoneStore.Zones);
+      zoneStore.ClearTmpZones()
+      r()
     };
-  });
+  }, []);
 
   const Zones = observer(() => (
     <div>
-      {zoneStore
-        .Filter(zoneStore.TmpZones)[0]
+      {/* {zoneStore
+        .Filter(zoneStore.TmpZones).zones
         .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
         .sort(
           (b: Zone, a: Zone) =>
@@ -34,51 +45,26 @@ export function ZonesSuperzone() {
           } else {
             return <ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>;
           }
+        })} */}
+
+      {
+        zoneStore.Difference(zoneStore.Filter(zoneStore.TmpZones).zones, zoneStore.Zones).sort((b: Zone, a: Zone) =>
+          a.AllCollection.length - b.AllCollection.length
+        ).map((z) => {
+          return (<ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>)
+
         })}
 
-      {zoneStore
-        .Filter(zoneStore.TmpZones)[1]
-        .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
-        .sort(
-          (b: Zone, a: Zone) =>
-            a.AllCollection.length - b.AllCollection.length
-        )
-        .forEach((z) => {
-          z.ClearZone();
-          if (zoneStore.Zones.some((zone) => zone.Id === z.Id)) {
-          } else {
-            return (
-              <ZoneItem
-                addButton={true}
-                greyed={true}
-                zone={z as EgoZone}
-              ></ZoneItem>
-            );
-          }
-        })}
     </div>
   ));
 
-  const addZone = action((zone: Zone) => {
-    zoneStore.AddTmpZone([zone], true);
-    zone.Alpha = 0.25;
-    zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-  });
-
-  const clearZone = action(() => {
-    // zoneStore.Zones.forEach((z) => z.ClearZone());
-
-    zoneStore.TmpZones.forEach((z) => z.ClearZone());
-    zoneStore.TmpZones.length = 0;
-    zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-  });
 
   const ActiveZones = observer(() => (
     <Stack>
       <Select
         placeholder="None"
         onChange={(e) => {
-          clearZone();
+          zoneStore.ClearTmpZones()
           if (e.target.value) {
             // zoneStore.FindZone(e.target.value).DrawZone();
             // zoneStore.FindZone(e.target.value).SetAlpha("ff");
@@ -89,10 +75,10 @@ export function ZonesSuperzone() {
                 )[0]
               )
               .then((res) => {
-                console.log(res);
+                const filtered = zoneStore.Difference(res.zones, zoneStore.Zones);
 
-                if (res.length > 0) {
-                  res[0].forEach((z) => addZone(z));
+                if (res.zones.length > 0) {
+                  zoneStore.AddTmpZone(filtered, true);
                   //res[1].forEach((z) => addZone(z));
                 }
               });
@@ -103,11 +89,11 @@ export function ZonesSuperzone() {
           return <option value={z.Id}>{z.Id}</option>;
         })}
       </Select>
-      {zoneStore.Filter(zoneStore.TmpZones)[0].length > 0 && (
+      {zoneStore.Filter(zoneStore.TmpZones).zones.length > 0 && (
         <Button
           isFullWidth={true}
           onClick={() => {
-            zoneStore.AddZones(zoneStore.Filter(zoneStore.TmpZones)[0]);
+            zoneStore.AddZones(zoneStore.Filter(zoneStore.TmpZones).zones);
             zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
           }}
         >

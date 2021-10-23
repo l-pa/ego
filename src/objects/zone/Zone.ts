@@ -63,7 +63,7 @@ export default abstract class Zone {
 
   public set ZIndex(index: number) {
     this.zIndex = index;
-    this.ClearZone();
+    this.DeleteZone();
     if (this.IsDrawn) {
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
@@ -119,11 +119,12 @@ export default abstract class Zone {
     }
   }
 
-  public ClearZone() {
+  public DeleteZone() {
     if (this.IsDrawn) {
-      this.IsDrawn = false;
       this.layer.clear(this.ctx);
       this.canvas.remove();
+      this.canvas = undefined;
+      this.isDrawn = false;
     }
 
     // if (zoneStore.TmpZones.length > 0) {
@@ -133,6 +134,12 @@ export default abstract class Zone {
     // }
   }
 
+  public HideZone() {
+    if (this.canvas) {
+      this.canvas.style.display = "none";
+      this.isDrawn = false;
+    }
+  }
   /**
    * CTX
    */
@@ -187,7 +194,7 @@ export default abstract class Zone {
     if (v) {
       this.DrawZone();
     } else {
-      this.ClearZone();
+      this.HideZone();
     }
   }
 
@@ -197,14 +204,18 @@ export default abstract class Zone {
 
   public DrawZone() {
     if (!this.IsDrawn) {
-      console.log("draw, ", this.id);
-      this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
-      this.canvas = this.layer.getCanvas();
-      this.ctx = this.canvas.getContext("2d");
-      this.IsDrawn = true;
+      if (this.canvas) {
+        this.canvas.style.display = "block";
+      } else {
+        this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
+        this.canvas = this.layer.getCanvas();
+        this.ctx = this.canvas.getContext("2d");
+      }
+
+      console.log(this);
+      this.isDrawn = true;
 
       this.Update();
-      // zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
     }
   }
 
@@ -420,7 +431,7 @@ export default abstract class Zone {
   }
 
   private updateCanvas() {
-    // this.layer.resetTransform(this.ctx);
+    this.layer.resetTransform(this.ctx);
     this.layer.clear(this.ctx);
     this.layer.setTransform(this.ctx);
     this.getNewContext(this.ctx);

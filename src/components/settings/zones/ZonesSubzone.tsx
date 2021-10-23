@@ -1,5 +1,5 @@
 import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
-import { action, autorun } from "mobx";
+import { action, autorun, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 import { zoneStore } from "../../..";
@@ -10,37 +10,36 @@ import { ZoneItem } from "../../ZoneItem";
 export function ZonesSubzone() {
   useEffect(() => {
     zoneStore.HideAllZones()
+
+    const r = reaction(() => zoneStore.Zones.slice(), () => {
+      zoneStore.HideZones()
+    })
+
     return () => {
-      clearZone();
+      zoneStore.ClearTmpZones()
+      r()
     };
   }, []);
 
   const Zones = observer(() => (
     <div>
-      {zoneStore
-        .Filter(zoneStore.TmpZones)[0]
-        .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
-        .sort(
-          (b: Zone, a: Zone) =>
+      {
+        zoneStore.Difference(zoneStore.Filter(zoneStore.TmpZones).zones, zoneStore.Zones).sort((b: Zone, a: Zone) =>
             a.AllCollection.length - b.AllCollection.length
-        )
-        .forEach((z) => {
-          z.DrawZone();
-          if (zoneStore.Zones.some((zone) => zone.Id === z.Id)) {
-          } else {
-            return <ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>;
-          }
+        ).map((z) => {
+          return (<ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>)
+
         })}
 
-      {zoneStore
-        .Filter(zoneStore.TmpZones)[1]
+      {/* {zoneStore
+        .Filter(zoneStore.TmpZones).filtered
         .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
         .sort(
           (b: Zone, a: Zone) =>
             a.AllCollection.length - b.AllCollection.length
         )
         .forEach((z) => {
-          z.ClearZone();
+          z.HideZone();
           if (zoneStore.Zones.some((zone) => zone.Id === z.Id)) {
           } else {
             return (
@@ -52,25 +51,18 @@ export function ZonesSubzone() {
               ></ZoneItem>
             );
           }
-        })}
+        })} */}
     </div>
   ));
 
-  const addZone = action((zone: Zone[]) => {
-    zoneStore.AddTmpZone(zone, true);
-  });
 
-  const clearZone = action(() => {
-    zoneStore.TmpZones.forEach((z) => z.ClearZone());
-    zoneStore.TmpZones.length = 0;
-  });
 
   const ActiveZones = observer(() => (
     <Stack>
       <Select
         placeholder="None"
         onChange={(e) => {
-          clearZone();
+          zoneStore.ClearTmpZones()
           if (e.target.value) {
             zoneStore
               .SubzonesOfZone([
@@ -80,10 +72,10 @@ export function ZonesSubzone() {
               ])
               .then((res) => {
                 console.log(res);
-                const filtered = zoneStore.Filter(res, [], true);
+                const filtered = zoneStore.Difference(zoneStore.Filter(res).zones, zoneStore.Zones);
                 if (res.length > 0) {
-                  addZone(filtered[0]);
-                  addZone(filtered[1]);
+                  zoneStore.AddTmpZone(filtered, true);
+                  // addZone(filtered[1]);
                 }
               });
           }
@@ -97,11 +89,11 @@ export function ZonesSubzone() {
           );
         })}
       </Select>
-      {zoneStore.Filter(zoneStore.TmpZones)[0].length > 0 && (
+      {zoneStore.Filter(zoneStore.TmpZones).zones.length > 0 && (
         <Button
           isFullWidth={true}
           onClick={() => {
-            zoneStore.AddZones(zoneStore.Filter(zoneStore.TmpZones)[0]);
+            zoneStore.AddZones(zoneStore.Filter(zoneStore.TmpZones).zones);
             zoneStore.TmpZones.forEach((z) => zoneStore.RemoveTmpZone(z));
           }}
         >

@@ -4,32 +4,30 @@ import {
   Divider,
   Heading,
   Input,
+  Select,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { Collection, NodeSingular } from "cytoscape";
+import { Collection, NodeCollection, NodeSingular } from "cytoscape";
 import { action, reaction } from "mobx";
 import { observer, useLocalObservable } from "mobx-react-lite";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import { cy } from "../../../objects/graph/Cytoscape";
 import Zone from "../../../objects/zone/Zone";
 
 export function BasicNodes() {
-  useEffect(() => {
-    return () => {
-      zoneStore.ClearTmpZones();
-      // zoneStore.Zones.forEach((z) => z.DrawZone());
-    };
-  });
 
   useEffect(() => {
     zoneStore.HideAllZones()
+    return () => {
+      zoneStore.ClearTmpZones();
+    };
   }, [])
 
   const localObserverable = useLocalObservable(() => ({
     search: "",
-    nodes: [] as NodeSingular[],
+    nodes: cy.collection() as NodeCollection,
     zonesForNodes: [] as Zone[],
     nodesAvailable: cy.collection() as Collection,
   }));
@@ -53,14 +51,14 @@ export function BasicNodes() {
                   !localObserverable.nodesAvailable
                     ?.nodes()
                     .some((node) => node[0].id() === n.id())
-                ) || localObserverable.nodes.some((node) => node.id() == n.id())
+                ) || localObserverable.nodes.has(n)
               ) {
                 return (
                   <Checkbox
                     key={n.id()}
                     isDisabled={false}
-                    isChecked={localObserverable.nodes.some(
-                      (node) => node.id() === n.id()
+                    isChecked={localObserverable.nodes.has(
+                      n
                     )}
                     onChange={(e) => {
                       const node = networkStore.Network?.getNode(
@@ -84,9 +82,9 @@ export function BasicNodes() {
                   <Checkbox
                     key={n.id()}
                     isDisabled={true}
-                    isChecked={localObserverable.nodes.some(
-                      (node) => node.id() === n.id()
-                    )}
+                    isChecked={
+                      localObserverable.nodes.has(n)
+                    }
                     onChange={(e) => {
                       const node = networkStore.Network?.getNode(
                         e.target.value
@@ -115,6 +113,7 @@ export function BasicNodes() {
           isDisabled={localObserverable.zonesForNodes?.length === 0}
           onClick={() => {
             zoneStore.AddZones(localObserverable.zonesForNodes);
+            localObserverable.zonesForNodes = zoneStore.Difference(localObserverable.zonesForNodes, zoneStore.Zones)
           }}
         >
           Add
@@ -127,17 +126,17 @@ export function BasicNodes() {
   useEffect(() => {
     // zoneStore.HideAllZones()
 
-    reaction(
+    const a = reaction(
       () => settingsStore.GetFilterChanged(),
       () => {
         if (localObserverable.nodes.length > 0) {
           localObserverable.zonesForNodes = zoneStore.Filter(
             zoneStore.ZonesForNodes(localObserverable.nodes)
-          )[0];
+          ).zones;
         }
       }
     );
-    reaction(
+    const b = reaction(
       () => localObserverable.zonesForNodes,
       () => {
         let nodesAvailable = cy.collection();
@@ -147,19 +146,18 @@ export function BasicNodes() {
           );
           localObserverable.nodesAvailable = nodesAvailable;
         }
-
         zoneStore.AddTmpZone(localObserverable.zonesForNodes, true);
+        zoneStore.UpdateTmp();
       }
     );
 
-    reaction(
+    const c = reaction(
       () => localObserverable.nodes,
       () => {
         zoneStore.ClearTmpZones();
         if (localObserverable.nodes.length > 0) {
-          localObserverable.zonesForNodes = zoneStore.Filter(
-            zoneStore.ZonesForNodes(localObserverable.nodes), [], true
-          )[0];
+          localObserverable.zonesForNodes = zoneStore.Difference(zoneStore.Filter(
+            zoneStore.ZonesForNodes(localObserverable.nodes)).zones, zoneStore.Zones);
         } else {
           localObserverable.zonesForNodes = [];
         }
@@ -167,14 +165,18 @@ export function BasicNodes() {
     );
     return () => {
       action(() => {
-        localObserverable.nodes = [];
+        localObserverable.nodes = cy.collection();
         localObserverable.zonesForNodes = [];
       }).call([]);
+
+      a()
+      b()
+      c()
     };
   }, []);
 
   const addNode = action((node: NodeSingular) => {
-    localObserverable.nodes = [...localObserverable.nodes, node];
+    localObserverable.nodes = localObserverable.nodes.add(node)
   });
 
   const removeNode = action((node: NodeSingular) => {
@@ -187,19 +189,37 @@ export function BasicNodes() {
     localObserverable.search = id;
   });
 
-  const DegreeSize = observer(() => (
-    <Button
-      isFullWidth={true}
-      onClick={() => {
-        if (settingsStore.GetNodeSize() === "fixed") {
-          settingsStore.SetNodeSize("degree");
-        } else {
+  const Size = observer(() => (
+
+    <Select defaultValue={settingsStore.GetNodeSize()} onChange={(e) => {
+
+      switch (e.target.value) {
+        case "fixed":
           settingsStore.SetNodeSize("fixed");
-        }
-      }}
-    >
-      {settingsStore.GetNodeSize() === "fixed" ? "Degree" : "Fixed"}
-    </Button>
+          break;
+        case "degree":
+          settingsStore.SetNodeSize("degree");
+          break;
+        default:
+          break;
+      }
+
+    }}>
+      <option value="fixed">Fixed</option>
+      <option value="degree">Degree</option>
+    </Select>
+
+  ));
+
+  const Label = observer(() => (
+
+    <Select defaultValue={settingsStore.NodeLabel} onChange={(e) => {
+      settingsStore.NodeLabel = e.target.value
+    }}>
+      <option value="id">Id</option>
+      <option value="label">Label</option>
+    </Select>
+
   ));
 
   return (
@@ -215,25 +235,24 @@ export function BasicNodes() {
       >
         Hide labels
       </Checkbox> */}
-      <Text mt={5} fontSize="md">
+      <Heading size="sm">
         Size
-      </Text>
+      </Heading>
 
-      <DegreeSize />
+      <Size />
       <Divider paddingBottom={5} marginBottom={5} />
+
+      <Heading size="sm">
+        Label
+      </Heading>
+
+      <Label />
+      <Divider paddingBottom={5} marginBottom={5} />
+
+
       <Heading as="h4" size="md" pb={5}>
         Show
       </Heading>
-      <Checkbox
-        key={"showInZonesCheckbox"}
-        defaultIsChecked={settingsStore.HideOutsideZones}
-        onChange={(e) => {
-          settingsStore.HideOutsideZones = e.target.checked;
-        }}
-      >
-        In zones
-      </Checkbox>
-
       <Divider />
       <Heading as="h4" size="md" pt={5}>
         Same zones

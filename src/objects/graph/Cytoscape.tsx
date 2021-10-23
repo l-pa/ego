@@ -1,4 +1,4 @@
-import cytoscape from "cytoscape";
+import cytoscape, { ElementDefinition } from "cytoscape";
 import { networkStore, zoneStore } from "../..";
 import Edge from "../network/Edge";
 import EgoZone from "../zone/EgoZone";
@@ -8,15 +8,20 @@ export let cy: cytoscape.Core;
 export default class Cytoscape {
   constructor(div: HTMLDivElement | null) {
     if (networkStore.Network) {
-      networkStore.Network.Edges.forEach((e: Edge) => {
+      Object.keys(networkStore.Network.Edges).forEach(function (key) {
+        const e = networkStore.Network!!.Edges[key]
         e.UpdateClasses();
       });
 
       cy = cytoscape({
         container: div,
         elements: [
-          ...networkStore.Network.Nodes.map((e) => e.PlainObject()),
-          ...networkStore.Network.Edges.map((e) => e.PlainObject()),
+          ...Object.keys(networkStore.Network.Nodes).map(function (key) {
+            return networkStore.Network?.Nodes[key].PlainObject();
+          }) as ElementDefinition[],
+          ...Object.keys(networkStore.Network.Edges).map(function (key) {
+            return networkStore.Network?.Edges[key].PlainObject();
+          }) as ElementDefinition[],
         ],
 
         wheelSensitivity: 0.15,
@@ -186,9 +191,8 @@ export default class Cytoscape {
       cy.on("mouseover", "node", (event) => {
         if (networkStore.Network) {
           z = new EgoZone(
-            networkStore.Network.Nodes.filter(
-              (e) => e.Id.toString() === event.target._private.data.id
-            )[0]
+
+            networkStore.Network.Nodes[event.target._private.data.id]
           );
           zoneStore.ColorNodesInZone(z);
         }
@@ -202,9 +206,9 @@ export default class Cytoscape {
       cy.on("click", "node", function (event) {
         if (networkStore.Network) {
           const z = new EgoZone(
-            networkStore.Network.Nodes.filter(
-              (e) => e.Id === event.target._private.data.id
-            )[0]
+
+            networkStore.Network.Nodes[event.target._private.data.id]
+
           );
           zoneStore.AddZone(z);
         }

@@ -13,6 +13,11 @@ export function BasicLayout() {
         <option value="cola">Cola</option>
         <option value="random">Random</option>
         <option value="stack">Stack</option>
+        <option value="cise">Cise</option>
+        <option value="fcose">Fcose</option>
+        <option value="euler">Euler</option>
+
+
       </Select>
 
       <Button
@@ -25,11 +30,21 @@ export function BasicLayout() {
             case "random":
               cy.layout({ name: "random" }).run();
               break;
+            case "cise":
+              cy.layout({ name: "cise" }).run();
+              break;
 
+            case "fcose":
+              cy.layout({ name: "fcose" }).run();
+              break;
+
+            case "euler":
+              cy.layout({ name: "euler" }).run();
+              break;
             case "stack":
               cy.nodes().forEach((n, i) => {
-                n.position("x", i)
-                n.position("y", i)
+                n.position("x", i * 5)
+                n.position("y", i * 5)
               })
               break;
 
