@@ -1,15 +1,5 @@
-import {
-  action,
-  autorun,
-  computed,
-  makeAutoObservable,
-  makeObservable,
-  observable,
-  observe,
-} from "mobx";
+import { computed, makeObservable, observable } from "mobx";
 import { zoneStore } from "../..";
-import { ZoneStore } from "../../stores/ZoneStore";
-import ExportImage from "../export/ExportImage";
 import { cy } from "../graph/Cytoscape";
 import {
   Subtract,
@@ -23,28 +13,33 @@ import {
 } from "../utility/Vector";
 import { IPoint } from "./IPoints";
 import { Point } from "./Point";
+import { getRandomInt } from "../utility/Vector";
+
+export interface IColor {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
 
 export default abstract class Zone {
-  private isZoneShown: boolean = true;
-  private areShownNodes: boolean = false;
+  private randomColor: { r: number; g: number; b: number; a: number } = {
+    r: getRandomInt(0, 255),
+    g: getRandomInt(0, 255),
+    b: getRandomInt(0, 255),
+    a: 0.5,
+  };
 
   private zIndex: number = -1;
-
   private layer: any = undefined;
   private canvas: any = undefined;
   private ctx: any = undefined;
-
   private label: string = "";
-
-  private ctxStyle: string = "#00ff00";
-
-  private alpha: number = 0.5;
-
+  private ctxStyle: string | IColor = "rgba(0,0,0,1)";
+  private color: IColor = this.randomColor;
   private points: Array<IPoint> = [];
   private collection: cytoscape.Collection = cy.collection();
-
   private id: string;
-
   private isDrawn = false;
 
   public static hullPadding = 70;
@@ -52,11 +47,13 @@ export default abstract class Zone {
   constructor(id: string) {
     this.id = id;
 
-    makeObservable<this, "isDrawn">(this, { isDrawn: observable });
-    makeObservable(this, { IsDrawn: computed });
+    makeObservable<this, "isDrawn">(this, {
+      isDrawn: observable,
+      IsDrawn: computed,
+    });
   }
 
-  public Points(v: IPoint[]) {
+  public set Points(v: IPoint[]) {
     this.points = v;
   }
 
@@ -64,14 +61,10 @@ export default abstract class Zone {
     return Zone.hullPadding;
   }
 
-  public get Color(): string {
-    return this.ctxStyle;
-  }
-
-  public SetZindex(index: number) {
+  public set ZIndex(index: number) {
     this.zIndex = index;
     this.ClearZone();
-    if (this.isZoneShown) {
+    if (this.IsDrawn) {
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
@@ -79,16 +72,17 @@ export default abstract class Zone {
     }
   }
 
-  public GetAlpha() {
-    return this.alpha;
+  public get Alpha() {
+    return this.color.a;
   }
 
-  public SetAlpha(alpha: number) {
-    this.alpha = alpha;
-    if (this.isDrawn) {
-      // this.ctx.fillStyle = this.ctxStyle; // + this.alpha;
-      // this.ctx.fillStyle = ExportImage.hexToRgb(this.ctxStyle, alpha);
-      if (this.isDrawn) {
+  public set Alpha(alpha: number) {
+    this.color.a = alpha;
+
+    if (this.IsDrawn) {
+      this.CTXStyle(this.color, this.ctx);
+      // this.ctx.fillStyle = this.CTXStyle(); // + this.alpha;
+      if (this.IsDrawn) {
         this.Update();
       }
     }
@@ -98,71 +92,78 @@ export default abstract class Zone {
     return this.canvas;
   }
 
-  public GetLabel() {
+  public get Label() {
     return this.label;
   }
 
-  public GetId() {
+  public get Id() {
     return this.id;
   }
 
-  public SetLabel(label: string) {
+  public set Label(label: string) {
     this.label = label;
     // this.updatePath();
   }
 
-  public GetAreShownNodes() {
-    return this.areShownNodes;
-  }
-
-  public AllCollection(): cytoscape.Collection {
+  public get AllCollection() {
     return this.collection;
   }
 
-  public SetAllCollection(collection: cytoscape.Collection) {
+  public set AllCollection(collection: cytoscape.Collection) {
     this.collection = collection;
   }
 
-  public SetAreShownNodes(show: boolean) {
-    this.areShownNodes = show;
-  }
-
   public Update() {
-    if (this.isDrawn) {
-      this.calc();
+    if (this.IsDrawn) {
+      this.updateCanvas();
     }
   }
 
   public ClearZone() {
-    if (this.isDrawn) {
+    if (this.IsDrawn) {
       this.IsDrawn = false;
       this.layer.clear(this.ctx);
       this.canvas.remove();
-    } else {
-      console.log("Nothing to clear");
     }
 
-    if (zoneStore.TmpZones.length > 0) {
-      zoneStore.ColorNodesInZones(zoneStore.TmpZones);
-    } else {
-      zoneStore.ColorNodesInZones(zoneStore.Zones);
-    }
+    // if (zoneStore.TmpZones.length > 0) {
+    //   zoneStore.ColorNodesInZones(zoneStore.TmpZones);
+    // } else {
+    //   zoneStore.ColorNodesInZones(zoneStore.Zones);
+    // }
   }
 
   /**
    * CTX
    */
-  public CTX() {
+  public get CTX() {
     return this.ctx;
   }
 
+  public get Color() {
+    return this.color;
+  }
+
+  public set Color(v: IColor) {
+    this.color = v;
+    this.CTXStyle(this.color, this.CTX());
+    this.Update();
+  }
+
+  private checkColor(color: string | IColor | CanvasPattern): color is IColor {
+    return (<IColor>color).r !== undefined;
+  }
+
   public CTXStyle(
-    style: string | CanvasPattern,
+    style: string | IColor | CanvasPattern,
     ctx: CanvasRenderingContext2D = this.ctx
   ) {
-    this.ctxStyle = style.toString();
-
-    ctx.fillStyle = style;
+    if (this.checkColor(style)) {
+      this.ctxStyle = `rgba(${style.r},${style.g},${style.b},${style.a})`;
+    } else {
+      this.ctxStyle = style.toString();
+    }
+    ctx.fillStyle = this.ctxStyle;
   }
 
   public CollectionPoints(
@@ -182,34 +183,29 @@ export default abstract class Zone {
 
   public set IsDrawn(v: boolean) {
     this.isDrawn = v;
+
+    if (v) {
+      this.DrawZone();
+    } else {
+      this.ClearZone();
+    }
   }
 
   public get IsDrawn(): boolean {
     return this.isDrawn;
   }
 
-  // public SetIsDrawn = (v: boolean) => {
-  //   this.isDrawn = v;
-  //   action(() => {});
-  // };
-
-  // public GetIsDrawn(): boolean {
-  //   return this.isDrawn;
-  // }
-
   public DrawZone() {
-    if (!this.isDrawn) {
+    if (!this.IsDrawn) {
       console.log("draw, ", this.id);
       this.layer = (cy as any).cyCanvas({ zIndex: this.zIndex });
       this.canvas = this.layer.getCanvas();
       this.ctx = this.canvas.getContext("2d");
-
       this.IsDrawn = true;
 
       this.Update();
+      // zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
     }
-
-    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
   }
 
   private line(
@@ -423,11 +419,10 @@ export default abstract class Zone {
     }
   }
 
-  private calc() {
+  private updateCanvas() {
     // this.layer.resetTransform(this.ctx);
     this.layer.clear(this.ctx);
     this.layer.setTransform(this.ctx);
-
     this.getNewContext(this.ctx);
   }
 }

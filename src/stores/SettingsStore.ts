@@ -226,10 +226,10 @@ export class SettingsStore {
    * DetermineTextColor, depends on the brightness of a background returns true if a text should have black or false if white color.
    * @param hex Hex color string
    */
-  public DetermineTextColor(hex: string) {
-    const rgb = this.HexToRgb(hex);
-    if (rgb) {
-      var a = 1 - (0.299 * rgb?.r + 0.587 * rgb?.g + 0.114 * rgb?.b) / 255;
+  public DetermineTextColor(r: { r: number; g: number; b: number; a: number }) {
+    // const rgb = this.HexToRgb(hex);
+    if (r) {
+      var a = 1 - (0.299 * r.r + 0.587 * r.g + 0.114 * r.b) / 255;
       return a < 0.5;
     }
   }
@@ -253,8 +253,7 @@ export class SettingsStore {
     this.filterExistingZones = true;
     this.duplicates = "all";
     this.zonesIdk = "all";
-    this.snapshots.Snapshots.length = 0
-    this.trackZonesExport = false
-
+    this.snapshots.Snapshots.length = 0;
+    this.trackZonesExport = false;
   }
 }

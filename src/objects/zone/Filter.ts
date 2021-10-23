@@ -33,7 +33,7 @@ export class ZoneSize implements IFilter {
   Filter(zones: Zone[]): Zone[] {
     const zonesToReturn: Zone[] = [];
     zones.forEach((element) => {
-      if (element.AllCollection().length >= settingsStore.MinNodesZoneShow) {
+      if (element.AllCollection.length >= settingsStore.MinNodesZoneShow) {
         zonesToReturn.push(element);
       }
     });
@@ -78,10 +78,7 @@ export class DuplicatesByEgo implements IFilter {
                 z1.InnerCollection.union(z1.OutsideCollection)
               ).length === 0
             ) {
-              if (
-                zonesToReturn.filter((z) => z.GetId() === z2.GetId()).length ===
-                0
-              ) {
+              if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
                 zonesToReturn.push(z2);
               }
             }
@@ -97,15 +94,12 @@ export class DuplicatesByEgo implements IFilter {
           const z2 = zones[j];
           if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
             if (
-              z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.GetId())
-                .length === 1 &&
+              z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.Id).length ===
+                1 &&
               z1.InnerCollection.subtract(z2.InnerCollection).length === 0 &&
               z2.InnerCollection.subtract(z1.InnerCollection).length === 0
             ) {
-              if (
-                zonesToReturn.filter((z) => z.GetId() === z2.GetId()).length ===
-                0
-              ) {
+              if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
                 zonesToReturn.push(z2);
               }
             }
@@ -113,9 +107,9 @@ export class DuplicatesByEgo implements IFilter {
         }
       }
     }
-    
+
     zonesToReturn = zones.filter(
-      (x) => !zonesToReturn.some((y) => y.GetId() === x.GetId())
+      (x) => !zonesToReturn.some((y) => y.Id === x.Id)
     );
 
     if (this.next) {
@@ -151,9 +145,7 @@ export class DuplicatesByZoneProperties implements IFilter {
 
         if (z1 instanceof EgoZone) {
           if (z1.InnerCollection.length > z1.OutsideCollection.length) {
-            if (
-              zonesToReturn.filter((z) => z.GetId() === z1.GetId()).length === 0
-            ) {
+            if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
               zonesToReturn.push(z1);
             }
           }
@@ -167,9 +159,7 @@ export class DuplicatesByZoneProperties implements IFilter {
 
         if (z1 instanceof EgoZone) {
           if (z1.InnerCollection.length < z1.OutsideCollection.length) {
-            if (
-              zonesToReturn.filter((z) => z.GetId() === z1.GetId()).length === 0
-            ) {
+            if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
               zonesToReturn.push(z1);
             }
           }
@@ -183,9 +173,7 @@ export class DuplicatesByZoneProperties implements IFilter {
 
         if (z1 instanceof EgoZone) {
           if (z1.InnerCollection.length === z1.OutsideCollection.length) {
-            if (
-              zonesToReturn.filter((z) => z.GetId() === z1.GetId()).length === 0
-            ) {
+            if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
               zonesToReturn.push(z1);
             }
           }
@@ -200,16 +188,14 @@ export class DuplicatesByZoneProperties implements IFilter {
 
         if (z1 instanceof EgoZone) {
           if (z1.OutsideCollection.length === 0) {
-            if (
-              zonesToReturn.filter((z) => z.GetId() === z1.GetId()).length === 0
-            ) {
+            if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
               zonesToReturn.push(z1);
             }
           }
         }
       }
     }
-    
+
     if (this.next) {
       return this.next.Filter(zonesToReturn);
     } else {

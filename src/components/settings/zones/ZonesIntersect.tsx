@@ -32,11 +32,11 @@ export function ZonesIntersect() {
         intersect = cy.collection();
         const firstZone = arr[0];
         if (firstZone instanceof EgoZone || firstZone instanceof CustomZone)
-          intersect = intersect.union(firstZone.AllCollection());
+          intersect = intersect.union(firstZone.AllCollection);
         for (let i = 1; i < arr.length; i++) {
           const element = arr[i];
           if (element instanceof EgoZone || element instanceof CustomZone)
-            intersect = intersect.intersect(element.AllCollection());
+            intersect = intersect.intersect(element.AllCollection);
         }
       } else {
         console.log("< 2");
@@ -49,12 +49,12 @@ export function ZonesIntersect() {
   const addZone = action((zone: Zone) => {
     zonesToIntersert.push(zone);
     // zone.DrawZone();
-    id.push(zone.GetId());
+    id.push(zone.Id);
     // zone.DrawZone();
   });
   const removeZone = action((zone: Zone) => {
     zonesToIntersert.splice(zonesToIntersert.indexOf(zone), 1);
-    id = id.filter((i) => i !== zone.GetId());
+    id = id.filter((i) => i !== zone.Id);
     // zone.ClearZone();
   });
 
@@ -80,18 +80,18 @@ export function ZonesIntersect() {
       {zoneStore.Zones.map((z, i) => {
         return (
           <Checkbox
-            borderColor={z instanceof EgoZone ? z.Color : ""}
-            key={z.GetId()}
-            value={z.GetId()}
+            borderColor={z instanceof EgoZone ? z.StringColorRGB() : ""}
+            key={z.Id}
+            value={z.Id}
             onChange={(v) => {
               if (v.target.checked) {
                 addZone(
-                  zoneStore.Zones.filter((z) => z.GetId() === v.target.value)[0]
+                  zoneStore.Zones.filter((z) => z.Id === v.target.value)[0]
                 );
               } else {
                 removeZone(
                   zonesToIntersert.filter(
-                    (z) => z.GetId() === v.target.value
+                    (z) => z.Id === v.target.value
                   )[0]
                 );
               }
@@ -110,11 +110,11 @@ export function ZonesIntersect() {
           >
             {z.IsDrawn && (
               <Heading as="h5" size="sm">
-                {z.GetId()}
+                {z.Id}
               </Heading>
             )}
 
-            {!z.IsDrawn && z.GetId()}
+            {!z.IsDrawn && z.Id}
           </Checkbox>
         );
       })}

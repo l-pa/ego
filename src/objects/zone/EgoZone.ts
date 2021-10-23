@@ -4,8 +4,8 @@ import cytoscape, { Collection } from "cytoscape";
 import { settingsStore, zoneStore } from "../..";
 
 import { cy } from "../graph/Cytoscape";
-import Zone from "./Zone";
-import { getRandomInt } from "../utility/Vector";
+import Zone, { IColor } from "./Zone";
+import { reaction } from "mobx";
 
 export default class EgoZone extends Zone {
   private ego: Node;
@@ -21,17 +21,6 @@ export default class EgoZone extends Zone {
   //   Math.floor(Math.random() * 16777215)
   //     .toString(16)
   //     .padStart(6, "0");
-
-  private colorObject: { r: number; g: number; b: number; a: number } = {
-    r: getRandomInt(0, 255),
-    g: getRandomInt(0, 255),
-    b: getRandomInt(0, 255),
-    a: this.GetAlpha(),
-  };
-
-  private color: string = `rgba(${this.colorObject.r},${this.colorObject.g},${
-    this.colorObject.b
-  },${this.GetAlpha()})`;
 
   private automove: any = undefined;
 
@@ -67,7 +56,9 @@ export default class EgoZone extends Zone {
       );
     });
 
-    super.Points(super.CollectionPoints(this.AllCollection()));
+    this.AllCollection = this.outsideCollection.union(this.innerCollection);
+
+    this.Points = super.CollectionPoints(this.AllCollection);
   }
 
   public get InnerCollection() {
@@ -86,26 +77,20 @@ export default class EgoZone extends Zone {
     return this.outerZoneNodes;
   }
 
-  public AllCollection() {
-    return this.outsideCollection.union(this.innerCollection);
-  }
+  // public AllCollection() {
+  //   return this.outsideCollection.union(this.innerCollection);
+  // }
 
   public get Ego(): Node {
     return this.ego;
   }
 
-  public set Color(color: string) {
-    this.color = color;
-    super.CTXStyle(this.color, this.CTX());
-    this.Update();
+  public StringColorRGBA() {
+    return `rgba(${this.Color.r},${this.Color.g},${this.Color.b},${this.Color.a})`;
   }
 
-  public get Color() {
-    return this.color;
-  }
-
-  public get ColorObject() {
-    return this.colorObject;
+  public StringColorRGB() {
+    return `rgb(${this.Color.r},${this.Color.g},${this.Color.b})`;
   }
 
   public set EnableAutomove(enable: boolean) {
@@ -122,17 +107,17 @@ export default class EgoZone extends Zone {
   public ClearZone() {
     if (settingsStore.HideOutsideZones) {
       let nodesInZonesExceptZ: Collection = cy.collection();
-      zoneStore.Zones.filter((zone) => zone.GetId() !== this.GetId()).forEach(
+      zoneStore.Zones.filter((zone) => zone.Id !== this.Id).forEach(
         (element) => {
           if (element instanceof EgoZone)
             nodesInZonesExceptZ = nodesInZonesExceptZ.union(
-              element.AllCollection()
+              element.AllCollection
             );
         }
       );
       //  this.AllCollection().classes();
 
-      this.AllCollection().difference(nodesInZonesExceptZ).addClass("hide");
+      this.AllCollection.difference(nodesInZonesExceptZ).addClass("hide");
     }
     if (this.automove) this.automove.destroy();
 
@@ -144,30 +129,26 @@ export default class EgoZone extends Zone {
    */
   public DrawZone() {
     if (settingsStore.HideOutsideZones) {
-      this.AllCollection().removeClass("hide");
+      this.AllCollection.removeClass("hide");
     }
 
     if (!this.IsDrawn) {
-      if (this.AllCollection().length < settingsStore.MinNodesZoneShow) {
-        // return;
-      }
-
       this.automove = (cy as any).automove({
         nodesMatching: this.innerCollection
           .subtract(this.innerCollection[0])
           .union(this.outsideCollection),
-
         reposition: "drag",
-
         dragWith: this.innerCollection[0],
       });
+
       this.automove.disable();
+
       if (settingsStore.Automove) {
         this.automove.enable();
       }
 
       super.DrawZone();
-      super.CTXStyle(this.color);
+      super.CTXStyle(this.Color);
     }
   }
 
@@ -175,7 +156,7 @@ export default class EgoZone extends Zone {
    * Update
    */
   public Update() {
-    super.Points(super.CollectionPoints(this.AllCollection()));
+    this.Points = super.CollectionPoints(this.AllCollection);
     super.Update();
   }
 

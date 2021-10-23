@@ -20,6 +20,7 @@ import svg from "cytoscape-svg";
 
 // @ts-ignore
 import contextMenus from "cytoscape-context-menus";
+import { configure, spy } from "mobx";
 
 interface IStore {
   zones: ZoneStore;
@@ -40,6 +41,20 @@ cytoscape.use(cola);
 cytoscape.use(coseBilkent);
 cytoscape.use(contextMenus);
 cytoscape.use(svg);
+
+configure({
+  enforceActions: "always",
+  computedRequiresReaction: true,
+  reactionRequiresObservable: true,
+  observableRequiresReaction: false,
+  disableErrorBoundaries: true
+})
+
+spy(event => {
+  if (event.type === "action") {
+    // console.log(`${event.name} with args: ${event.arguments}`)
+  }
+})
 
 // @ts-ignore
 C2S.prototype.curve = CanvasRenderingContext2D.prototype.curve;

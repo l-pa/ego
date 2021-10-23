@@ -10,8 +10,8 @@ export default class CustomZone extends Zone {
 
   constructor(collection: cytoscape.Collection, id: string) {
     super(id);
-    super.Points(super.CollectionPoints(collection));
-    super.SetAllCollection(collection);
+    this.Points = super.CollectionPoints(collection); 
+    this.AllCollection = collection
   }
 
   public set EnableAutomove(enable: boolean) {
@@ -37,19 +37,19 @@ export default class CustomZone extends Zone {
    */
   public DrawZone() {
     if (settingsStore.HideOutsideZones) {
-      super.AllCollection().removeClass("hide");
+      this.AllCollection.removeClass("hide");
     }
     // if (!super.) {
-    if (super.AllCollection.length > settingsStore.MinNodesZoneShow) {
+    if (this.AllCollection.length > settingsStore.MinNodesZoneShow) {
       return;
     }
 
     this.automove = (cy as any).automove({
-      nodesMatching: super.AllCollection(),
+      nodesMatching: this.AllCollection,
 
       reposition: "drag",
 
-      dragWith: this.AllCollection(),
+      dragWith: this.AllCollection,
     });
     this.automove.disable();
     if (settingsStore.Automove) {
@@ -74,7 +74,7 @@ export default class CustomZone extends Zone {
       patternContext.lineTo(50, 50);
       patternContext.stroke();
     }
-    const pattern = super.CTX().createPattern(patternCanvas, "repeat");
+    const pattern = this.CTX().createPattern(patternCanvas, "repeat");
 
     super.CTXStyle(pattern, this.CTX());
     // }
@@ -84,7 +84,7 @@ export default class CustomZone extends Zone {
    * Update
    */
   public Update() {
-    super.Points(super.CollectionPoints(this.AllCollection()));
+    this.Points = super.CollectionPoints(this.AllCollection);
     super.Update();
   }
 }

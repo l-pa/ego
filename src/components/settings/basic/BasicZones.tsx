@@ -6,13 +6,11 @@ import { observer } from "mobx-react-lite";
 import EgoZone from "../../../objects/zone/EgoZone";
 import CustomZone from "../../../objects/zone/CustomZone";
 import { ZoneItemCustom } from "../../ZoneItemCustom";
-import { reaction } from "mobx";
+import { autorun, reaction } from "mobx";
 
 export const BasicZones: React.FunctionComponent = () => {
 
   useEffect(() => {
-    console.log("aaa");
-
     zoneStore.DefaultColors()
     zoneStore.Update()
   }, [])

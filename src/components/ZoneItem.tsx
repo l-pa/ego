@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Stack,
   Box,
@@ -19,8 +19,6 @@ import { settingsStore, zoneStore } from "..";
 import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
-import Zone from "../objects/zone/Zone";
-import { observer } from "mobx-react-lite";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
@@ -28,23 +26,19 @@ export const ZoneItem: React.FunctionComponent<{
   greyed?: boolean;
   filter?: boolean;
 }> = ({ zone, addButton = false, greyed = false, filter = false }) => {
+
   const innerE =
-    zone.AllCollection().edgesWith(zone.AllCollection()).length * 2;
+    zone.AllCollection.nodes().edgesWith(zone.AllCollection).length * 2;
   const outerE =
-    zone.AllCollection().edgesWith(cy.nodes().difference(zone.AllCollection()))
+    zone.AllCollection.nodes().edgesWith(cy.nodes().difference(zone.AllCollection))
       .length + innerE;
 
   const color = settingsStore.DetermineTextColor(zone.Color)
     ? "black"
     : "white";
 
-  const [isDrawn, setIsDrawn] = useState(zone.IsDrawn);
-  greyed = !isDrawn;
-
-  const activeZones: Zone[] = [];
-
   const mouseLeaveFunction = () => {
-    cy.nodes().difference(zone.AllCollection().nodes()).removeClass("tmpHide");
+    cy.nodes().difference(zone.AllCollection.nodes()).removeClass("tmpHide");
 
     zoneStore.Update()
   };
@@ -58,17 +52,15 @@ export const ZoneItem: React.FunctionComponent<{
 
     zoneStore.ColorNodesInZone(zone);
 
-    cy.nodes().difference(zone.AllCollection().nodes()).addClass("tmpHide");
+    cy.nodes().difference(zone.AllCollection.nodes()).addClass("tmpHide");
   };
 
-
-
   return (
-    <Box zIndex={1} bg={!greyed ? zone.Color : "grey"} p={4}>
+    <Box zIndex={1} bg={!greyed ? zone.StringColorRGB() : "grey"} p={4}>
       <Box display={"flex"}>
         {zone.Ego.isProminent() === 0 ? (
           <Avatar
-            name={zone.GetId().split("").join(" ")}
+            name={zone.Id.split("").join(" ")}
             backgroundColor={!greyed ? "red.400" : "grey"}
             colorScheme={"primary"}
             outline=""
@@ -81,7 +73,7 @@ export const ZoneItem: React.FunctionComponent<{
           />
         ) : zone.Ego.isProminent() === 1 ? (
           <Avatar
-            name={zone.GetId().split("").join(" ")}
+              name={zone.Id.split("").join(" ")}
             backgroundColor={!greyed ? "yellow.400" : "grey"}
             colorScheme={"primary"}
             onMouseEnter={(e) => {
@@ -93,7 +85,7 @@ export const ZoneItem: React.FunctionComponent<{
           />
         ) : (
           <Avatar
-            name={zone.GetId().split("").join(" ")}
+                name={zone.Id.split("").join(" ")}
             backgroundColor={!greyed ? "green.400" : "grey"}
             colorScheme={"primary"}
             onMouseEnter={(e) => {
@@ -277,9 +269,12 @@ export const ZoneItem: React.FunctionComponent<{
       </Heading>
       <Slider
         color="pink"
-        defaultValue={zone.GetAlpha()}
+        min={0}
+        max={1}
+        step={0.01}
+        defaultValue={zone.Alpha}
         onChange={(val) => {
-          zone.SetAlpha(val);
+          zone.Alpha = val;
         }}
       >
         <SliderTrack />
@@ -291,7 +286,7 @@ export const ZoneItem: React.FunctionComponent<{
         alignItems="center"
         justifyContent="space-between"
       >
-        <Checkbox
+        {/* <Checkbox
           onChange={(e) => {
             if (e.target.checked) {
               zone.DrawZone();
@@ -301,8 +296,8 @@ export const ZoneItem: React.FunctionComponent<{
             setIsDrawn(e.target.checked);
           }}
           size="lg"
-          defaultIsChecked={zone.IsDrawn}
-        ></Checkbox>
+          defaultIsChecked={isDrawn}
+        ></Checkbox> */}
         {!addButton && (
           <Button
             colorScheme="red"
@@ -331,5 +326,5 @@ export const ZoneItem: React.FunctionComponent<{
         )}
       </Stack>
     </Box>
-  );
+  )
 };

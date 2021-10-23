@@ -22,17 +22,17 @@ export const ZoneItemCustom: React.FunctionComponent<{
 }> = ({ zone }) => {
   return (
     <Box zIndex={1} bg={"red"} p={4} color="black">
-      <Heading textAlign={"center"}>{zone.GetId()}</Heading>
+      <Heading textAlign={"center"}>{zone.Id}</Heading>
       <Box d="flex" alignItems="baseline" pb={6}>
         <Box fontSize="sm">
-          <Heading>{zone.AllCollection().length} nodes</Heading>
+          <Heading>{zone.AllCollection.length} nodes</Heading>
         </Box>
       </Box>
       <Accordion allowToggle>
         <AccordionItem>
           <Input
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              zone.SetLabel(e.target.value);
+              zone.Label = e.target.value;
             }}
             style={{ color: "black" }}
             placeholder="Label"
@@ -45,7 +45,7 @@ export const ZoneItemCustom: React.FunctionComponent<{
               let alpha = Number.parseInt(
                 (255 * (val / 100)).toString()
               ).toString(16);
-              zone.SetAlpha(0.2);
+              zone.Alpha = 0.2;
             }}
           >
             <SliderTrack />

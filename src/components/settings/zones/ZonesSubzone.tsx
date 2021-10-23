@@ -22,11 +22,11 @@ export function ZonesSubzone() {
         .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
         .sort(
           (b: Zone, a: Zone) =>
-            a.AllCollection().length - b.AllCollection().length
+            a.AllCollection.length - b.AllCollection.length
         )
         .forEach((z) => {
           z.DrawZone();
-          if (zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())) {
+          if (zoneStore.Zones.some((zone) => zone.Id === z.Id)) {
           } else {
             return <ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>;
           }
@@ -37,18 +37,18 @@ export function ZonesSubzone() {
         .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
         .sort(
           (b: Zone, a: Zone) =>
-            a.AllCollection().length - b.AllCollection().length
+            a.AllCollection.length - b.AllCollection.length
         )
         .forEach((z) => {
           z.ClearZone();
-          if (zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())) {
+          if (zoneStore.Zones.some((zone) => zone.Id === z.Id)) {
           } else {
             return (
               <ZoneItem
                 addButton={true}
                 greyed={true}
                 zone={z as EgoZone}
-                key={z.GetId()}
+                key={z.Id}
               ></ZoneItem>
             );
           }
@@ -75,7 +75,7 @@ export function ZonesSubzone() {
             zoneStore
               .SubzonesOfZone([
                 zoneStore.Zones.filter(
-                  (z) => z.GetId().toString() === e.target.value
+                  (z) => z.Id.toString() === e.target.value
                 )[0],
               ])
               .then((res) => {
@@ -91,8 +91,8 @@ export function ZonesSubzone() {
       >
         {zoneStore.Zones.map((z, i) => {
           return (
-            <option key={i} value={z.GetId()}>
-              {z.GetId()}
+            <option key={i} value={z.Id}>
+              {z.Id}
             </option>
           );
         })}

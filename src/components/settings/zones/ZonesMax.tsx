@@ -6,12 +6,11 @@ import {
   Switch,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { networkStore, zoneStore } from "../../..";
 import EgoZone from "../../../objects/zone/EgoZone";
 import { ZoneItem } from "../../ZoneItem";
-import { action, observable, reaction } from "mobx";
-import Zone from "../../../objects/zone/Zone";
+import { action, observable } from "mobx";
 
 export function ZonesMax() {
 
@@ -41,19 +40,19 @@ export function ZonesMax() {
         );
 
         largestEgoZone = largestZone.sort(
-          (a, b) => b.AllCollection().length - a.AllCollection().length
+          (a, b) => b.AllCollection.length - a.AllCollection.length
         )[0] as EgoZone;
 
         const tmp = largestZone.filter(
           (z) =>
-            z.AllCollection().length === largestZone[0].AllCollection().length
+            z.AllCollection.length === largestZone[0].AllCollection.length
         );
 
         return (
           <Stack>
             {tmp.map((z) => {
-              z.DrawZone()
-              return <ZoneItem key={z.GetId()} zone={z as EgoZone}></ZoneItem>;
+              z.IsDrawn = true
+              return <ZoneItem key={z.Id} zone={z as EgoZone}></ZoneItem>;
             })}
           </Stack>
         );
@@ -73,22 +72,22 @@ export function ZonesMax() {
 
       largestEgoZone = tmp.sort(
         (a: EgoZone, b: EgoZone) =>
-          b.AllCollection().length - a.AllCollection().length
+          b.AllCollection.length - a.AllCollection.length
       )[0];
 
       tmp = tmp.filter(
         (z) =>
-          z.AllCollection().length === largestEgoZone.AllCollection().length
+          z.AllCollection.length === largestEgoZone.AllCollection.length
       );
 
 
       return (
         <Stack>
           {tmp.map((zone) => {
-            if (!zoneStore.Zones.some((z) => z.GetId() === zone.GetId())) {
+            if (!zoneStore.Zones.some((z) => z.Id === zone.Id)) {
               return (
                 <ZoneItem
-                  key={zone.GetId()}
+                  key={zone.Id}
                   addButton={true}
                   zone={zone}
                 ></ZoneItem>
@@ -96,11 +95,11 @@ export function ZonesMax() {
             } else {
               return (
                 <ZoneItem
-                  key={zone.GetId()}
+                  key={zone.Id}
                   addButton={false}
                   zone={
                     zoneStore.Zones.filter(
-                      (z) => z.GetId() === zone.GetId()
+                      (z) => z.Id === zone.Id
                     )[0] as EgoZone
                   }
                 ></ZoneItem>

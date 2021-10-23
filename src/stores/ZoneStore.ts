@@ -15,10 +15,6 @@ import Filter, {
 export class ZoneStore {
   constructor() {
     makeAutoObservable(this);
-
-    autorun(() => {
-      console.log(this);
-    });
   }
 
   private zones: Zone[] = [];
@@ -40,6 +36,10 @@ export class ZoneStore {
     return this.filteredZonesCount;
   }
 
+  set FilteredZonesCount(v:number) {
+    this.filteredZonesCount = v;
+  }
+
   /**
    * Adds temporarily zone
    * @public
@@ -53,11 +53,11 @@ export class ZoneStore {
     });
 
     zonesToAdd = zonesToAdd.filter(
-      (x) => !zoneStore.tmpZones.some((y) => y.GetId() === x.GetId())
+      (x) => !zoneStore.tmpZones.some((y) => y.Id === x.Id)
     );
 
     zonesToAdd
-      .filter((x) => !this.tmpZones.some((y) => y.GetId() === x.GetId()))
+      .filter((x) => !this.tmpZones.some((y) => y.Id === x.Id))
       .forEach((zone) => {
         this.tmpZones.push(zone);
       });
@@ -66,7 +66,7 @@ export class ZoneStore {
 
     if (draw) {
       this.tmpZones
-        .filter((x) => !zoneStore.Zones.some((y) => x.GetId() === y.GetId()))
+        .filter((x) => !zoneStore.Zones.some((y) => x.Id === y.Id))
         .forEach((z) => {
           z.DrawZone();
         });
@@ -80,7 +80,7 @@ export class ZoneStore {
    * @returns Specified zone | undefined
    */
   public FindZone(id: string) {
-    return this.zones.filter((z) => z.GetId() === id)[0];
+    return this.zones.filter((z) => z.Id === id)[0];
   }
 
   /**
@@ -110,13 +110,13 @@ export class ZoneStore {
    * @param zone Zone to be added
    */
   public AddZone(zone: Zone, addSnapshot = true) {
-    if (this.zones.filter((z) => z.GetId() === zone.GetId()).length === 0) {
+    if (this.zones.filter((z) => z.Id === zone.Id).length === 0) {
       this.zones.push(zone);
 
-      zone.DrawZone();
+      zone.DrawZone()
 
       if (zone instanceof EgoZone) {
-        zone.AllCollection().removeClass("hide");
+        zone.AllCollection.removeClass("hide");
       }
 
       this.Update();
@@ -124,7 +124,7 @@ export class ZoneStore {
       const toast = createStandaloneToast();
       toast({
         title: "Already exists",
-        description: `Zone with ID ${zone.GetId()} already exists`,
+        description: `Zone with ID ${zone.Id} already exists`,
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -190,7 +190,7 @@ export class ZoneStore {
    * @param zone Zone to be removed
    */
   public RemoveZone(zone: Zone, addSnapshot = true) {
-    this.zones = this.zones.filter((z) => z.GetId() !== zone.GetId());
+    this.zones = this.zones.filter((z) => z.Id !== zone.Id);
     zone.ClearZone();
 
     this.Update();
@@ -223,7 +223,7 @@ export class ZoneStore {
         );
       }
       if (zone instanceof CustomZone) {
-        nodesInZones = nodesInZones.union(zone.AllCollection());
+        nodesInZones = nodesInZones.union(zone.AllCollection);
       }
     });
     return nodesInZones;
@@ -276,11 +276,11 @@ export class ZoneStore {
 
       this.zones.forEach((z) => {
         if (z instanceof EgoZone || z instanceof CustomZone)
-          if (z.IsDrawn) nodes = nodes.union(z.AllCollection());
+          if (z.IsDrawn) nodes = nodes.union(z.AllCollection);
       });
       this.TmpZones.forEach((z) => {
         if (z instanceof EgoZone || z instanceof CustomZone)
-          if (z.IsDrawn) nodes = nodes.union(z.AllCollection());
+          if (z.IsDrawn) nodes = nodes.union(z.AllCollection);
       });
 
       // nodes.forEach((x, i) => {
@@ -313,9 +313,8 @@ export class ZoneStore {
       //   });
       // });
 
-      z.AllCollection()
-        .nodes()
-        .edgesWith(z.AllCollection())
+      z.AllCollection.nodes()
+        .edgesWith(z.AllCollection)
         .forEach((e) => {
           e.classes(e.data("edgeType"));
         });
@@ -340,20 +339,17 @@ export class ZoneStore {
             element.IsDrawn &&
             (element instanceof EgoZone || element instanceof CustomZone)
           ) {
-            element
-              .AllCollection()
-              .not(".hide")
-              ?.forEach((n) => {
-                n.classes(
-                  networkStore.Network?.Nodes.filter(
-                    (node) =>
-                      node.Id ===
-                      ((n as { [key: string]: any })["_private"]["data"][
-                        "id"
-                      ] as string)
-                  )[0].classes
-                );
-              });
+            element.AllCollection.not(".hide")?.forEach((n) => {
+              n.classes(
+                networkStore.Network?.Nodes.filter(
+                  (node) =>
+                    node.Id ===
+                    ((n as { [key: string]: any })["_private"]["data"][
+                      "id"
+                    ] as string)
+                )[0].classes
+              );
+            });
           }
         });
         zones.forEach((z) => {
@@ -427,9 +423,9 @@ export class ZoneStore {
     }
 
     if (z instanceof CustomZone) {
-      z.AllCollection().not(".hide").classes("");
-      z.AllCollection().forEach((n) => {
-        z.AllCollection().classes(
+      z.AllCollection.not(".hide").classes("");
+      z.AllCollection.forEach((n) => {
+        z.AllCollection.classes(
           networkStore.Network?.Nodes.filter(
             (node) =>
               node.Id ===
@@ -455,7 +451,7 @@ export class ZoneStore {
           zone.IsDrawn &&
           (zone instanceof EgoZone || zone instanceof CustomZone)
         )
-          nodesInZones = nodesInZones.union(zone.AllCollection());
+          nodesInZones = nodesInZones.union(zone.AllCollection);
       });
 
       const nodesOutside = cy.nodes().difference(nodesInZones);
@@ -487,8 +483,8 @@ export class ZoneStore {
       let zonesCollection = cy.collection();
 
       zone.forEach((z) => {
-        let a = networkStore.Network?.getNode(z.GetId());
-        let b = z.AllCollection();
+        let a = networkStore.Network?.getNode(z.Id);
+        let b = z.AllCollection;
 
         if (a) {
           egosCollection = egosCollection.union(a);
@@ -504,7 +500,7 @@ export class ZoneStore {
         )[0];
         if (n) {
           const newZone = new EgoZone(n);
-          if (newZone.AllCollection().subtract(zonesCollection).length === 0) {
+          if (newZone.AllCollection.subtract(zonesCollection).length === 0) {
             subzones.push(newZone);
           }
         }
@@ -517,16 +513,14 @@ export class ZoneStore {
     const superzones: Array<Zone> = [];
 
     cy.nodes()
-      .difference(`#${zone.GetId()}`)
+      .difference(`#${zone.Id}`)
       .forEach((node) => {
         const n = networkStore.Network?.Nodes.filter(
           (n) => n.Id === node.data("id")
         )[0];
         if (n) {
           const newZone = new EgoZone(n);
-          if (
-            zone.AllCollection().subtract(newZone.AllCollection()).length === 0
-          ) {
+          if (zone.AllCollection.subtract(newZone.AllCollection).length === 0) {
             superzones.push(newZone);
           }
         }
@@ -546,7 +540,7 @@ export class ZoneStore {
    * ZonesForNodes, returns zones in which are nodes contained.
    */
   public ZonesForNodes(nodes: NodeSingular[]) {
-    const zones: EgoZone[] = [];
+    const zones: Zone[] = [];
     let toCheckNodes = cy.collection();
 
     nodes.forEach((n) => {
@@ -560,7 +554,7 @@ export class ZoneStore {
       if (node) {
         const zone = new EgoZone(node);
 
-        if (toCheckNodes.nodes().subtract(zone.AllCollection()).length === 0) {
+        if (toCheckNodes.nodes().subtract(zone.AllCollection).length === 0) {
           zones.push(new EgoZone(node));
         }
       }
@@ -588,15 +582,15 @@ export class ZoneStore {
     const difference: Zone[] = [];
 
     zones.forEach((z) => {
-      if (!returnFilter.some((a) => a.GetId() === z.GetId())) {
+      if (!returnFilter.some((a) => a.Id === z.Id)) {
         difference.push(z);
       }
     });
-    this.filteredZonesCount = difference.length;
+    this.FilteredZonesCount = difference.length;
     if (exceptExisting) {
       return [
         Array.from(new Set(returnFilter.concat(include))).filter(
-          (x) => !zoneStore.Zones.some((y) => y.GetId() === x.GetId())
+          (x) => !zoneStore.Zones.some((y) => y.Id === x.Id)
         ),
         difference,
       ];

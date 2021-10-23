@@ -173,6 +173,8 @@ export default class Matrix {
         this.network.Nodes.filter((n) => n.Id === key)[0].TwDep = twdep;
 
         this.network.Nodes.filter((n) => n.Id === key)[0].TwInDep = twindep;
+
+        this.network.Nodes.filter((n) => n.Id === key)[0].UpdateClass();
       }
     );
   }

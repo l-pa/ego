@@ -68,9 +68,9 @@ class Snapshot implements ISnapshot {
     zoneStore.Zones.forEach((z) => {
       if (z.IsDrawn) {
         this.activeZones?.push({
-          id: z.GetId(),
-          color: (z as EgoZone).ColorObject,
-          nodes: z.AllCollection(),
+          id: z.Id,
+          color: (z as EgoZone).Color,
+          nodes: z.AllCollection,
         });
       }
     });
@@ -355,11 +355,8 @@ export default class ExportImage {
 
       svgMain.setAttribute(
         "transform",
-        `scale(${aaa.width / cyWidth} ${aaa.height / cyHeight})`
+        `scale(${aaa.width / cyWidth * window.devicePixelRatio} ${aaa.height / cyHeight * window.devicePixelRatio})`
       );
-      console.log(`scale(${aaa.width / cyWidth} ${aaa.height / cyHeight})`
-      );
-
     }
 
     for (let stringI = 1; stringI < inputStrings.length; stringI++) {

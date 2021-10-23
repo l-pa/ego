@@ -26,11 +26,11 @@ export function ZonesSuperzone() {
         .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
         .sort(
           (b: Zone, a: Zone) =>
-            a.AllCollection().length - b.AllCollection().length
+            a.AllCollection.length - b.AllCollection.length
         )
         .forEach((z) => {
           z.DrawZone();
-          if (zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())) {
+          if (zoneStore.Zones.some((zone) => zone.Id === z.Id)) {
           } else {
             return <ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>;
           }
@@ -41,11 +41,11 @@ export function ZonesSuperzone() {
         .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
         .sort(
           (b: Zone, a: Zone) =>
-            a.AllCollection().length - b.AllCollection().length
+            a.AllCollection.length - b.AllCollection.length
         )
         .forEach((z) => {
           z.ClearZone();
-          if (zoneStore.Zones.some((zone) => zone.GetId() === z.GetId())) {
+          if (zoneStore.Zones.some((zone) => zone.Id === z.Id)) {
           } else {
             return (
               <ZoneItem
@@ -61,7 +61,7 @@ export function ZonesSuperzone() {
 
   const addZone = action((zone: Zone) => {
     zoneStore.AddTmpZone([zone], true);
-    zone.SetAlpha(0.25);
+    zone.Alpha = 0.25;
     zoneStore.ColorNodesInZones(zoneStore.TmpZones);
   });
 
@@ -85,7 +85,7 @@ export function ZonesSuperzone() {
             zoneStore
               .SuperzoneOfZone(
                 zoneStore.Zones.filter(
-                  (z) => z.GetId().toString() === e.target.value
+                  (z) => z.Id.toString() === e.target.value
                 )[0]
               )
               .then((res) => {
@@ -100,7 +100,7 @@ export function ZonesSuperzone() {
         }}
       >
         {zoneStore.Zones.map((z, i) => {
-          return <option value={z.GetId()}>{z.GetId()}</option>;
+          return <option value={z.Id}>{z.Id}</option>;
         })}
       </Select>
       {zoneStore.Filter(zoneStore.TmpZones)[0].length > 0 && (

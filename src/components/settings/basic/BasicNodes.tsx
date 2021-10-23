@@ -143,7 +143,7 @@ export function BasicNodes() {
         let nodesAvailable = cy.collection();
         if (localObserverable.nodes.length > 0) {
           localObserverable.zonesForNodes?.forEach(
-            (z) => (nodesAvailable = nodesAvailable.union(z.AllCollection()))
+            (z) => (nodesAvailable = nodesAvailable.union(z.AllCollection))
           );
           localObserverable.nodesAvailable = nodesAvailable;
         }

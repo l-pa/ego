@@ -159,7 +159,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         justifyContent="space-around"
         alignItems="center"
       >
-        <LatestRedo />
+        {/* <LatestRedo /> */}
       </Stack>
     </Stack>
   );

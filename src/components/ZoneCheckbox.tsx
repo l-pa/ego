@@ -8,10 +8,10 @@ export const ZoneCheckbox: FunctionComponent<{ zone: Zone, isChecked?: boolean, 
     const checkboxRef = useRef<HTMLInputElement>(null)
 
     return (<Stack>
-        <Checkbox borderColor={zone instanceof EgoZone ? zone.Color : ""} ref={checkboxRef}>
+        <Checkbox borderColor={zone instanceof EgoZone ? zone.StringColorRGB() : ""} ref={checkboxRef}>
             <Stack display="flex" flexDirection="row" justifyContent="space-around">
                 <Text>
-                    {zone.GetId()}
+                    {zone.Id}
                 </Text>
                 {/* {zone instanceof EgoZone ? <Box bgColor={zone.Color} width="5" height="5"></Box> : <Box>?</Box>} */}
             </Stack>

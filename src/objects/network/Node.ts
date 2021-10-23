@@ -12,7 +12,7 @@ export default class Node implements ElementDefinition {
   private twDep: Node[] = [];
   private twInDep: Node[] = [];
 
-  private updateClass() {
+  public UpdateClass() {
     this.classes = this.data.nodeType =
       this.isProminent() !== -1
         ? this.isProminent() === 1
@@ -23,22 +23,18 @@ export default class Node implements ElementDefinition {
 
   public set OwDep(nodes: Node[]) {
     this.owDep = [...nodes];
-    this.updateClass();
   }
 
   public set OwInDep(nodes: Node[]) {
     this.owInDep = [...nodes];
-    this.updateClass();
   }
 
   public set TwDep(nodes: Node[]) {
     this.twDep = [...nodes];
-    this.updateClass();
   }
 
   public set TwInDep(nodes: Node[]) {
     this.twInDep = [...nodes];
-    this.updateClass();
   }
 
   public get OwDep() {
