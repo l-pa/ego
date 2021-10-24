@@ -52,7 +52,33 @@ export function Export() {
       <Button
         isFullWidth={true}
         onClick={() => {
-          settingsStore.ExportSnapshot.getImageToNewTab(ImageType.PNG, false);
+
+          settingsStore.ExportSnapshot.GetImageData(ImageType.PNG, true, true).then(async (res) => {
+            // settingsStore.ExportSnapshot.getImageToNewTab(ImageType.PNG, false);
+            const options = {
+              suggestedName: `Ego-${new Date().toLocaleString()}.png`,
+              startIn: 'desktop',
+              types: [
+                {
+                  description: 'Image file',
+                  accept: {
+                    'image/png': ['.png'],
+                  },
+                },
+              ],
+            };
+            fetch(res.getAttribute("src") as string)
+              .then(res => res.blob())
+              .then(async (res) => {
+                // @ts-ignore
+                const handle = await window.showSaveFilePicker(options);
+                const writable = await handle.createWritable();
+
+                await writable.write(res);
+                await writable.close();
+              })
+
+          })
         }}
       >
         PNG
@@ -61,7 +87,30 @@ export function Export() {
       <Button
         isFullWidth={true}
         onClick={() => {
-          settingsStore.ExportSnapshot.getImageToNewTab(ImageType.SVG, false);
+
+          settingsStore.ExportSnapshot.GetImageData(ImageType.SVG, true, false).then(async (res) => {
+            // settingsStore.ExportSnapshot.getImageToNewTab(ImageType.PNG, false);
+            const options = {
+              suggestedName: `Ego-${new Date().toLocaleString()}.svg`,
+              startIn: 'desktop',
+              types: [
+                {
+                  description: 'Image file',
+                  accept: {
+                    'image/svg': ['.svg'],
+                  },
+                },
+              ],
+            };
+
+            // @ts-ignore
+            const handle = await window.showSaveFilePicker(options);
+            const writable = await handle.createWritable();
+            await writable.write(new XMLSerializer().serializeToString(res));
+            await writable.close();
+
+          })
+
         }}
       >
         SVG

@@ -106,7 +106,7 @@ export default class ExportImage {
 
   public TakeSnapshot() {
     if (settingsStore.TrackZonesExport)
-      this.getImageData(settingsStore.ExportOptions.imageFormat).then(
+      this.GetImageData(settingsStore.ExportOptions.imageFormat).then(
         (data) => {
           if (data instanceof SVGElement)
             this.snapshots.push(
@@ -151,7 +151,7 @@ export default class ExportImage {
     return newCanvas;
   }
 
-  private async getImageData(
+  public async GetImageData(
     imageType: ImageType,
     addCy = true,
     center = true
@@ -160,6 +160,7 @@ export default class ExportImage {
       switch (imageType) {
         case ImageType.PNG:
           this.getMergedCanvas(addCy).then((res) => {
+
             const image = document.createElement("img");
             image.src = res
               .toDataURL("image/png")
@@ -286,29 +287,29 @@ export default class ExportImage {
     })
   }
 
-  public getImageToNewTab(imageType: ImageType, center: boolean) {
-    const newTab = window.open("");
-    zoneStore.Update()
-    this.getImageData(imageType, true, center).then((res) => {
-      switch (imageType) {
-        case ImageType.PNG:
-          newTab?.document.write(
-            "<img src='" + res.getAttribute("src") + "' alt='from canvas'/>"
-          );
-          break;
+  // public getImageToNewTab(imageType: ImageType, center: boolean) {
+  //   const newTab = window.open("");
+  //   zoneStore.Update()
+  //   this.GetImageData(imageType, true, center).then((res) => {
+  //     switch (imageType) {
+  //       case ImageType.PNG:
+  //         newTab?.document.write(
+  //           "<img src='" + res.getAttribute("src") + "' alt='from canvas'/>"
+  //         );
+  //         break;
 
-        case ImageType.SVG:
-          this.saveSvg(res as SVGElement, "Ego" + new Date().toLocaleString() + ".svg");
-          // newTab?.document.write(new XMLSerializer().serializeToString(res));
+  //       case ImageType.SVG:
+  //         this.saveSvg(res as SVGElement, "Ego" + new Date().toLocaleString() + ".svg");
+  //         // newTab?.document.write(new XMLSerializer().serializeToString(res));
 
-          break;
+  //         break;
 
-        default:
-          break;
-      }
-    });
+  //       default:
+  //         break;
+  //     }
+  //   });
 
-  }
+  // }
 
   private getSVGContents(inputString: string) {
     let domParser = new DOMParser();
@@ -345,16 +346,21 @@ export default class ExportImage {
       a4_max_height
     );
 
+
     //@ts-ignore
     svgMain.setAttribute("width", cySvg.getAttribute("width"));
     //@ts-ignore
     svgMain.setAttribute("height", cySvg.getAttribute("height"));
 
     if (center && ((cyWidth > a4_max_width) || (cyHeight > a4_max_width))) {
-
       svgMain.setAttribute(
         "transform",
-        `scale(${aaa.width / cyWidth * window.devicePixelRatio} ${aaa.height / cyHeight * window.devicePixelRatio})`
+        `scale(${((aaa.width * window.devicePixelRatio) / (cyWidth + Zone.hullPadding))} ${((aaa.height * window.devicePixelRatio) / (cyHeight + + Zone.hullPadding))})`
+      );
+    } else {
+      svgMain.setAttribute(
+        "transform",
+        `scale(1 1)`
       );
     }
 
@@ -368,8 +374,7 @@ export default class ExportImage {
         .getElementsByTagName("g")[0]
         .setAttribute(
           "transform",
-          `translate(${translate[0] + Zone.hullPadding},${
-            translate[1] + Zone.hullPadding
+          `translate(${translate[0] + Zone.hullPadding},${translate[1] + Zone.hullPadding
           })`
         );
 
@@ -386,15 +391,15 @@ export default class ExportImage {
     }
 
     //@ts-ignore
-    const w = Number.parseInt(svgMain.getAttribute("width"));
+    const w = Number.parseInt(svgMain.getAttribute("width") / window.devicePixelRatio + Zone.hullPadding);
     //@ts-ignore
-    const h = Number.parseInt(svgMain.getAttribute("height"));
+    const h = Number.parseInt(svgMain.getAttribute("height") / window.devicePixelRatio + Zone.hullPadding);
 
     if (w && h) {
       console.log(w, h);
 
-      svgMain.setAttribute("width", (w + Zone.hullPadding * 2).toString());
-      svgMain.setAttribute("height", (h + Zone.hullPadding * 2).toString());
+      svgMain.setAttribute("width", (w + Zone.hullPadding).toString());
+      svgMain.setAttribute("height", (h + Zone.hullPadding).toString());
     }
     return svgMain;
   }
@@ -416,11 +421,13 @@ export default class ExportImage {
 
       a.setAttribute(
         "transform",
-        `scale(${ratioS.width / cyWidth} ${ratioS.height / cyHeight})`
+        `scale(${((ratioS.width / (cyWidth + Zone.hullPadding)))} ${((ratioS.height / (cyHeight + Zone.hullPadding)))})`
       );
-      console.log(`scale(${ratioS.width / cyWidth} ${ratioS.height / cyHeight})`)
-
-
+    } else {
+      a.setAttribute(
+        "transform",
+        `scale(1 1)`
+      );
     }
     return a;
   }
@@ -474,12 +481,13 @@ export default class ExportImage {
         .split(new RegExp(/\(([^)]+)\)/))[1]
         .split(",");
 
-      translate.push(Number.parseFloat(t[0]));
-      translate.push(Number.parseFloat(t[1]));
+      translate.push(Number.parseFloat(t[0]) / window.devicePixelRatio);
+      translate.push(Number.parseFloat(t[1]) / window.devicePixelRatio);
+
+
       cy.getElementsByTagName("g")[0].setAttribute(
         "transform",
-        `translate(${translate[0] + Zone.hullPadding},${
-          translate[1] + Zone.hullPadding
+        `translate(${translate[0] + Zone.hullPadding},${translate[1] + Zone.hullPadding
         })`
       );
 
@@ -541,11 +549,23 @@ export default class ExportImage {
           copy.height = merger.height;
 
           const ctxCopy = copy.getContext("2d");
+
+
+          //
           if (ctxCopy) {
-            ctxCopy?.translate(
-              -cyBBox.x1 * window.devicePixelRatio + hullPadding,
-              -cyBBox.y1 * window.devicePixelRatio + hullPadding
-            );
+
+            if (window.devicePixelRatio !== 1) {
+              ctxCopy?.translate(
+                - cyBBox.x1 + Zone.hullPadding,
+                -cyBBox.y1 + Zone.hullPadding
+              );
+            } else {
+              ctxCopy?.translate(
+                - cyBBox.x1 + Zone.hullPadding,
+                -cyBBox.y1 + Zone.hullPadding
+              );
+
+            }
 
             z.getNewContext(ctxCopy);
           }
