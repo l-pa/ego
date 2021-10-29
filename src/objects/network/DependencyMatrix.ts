@@ -182,6 +182,16 @@ export default class Matrix {
         this.network.Nodes[key].TwInDep = twindep;
 
         this.network.Nodes[key].UpdateClass();
+
+        const p = this.network.Nodes[key].isProminent();
+
+        if (p === 0) {
+          this.network.StronglyProminent++;
+        }
+
+        if (p === 1) {
+          this.network.WeaklyProminent++;
+        }
       }
     );
   }

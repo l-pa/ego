@@ -2,21 +2,114 @@ import {
   Button,
   Checkbox,
   Divider,
+  FormControl,
+  FormLabel,
   Heading,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Select,
   Stack,
+  Switch,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
-import { settingsStore } from "../../..";
+import { networkStore, settingsStore, zoneStore } from "../../..";
 import { ImageType } from "../../../objects/export/ExportImage";
+import { cy } from "../../../objects/graph/Cytoscape";
+import Louvain from "../../../objects/utility/Modularity";
 
 export function Export() {
   const ShowTrackOptions = observer(() =>
     settingsStore.TrackZonesExport ? (
       <Stack>
-        <p></p>
-      </Stack>
+        <Checkbox
+          defaultChecked={settingsStore.PdfExportOptions.firstPage}
+          onChange={(v) => {
+            const a = settingsStore.PdfExportOptions
+            a.firstPage = v.target.checked
+            settingsStore.PdfExportOptions = a
+          }}
+        >
+          Add network summary (1st page)
+        </Checkbox>
+        <Stack pl={6} mt={1} spacing={1}>
+          <Checkbox
+            defaultChecked={settingsStore.PdfExportOptions.firstPageOptions.title}
+            isDisabled={!settingsStore.PdfExportOptions.firstPage}
+            onChange={(v) => {
+              const a = settingsStore.PdfExportOptions
+              a.firstPageOptions.title = v.target.checked
+              settingsStore.PdfExportOptions = a
+            }}
+          >
+            Title
+          </Checkbox>
+          <Checkbox
+            defaultChecked={settingsStore.PdfExportOptions.firstPageOptions.image}
+            isDisabled={!settingsStore.PdfExportOptions.firstPage}
+            onChange={(v) => {
+              const a = settingsStore.PdfExportOptions
+              a.firstPageOptions.image = v.target.checked
+              settingsStore.PdfExportOptions = a
+            }}
+          >
+            Image
+          </Checkbox>
+          <Checkbox
+            defaultChecked={settingsStore.PdfExportOptions.firstPageOptions.summary}
+            isDisabled={!settingsStore.PdfExportOptions.firstPage}
+            onChange={(v) => {
+              const a = settingsStore.PdfExportOptions
+              a.firstPageOptions.summary = v.target.checked
+              settingsStore.PdfExportOptions = a
+            }}
+          >
+            Summary
+          </Checkbox>
+        </Stack>
+
+
+        <Checkbox
+          defaultChecked={settingsStore.PdfExportOptions.zonesPage}
+          onChange={(v) => {
+            const a = settingsStore.PdfExportOptions
+            a.zonesPage = v.target.checked
+            settingsStore.PdfExportOptions = a
+          }}
+        >
+          Zones
+        </Checkbox>
+        <Stack pl={6} mt={1} spacing={1}>
+          <Checkbox onChange={(v) => {
+            const a = settingsStore.PdfExportOptions
+            a.zonesPageOptions.image = v.target.checked
+            settingsStore.PdfExportOptions = a
+          }} isDisabled={!settingsStore.PdfExportOptions.zonesPage} defaultChecked={settingsStore.PdfExportOptions.zonesPageOptions.image}>
+            Image
+          </Checkbox>
+          <Checkbox onChange={(v) => {
+            const a = settingsStore.PdfExportOptions
+            a.zonesPageOptions.summary = v.target.checked
+            settingsStore.PdfExportOptions = a
+          }} isDisabled={!settingsStore.PdfExportOptions.zonesPage} defaultChecked={settingsStore.PdfExportOptions.zonesPageOptions.summary}>
+            Summary
+          </Checkbox>
+        </Stack>
+        <Heading as="h4" size="sm" pt={5}>
+          Zones per page
+        </Heading>
+        <NumberInput onChange={(v) => {
+          settingsStore.PdfExportOptions.zonesPerPage = Number.parseInt(v)
+        }} defaultValue={0} min={1} max={zoneStore.Zones.length}>
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>      </Stack>
     ) : (
       <p></p>
     )
@@ -25,18 +118,43 @@ export function Export() {
   const PdfButton = observer(() => (
     <Button
       isLoading={isExportingPdf}
-      isDisabled={!settingsStore.TrackZonesExport}
+      isDisabled={!settingsStore.TrackZonesExport || (!settingsStore.PdfExportOptions.firstPage && !settingsStore.PdfExportOptions.zonesPage)}
       isFullWidth={true}
       onClick={() => {
         setSsExportingPdf(true)
-        settingsStore.ExportSnapshot.getPdf().then(() => {
-          setSsExportingPdf(false)
+        settingsStore.ExportSnapshot.getPdf().then(async (blob) => {
+          const options = {
+            suggestedName: `Ego-Report-${new Date().toLocaleString()}.pdf`,
+            startIn: 'desktop',
+            types: [
+              {
+                description: 'PDF',
+                accept: {
+                  'application/pdf': ['.pdf'],
+                },
+              },
+            ],
+          };
+          try {
+
+
+            // @ts-ignore
+            const handle = await window.showSaveFilePicker(options);
+            const writable = await handle.createWritable();
+
+            await writable.write(blob);
+            await writable.close();
+            setSsExportingPdf(false)
+          } catch (error) {
+            setSsExportingPdf(false)
+          }
         })
       }}
     >
       PDF
     </Button>
   ))
+
 
   const [isExportingPdf, setSsExportingPdf] = useState(false)
 
@@ -117,32 +235,25 @@ export function Export() {
       </Button>
       <Divider />
 
-      <Checkbox
-        defaultChecked={settingsStore.TrackZonesExport}
-        onChange={(v) => {
+
+      <Switch defaultChecked={settingsStore.TrackZonesExport} paddingTop={5} placeContent="flex-end" flexDirection="row-reverse" paddingBottom={5} display="flex" onChange={((v) => {
           settingsStore.TrackZonesExport = v.target.checked;
-        }}
-      >
-        Track zones
-      </Checkbox>
+
+      })}>      <Heading marginRight={5} as="h4" size="sm">
+          Track zones
+        </Heading></Switch>
+
 
       <PdfButton />
 
       <Divider />
       <Heading as="h4" size="md" pt={5}>
-        Options
+        PDF options
       </Heading>
       <Divider />
-      {/* <Select onChange={(v) => {
-        const settings = settingsStore.ExportOptions
-        settings.imageFormat = Number.parseInt(v.target.value)
-        settingsStore.ExportOptions = settings
-      }} defaultValue={settingsStore.ExportOptions.imageFormat}>
-        <option value={ImageType.PNG}>PNG</option>
-        <option value={ImageType.SVG}>SVG</option>
-      </Select> */}
-
       <ShowTrackOptions />
+
+
     </Stack>
   );
 }

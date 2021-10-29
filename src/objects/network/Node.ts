@@ -1,4 +1,5 @@
 import type { ElementDefinition, NodeDataDefinition } from "cytoscape";
+import { networkStore } from "../..";
 
 export default class Node implements ElementDefinition {
   public Id: string;

@@ -1,6 +1,8 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
 import { networkStore, zoneStore } from "../..";
 import Edge from "../network/Edge";
+import Centrality from "../utility/Centrality";
+import Louvain from "../utility/Modularity";
 import EgoZone from "../zone/EgoZone";
 
 export let cy: cytoscape.Core;
@@ -225,6 +227,32 @@ export default class Cytoscape {
           z.Update();
         });
       });
+
+
+      const nodes: string[] = []
+      const edges: { source: string, target: string }[] = []
+
+      cy.nodes().forEach(n => {
+        nodes.push(n.id())
+      })
+
+
+      cy.edges().forEach(n => {
+        edges.push({ source: n.source().id(), target: n.target().id() })
+      })
+
+
+      // @ts-ignore
+      const c = jLouvain()
+        .nodes(nodes)
+        .edges(edges)
+
+      for (const [key, value] of Object.entries(c())) {
+        cy.$id(key).attr("louvain", value)
+      }
+
+      console.log(Centrality.Clustering());
+
     }
   }
 }

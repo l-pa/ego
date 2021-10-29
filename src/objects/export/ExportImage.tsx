@@ -1,11 +1,12 @@
 import cytoscape from "cytoscape";
-import { settingsStore, zoneStore } from "../..";
+import { networkStore, settingsStore, zoneStore } from "../..";
 import { cy } from "../graph/Cytoscape";
 import Zone from "../zone/Zone";
 import C2S from "@bokeh/canvas2svg";
 
 import "../../register-files";
 import EgoZone from "../zone/EgoZone";
+import { ZoneStore } from "../../stores/ZoneStore";
 
 const PDFDocument = require("pdfkit").default;
 const SVGtoPDF = require("svg-to-pdfkit");
@@ -13,8 +14,8 @@ const SVGtoPDF = require("svg-to-pdfkit");
 const blobStream = require("blob-stream");
 
 const a4 = { w: 596, h: 842 };
-const a4_max_height = a4.h - 350;
-const a4_max_width = a4.w - 150;
+const a4_max_height = a4.h - 375;
+const a4_max_width = a4.w - 175;
 
 
 interface ISnapshot {
@@ -205,63 +206,165 @@ export default class ExportImage {
   }
 
   public getPdf(): Promise<void> {
-    // create a document the same way as above
+
     const doc = new PDFDocument({
       size: [a4.w, a4.h],
+      font: "Helvetica"
     });
 
-    doc.fontSize(15);
-    doc
-      .font("Helvetica-Bold")
-      .text("Ego report - " + new Date().toLocaleString(), 25, 25);
+    const textOptions = {
+      continued: true,
+      align: 'left'
+    }
 
-    doc.fontSize(13);
-    doc
-      .font("Helvetica")
-      .text(`Nodes - ${cy.nodes().length}; Edges - ${cy.edges().length}`, 25, a4.h - 150);
-
-    // pipe the document to a blob
     const stream = doc.pipe(blobStream());
-    doc.addSVG(this.snapshots[0].imageData, 50, 50, {
-      assumePt: true,
-      useCSS: true,
-    });
-    doc.addPage({
-      size: "A4",
-    });
-    for (let i = 1; i < this.snapshots.length; i++) {
-      const s = this.snapshots[i];
 
-      doc.addSVG(s.imageData, 50, 50, { assumePt: true, useCSS: true });
-      doc.fontSize(13);
+    if (settingsStore.PdfExportOptions.firstPage) {
 
-      doc
-        .font("Helvetica")
-        .text(
-          `Zones: ${s.activeZones?.length}, Filtered: ${s.filtered}`,
-          25,
-          a4.h - 120
-        );
+      if (settingsStore.PdfExportOptions.firstPageOptions.title) {
 
-      let newLine = 0
-      let j = 0
+        doc.fontSize(15);
 
-      this.snapshots[i].activeZones?.forEach((z) => {
-        j++
-        if (j % 7 === 0) {
-          newLine++
-          j = 0
-        }
-        // @ts-ignore
-        doc.circle(40 + ((j - 1) * 100), a4.h - 90 + 40 * newLine, 15).fill([z.color.r, z.color.g, z.color.b])
+        doc
+          .font("Helvetica-Bold")
+          .text("Ego report - " + new Date().toLocaleString(), 50, 50);
+      }
+
+      doc.fontSize(12);
+
+      if (settingsStore.PdfExportOptions.firstPageOptions.summary) {
 
 
-      })
+        doc.font('Helvetica').text('Nodes - ', 50, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.nodes().length}`);
 
-      if (i < this.snapshots.length - 1)
-        doc.addPage({
-          size: "A4",
+        doc.font('Helvetica').text('Edges - ', 50, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${cy.edges().length}`);
+
+        doc.font('Helvetica').text('Max. degree - ', 125, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.nodes().maxDegree(false)}`);
+
+        doc.font('Helvetica').text('Avg. degree - ', 125, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${(cy.nodes().totalDegree(false) / cy.nodes().length).toFixed(2)}`);
+
+        doc.font('Helvetica').text('Strong-prominents - ', 235, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.StronglyProminent}, (${((networkStore.Network!!.StronglyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
+
+        doc.font('Helvetica').text('Weak-prominents - ', 235, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.WeaklyProminent}, (${((networkStore.Network!!.WeaklyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
+
+        doc.font('Helvetica').text('Modularity - ', 415, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${0}`);
+        doc.font('Helvetica').text('Embeddedness - ', 415, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${0}`);
+
+
+      }
+
+      if (settingsStore.PdfExportOptions.firstPageOptions.image) {
+
+        doc.addSVG(this.snapshots[0].imageData, 75, 75, {
+          assumePt: true,
+          useCSS: true,
         });
+      }
+
+      doc.addPage({
+        size: "A4",
+      });
+    }
+
+    if (settingsStore.PdfExportOptions.zonesPage) {
+
+      for (let i = 1; i < this.snapshots.length; i++) {
+        const s = this.snapshots[i];
+        let initX = 55
+        let initY = a4.h - 100
+        let j = 0
+
+        if (settingsStore.PdfExportOptions.zonesPageOptions.image) {
+          doc.addSVG(s.imageData, 50, 50, { assumePt: true, useCSS: true });
+        } else {
+          initY = 80
+        }
+        if (settingsStore.PdfExportOptions.zonesPageOptions.summary) {
+
+          doc.fontSize(13);
+
+          doc
+            .text(
+              `Zones: ${s.activeZones?.length}`,
+              50,
+              a4.h - 120
+            );
+
+          doc.fontSize(10);
+
+
+          this.snapshots[i].activeZones?.forEach((z) => {
+            j++
+            if (j % 6 === 0) {
+              j = 1
+              initY += 75
+
+              if (initY + 85 > a4.h) {
+                console.log(j, initY);
+
+                doc.addPage({
+                  size: "A4",
+                });
+                initY = 80
+                j = 1
+              }
+            }
+
+            // @ts-ignore
+            doc.circle(initX + ((j - 1) * 100), initY, 15).fill([z.color.r, z.color.g, z.color.b])
+
+            if (zoneStore.FindZone(z.id) instanceof EgoZone) {
+
+              if ((zoneStore.FindZone(z.id) as EgoZone).Ego.isProminent() === 0) {
+                doc.fillColor('black')
+                  .font('Helvetica')
+                  .text(
+                    `Ego: `,
+                    initX + 20 + ((j - 1) * 100),
+                    (initY - 10),
+                    textOptions
+                  ).fillColor("red").font('Helvetica-Bold').text(`${(zoneStore.FindZone(z.id) as EgoZone).Ego.Id}`);
+              } else if ((zoneStore.FindZone(z.id) as EgoZone).Ego.isProminent() === 1) {
+                doc.fillColor('black')
+                  .font('Helvetica')
+                  .text(
+                    `Ego: `,
+                    initX + 20 + ((j - 1) * 100),
+                    (initY - 10),
+                    textOptions
+                  ).fillColor("yellow").font('Helvetica-Bold').text(`${(zoneStore.FindZone(z.id) as EgoZone).Ego.Id}`);
+              } else {
+                doc.fillColor('black')
+                  .font('Helvetica')
+                  .text(
+                    `Ego: `,
+                    initX + 20 + ((j - 1) * 100),
+                    (initY - 10),
+                    textOptions
+                  ).fillColor("black").font('Helvetica-Bold').text(`${(zoneStore.FindZone(z.id) as EgoZone).Ego.Id}`);
+              }
+
+              doc.fillColor('black')
+                .text(
+                  `Nodes: ${z.nodes.length}`,
+                  initX + 20 + ((j - 1) * 100),
+                  initY
+                );
+
+              doc.fillColor('black')
+                .text(
+                  `Embedd.: ${zoneStore.FindZone(z.id).Embeddedness.toFixed(2)}`,
+                  initX + 20 + ((j - 1) * 100),
+                  initY + 10
+                );
+            }
+          })
+          if (i < this.snapshots.length - 1)
+            doc.addPage({
+              size: "A4",
+            });
+        }
+      }
     }
 
     // get a blob when you're done
@@ -272,27 +375,29 @@ export default class ExportImage {
         // get a blob you can do whatever you like with
         const blob = stream.toBlob("application/pdf");
 
-        const link = document.createElement("a");
-        // create a blobURI pointing to our Blob
-        link.href = URL.createObjectURL(blob);
-        link.download = `Ego_${new Date().toLocaleString()}.pdf`;
-        // some browser needs the anchor to be in the doc
-        document.body.append(link);
-        link.click();
-        link.remove();
-        // in case the Blob uses a lot of memory
-        setTimeout(() => URL.revokeObjectURL(link.href), 7000);
-        res()
+        res(blob)
+
+            // const link = document.createElement("a");
+        // // create a blobURI pointing to our Blob
+        // link.href = URL.createObjectURL(blob);
+        // link.download = `Ego_${new Date().toLocaleString()}.pdf`;
+        // // some browser needs the anchor to be in the doc
+        // document.body.append(link);
+        // link.click();
+        // link.remove();
+        // // in case the Blob uses a lot of memory
+        // setTimeout(() => URL.revokeObjectURL(link.href), 7000);
+        // res()
       });
     })
   }
 
-  // public getImageToNewTab(imageType: ImageType, center: boolean) {
-  //   const newTab = window.open("");
-  //   zoneStore.Update()
+        // public getImageToNewTab(imageType: ImageType, center: boolean) {
+          //   const newTab = window.open("");
+          //   zoneStore.Update()
   //   this.GetImageData(imageType, true, center).then((res) => {
-  //     switch (imageType) {
-  //       case ImageType.PNG:
+    //     switch (imageType) {
+      //       case ImageType.PNG:
   //         newTab?.document.write(
   //           "<img src='" + res.getAttribute("src") + "' alt='from canvas'/>"
   //         );

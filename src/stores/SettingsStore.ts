@@ -6,6 +6,21 @@ import { cy } from "../objects/graph/Cytoscape";
 import Export, { ImageType } from "../objects/export/ExportImage";
 import { IExportSettings } from "./IExportSettings";
 
+
+interface IPdfPageExportOptions {
+  title?: boolean;
+  image: boolean;
+  summary: boolean;
+}
+
+export interface IPdfExportOptions {
+  firstPage: boolean;
+  firstPageOptions: IPdfPageExportOptions;
+  zonesPage: boolean;
+  zonesPageOptions: IPdfPageExportOptions;
+  zonesPerPage: number;
+}
+
 /**
  * Stores app settings, reacting on changes.
  *
@@ -26,6 +41,7 @@ export class SettingsStore {
   private selectedEdgeBlend: string = "normal";
   private nodeSize: string = "fixed";
   private nodeLabel: string = "id";
+  private defaultCategory: number = 0;
 
   private filterChanged: boolean = false;
   private filterExistingZones: boolean = true;
@@ -35,9 +51,25 @@ export class SettingsStore {
   private trackZonesExport: boolean = false;
   private snapshots: Export;
 
+  private pdfExportOptions: IPdfExportOptions = {
+    firstPage: true,
+    firstPageOptions: {
+      title: true,
+      image: true,
+      summary: true,
+    },
+    zonesPage: true,
+    zonesPageOptions: { image: true, summary: true },
+    zonesPerPage: 1,
+  };
+
   private exportOptions: IExportSettings = {
     imageFormat: ImageType.SVG,
   };
+
+  public get DefaultSettingsCategory(): number {
+    return this.defaultCategory;
+  }
 
   public get TrackZonesExport(): boolean {
     return this.trackZonesExport;
@@ -87,6 +119,14 @@ export class SettingsStore {
 
   public get IsLatestRedo(): boolean {
     return this.isLatestRedo;
+  }
+
+  public get PdfExportOptions(): IPdfExportOptions {
+    return this.pdfExportOptions;
+  }
+
+  public set PdfExportOptions(settings: IPdfExportOptions) {
+    this.pdfExportOptions = settings;
   }
 
   public set IsLatestRedo(v: boolean) {

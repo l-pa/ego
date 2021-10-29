@@ -41,6 +41,7 @@ export default abstract class Zone {
   private collection: cytoscape.Collection = cy.collection();
   private id: string;
   private isDrawn = false;
+  private embeddedness = 0;
 
   public static hullPadding = 70;
 
@@ -59,6 +60,10 @@ export default abstract class Zone {
 
   public get HullPadding(): number {
     return Zone.hullPadding;
+  }
+
+  public get Embeddedness(): number {
+    return this.embeddedness;
   }
 
   public set ZIndex(index: number) {
@@ -111,6 +116,15 @@ export default abstract class Zone {
 
   public set AllCollection(collection: cytoscape.Collection) {
     this.collection = collection;
+
+    const innerE =
+      this.AllCollection.nodes().edgesWith(this.AllCollection).length * 2;
+    const outerE =
+      this.AllCollection.nodes().edgesWith(
+        cy.nodes().difference(this.AllCollection)
+      ).length + innerE;
+
+    this.embeddedness = innerE / outerE;
   }
 
   public Update() {

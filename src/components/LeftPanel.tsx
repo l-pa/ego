@@ -12,7 +12,7 @@ import { ArrowBackIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 import { observer } from "mobx-react-lite";
 
 export const LeftPanel: React.FunctionComponent = () => {
-  const [activeButton, setActiveButton] = useState<number>(8);
+  const [activeButton, setActiveButton] = useState<number>(settingsStore.DefaultSettingsCategory);
 
   useEffect(() => {
     settingsStore.ActiveCategory = activeButton;

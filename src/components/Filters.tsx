@@ -1,3 +1,4 @@
+import { WarningTwoIcon } from "@chakra-ui/icons";
 import {
   Heading,
   Text,
@@ -9,12 +10,24 @@ import {
   Divider,
   Select,
   Box,
+  Icon,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
 import React, { FunctionComponent } from "react";
 import { networkStore, settingsStore } from "..";
 
 export const Filters: FunctionComponent = () => {
+
+  const FilterTitle = observer(() => {
+    return (
+      <Stack display="flex" flexDirection='row' alignItems="baseline">
+
+        <Heading marginRight={2} size="md">Filters</Heading>
+        {settingsStore.ActiveCategory !== 0 ? < Icon margin={0} padding={0} as={WarningTwoIcon} color="orange.500" /> : ""}
+      </Stack>
+    )
+  })
+
   const NodesWithLessThanSlider = observer(() => {
     return (
       <Stack>
@@ -43,7 +56,7 @@ export const Filters: FunctionComponent = () => {
   return (
     <Stack height={"50%"} p={5}>
       <Box bg={"black"}></Box>
-      <Heading size="md">Filters</Heading>
+      <FilterTitle />
       {/* <Checkbox defaultChecked={settingsStore.FilterExistingZones} onChange={(e) => {
         settingsStore.FilterExistingZones = e.target.checked
       }}>Include created zones</Checkbox> */}

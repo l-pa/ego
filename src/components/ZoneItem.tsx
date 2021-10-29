@@ -27,12 +27,6 @@ export const ZoneItem: React.FunctionComponent<{
   filter?: boolean;
 }> = ({ zone, addButton = false, greyed = false, filter = false }) => {
 
-  const innerE =
-    zone.AllCollection.nodes().edgesWith(zone.AllCollection).length * 2;
-  const outerE =
-    zone.AllCollection.nodes().edgesWith(cy.nodes().difference(zone.AllCollection))
-      .length + innerE;
-
   const color = settingsStore.DetermineTextColor(zone.Color)
     ? "black"
     : "white";
@@ -144,7 +138,7 @@ export const ZoneItem: React.FunctionComponent<{
               >
                 <Stack>
                   <Text className="itemRight">
-                    {(innerE / outerE).toFixed(2)}
+                    {zone.Embeddedness.toFixed(2)}
                   </Text>
                 </Stack>
               </Tooltip>
