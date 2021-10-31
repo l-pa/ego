@@ -51,7 +51,7 @@ export function ZonesSuperzone() {
         zoneStore.Difference(zoneStore.Filter(zoneStore.TmpZones).zones, zoneStore.Zones).sort((b: Zone, a: Zone) =>
           a.AllCollection.length - b.AllCollection.length
         ).map((z) => {
-          return (<ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>)
+          return (<ZoneItem zone={z as EgoZone}></ZoneItem>)
 
         })}
 

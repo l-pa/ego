@@ -101,7 +101,15 @@ export class ZoneStore {
   /**
    * GetAllZones, returns zone for every node in the network
    */
-  public GetAllZones() {}
+  public GetAllZones() {
+    const zones: EgoZone[] = [];
+
+    Object.keys(networkStore.Network!!.Nodes).forEach((k) => {
+      zones.push(new EgoZone(networkStore.Network!!.Nodes[k]));
+    });
+
+    return zones;
+  }
 
   /**
    * GetZonesFromNodes, returns zones of which nodes are in @param nodes only, sorted by total size
@@ -378,11 +386,10 @@ export class ZoneStore {
    * Adds new zone
    * @param zone Zone to be added
    */
-  public AddZone(zone: Zone, addSnapshot = true) {
+  public AddZone(zone: Zone, addSnapshot = true, draw = true) {
     if (this.zones.filter((z) => z.Id === zone.Id).length === 0) {
       this.zones.push(zone);
-
-      zone.DrawZone();
+      if (draw) zone.DrawZone();
 
       if (zone instanceof EgoZone) {
         cy.batch(() => {
@@ -446,7 +453,7 @@ export class ZoneStore {
    */
 
   public UpdateTmp() {
-    const filter = zoneStore.Filter(this.tmpZones.concat(this.Zones));
+    const filter = zoneStore.Filter(this.tmpZones);
 
     filter.zones.forEach((z) => z.DrawZone());
 
@@ -547,11 +554,7 @@ export class ZoneStore {
   /**
    * EdgeColors
    */
-  private EdgeColors(
-    z: EgoZone | CustomZone,
-    hover: boolean = false,
-    tmpZone = false
-  ) {
+  private EdgeColors(z: EgoZone | CustomZone, hover: boolean = false) {
     cy.edges().style("line-color", "");
 
     if (!hover) {
@@ -565,17 +568,6 @@ export class ZoneStore {
         if (z instanceof EgoZone || z instanceof CustomZone)
           if (z.IsDrawn) nodes = nodes.union(z.AllCollection);
       });
-
-      // nodes.forEach((x, i) => {
-      //   nodes.forEach((y, j) => {
-      //     networkStore.Network?.getEdge(
-      //       (x as { [key: string]: any })["_private"]["data"]["id"] as number,
-      //       (y as { [key: string]: any })["_private"]["data"]["id"] as number
-      //     ).forEach((e) => {
-      //      //  this.EdgeColorCalc(e);
-      //     });
-      //   });
-      // });
       cy.batch(() => {
         nodes
           .nodes()
@@ -585,17 +577,6 @@ export class ZoneStore {
           });
       });
     } else {
-      // z.AllCollection().forEach((x, i) => {
-      //   z.AllCollection().forEach((y, j) => {
-      //     networkStore.Network?.getEdge(
-      //       (x as { [key: string]: any })["_private"]["data"]["id"] as number,
-      //       (y as { [key: string]: any })["_private"]["data"]["id"] as number
-      //     ).forEach((e) => {
-      //       //this.EdgeColorCalc(e);
-      //       // console.log(e);
-      //     });
-      //   });
-      // });
       cy.batch(() => {
         z.AllCollection.nodes()
           .edgesWith(z.AllCollection)
@@ -679,6 +660,7 @@ export class ZoneStore {
   public ColorNodesInZone(z: Zone) {
     cy.nodes().not(".hide").classes("");
     cy.edges().not(".hide").classes("");
+
     if (z instanceof EgoZone) {
       z.InnerCollection.not(".hide").forEach((n) => {
         n.classes("weaklyProminent");
@@ -697,18 +679,6 @@ export class ZoneStore {
             .classes("coliaisons");
         });
       }
-      this.EdgeColors(z, true);
-    }
-
-    if (z instanceof CustomZone) {
-      z.AllCollection.not(".hide").classes("");
-      z.AllCollection.forEach((n) => {
-        z.AllCollection.classes(
-          networkStore.Network?.Nodes[
-            (n as { [key: string]: any })["_private"]["data"]["id"] as string
-          ].classes
-        );
-      });
       this.EdgeColors(z, true);
     }
   }
@@ -809,6 +779,7 @@ export class ZoneStore {
   public HideAllZones() {
     zoneStore.Zones.forEach((z) => z.HideZone());
     zoneStore.TmpZones.forEach((z) => z.HideZone());
+    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
   }
 
   /**
@@ -816,6 +787,7 @@ export class ZoneStore {
    */
   public HideZones() {
     zoneStore.Zones.forEach((z) => z.HideZone());
+    zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
   }
 
   /**

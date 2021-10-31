@@ -166,7 +166,7 @@ export const LeftPanel: React.FunctionComponent = () => {
             setActiveButton(7);
           }}
         >
-          Intersect
+          Overlaps
         </Button>
 
         <Divider />

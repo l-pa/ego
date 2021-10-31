@@ -27,31 +27,9 @@ export function ZonesSubzone() {
         zoneStore.Difference(zoneStore.Filter(zoneStore.TmpZones.concat(zoneStore.Zones)).zones, zoneStore.Zones).sort((b: Zone, a: Zone) =>
             a.AllCollection.length - b.AllCollection.length
         ).map((z) => {
-          return (<ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>)
+          return (<ZoneItem zone={z as EgoZone}></ZoneItem>)
 
         })}
-
-      {/* {zoneStore
-        .Filter(zoneStore.TmpZones).filtered
-        .filter((z) => z instanceof EgoZone && !zoneStore.Zones.includes(z))
-        .sort(
-          (b: Zone, a: Zone) =>
-            a.AllCollection.length - b.AllCollection.length
-        )
-        .forEach((z) => {
-          z.HideZone();
-          if (zoneStore.Zones.some((zone) => zone.Id === z.Id)) {
-          } else {
-            return (
-              <ZoneItem
-                addButton={true}
-                greyed={true}
-                zone={z as EgoZone}
-                key={z.Id}
-              ></ZoneItem>
-            );
-          }
-        })} */}
     </div>
   ));
 

@@ -39,8 +39,6 @@ export const ZoneItem: React.FunctionComponent<{
     zoneStore.HideAllZones()
     zone.DrawZone();
 
-    // zoneStore.ColorNodesInZones([zone]);
-
     // zoneStore.Update()
 
     cy.nodes().difference(zone.AllCollection.nodes()).addClass("tmpHide");
@@ -311,7 +309,7 @@ export const ZoneItem: React.FunctionComponent<{
           size="lg"
           defaultIsChecked={isDrawn}
         ></Checkbox> */}
-        {!zoneStore.FindZone(zone.Id) ? (
+        {zoneStore.FindZone(zone.Id) ? (
           <Button
             colorScheme="red"
             isFullWidth={false}

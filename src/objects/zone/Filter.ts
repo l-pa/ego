@@ -9,6 +9,8 @@ export interface IFilter {
   LinkNext(handler: IFilter): IFilter;
 }
 
+export abstract class AFilter {}
+
 export default class Filter implements IFilter {
   FilterWithParams(zones: Zone[], param: object): Zone[] {
     throw new Error("Use specific filter object");
@@ -229,5 +231,21 @@ export class DuplicatesByZoneProperties implements IFilter {
 
   Filter(zones: Zone[]): Zone[] {
     return this.FilterWithParams(zones, { zoneSize: settingsStore.ZoneSizes });
+  }
+}
+
+export class FilterFromExistingZones implements IFilter {
+  next: IFilter | undefined;
+
+  Filter(zones: Zone[]): Zone[] {
+    throw new Error("Method not implemented.");
+  }
+
+  FilterWithParams(zones: Zone[], param: object): Zone[] {
+    throw new Error("Method not implemented.");
+  }
+
+  LinkNext(handler: IFilter): IFilter {
+    throw new Error("Method not implemented.");
   }
 }

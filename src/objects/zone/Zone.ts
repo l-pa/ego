@@ -224,8 +224,6 @@ export default abstract class Zone {
         this.canvas = this.layer.getCanvas();
         this.ctx = this.canvas.getContext("2d");
       }
-
-      console.log(this);
       this.isDrawn = true;
 
       this.Update();

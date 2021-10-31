@@ -111,7 +111,7 @@ export function ZonesMax() {
 
 
   const Aaa = observer(() => {
-    return (<Stack>{localObserverable.zones.map((z) => <ZoneItem zone={z as EgoZone} addButton={!zoneStore.Zones.some(zone => zone.Id === z.Id)}></ZoneItem>)}</Stack>
+    return (<Stack>{localObserverable.zones.map((z) => <ZoneItem zone={z as EgoZone}></ZoneItem>)}</Stack>
     )
   }
   )

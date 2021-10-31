@@ -15,6 +15,7 @@ export const BasicZones: React.FunctionComponent = () => {
     zoneStore.Update()
     return (() => {
       a()
+      zoneStore.HideZones()
     })
   }, [])
 

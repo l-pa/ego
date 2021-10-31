@@ -17,13 +17,13 @@ export function ZonesIntersect() {
 
   useEffect(() => {
     zoneStore.ClearTmpZones()
+    zoneStore.HideAllZones()
     return (() => {
       zoneStore.ClearTmpZones()
     })
-  })
+  }, [])
 
   const zonesToIntersert: EgoZone[] = observable([]);
-  const overlappingZones = observable.array<EgoZone>([], { deep: false });
 
   let customZone: EgoZone;
 
@@ -35,12 +35,9 @@ export function ZonesIntersect() {
       zoneStore.Zones.forEach((z) => z.HideZone());
 
       if (arr.length > 1) {
-
+        zoneStore.ClearTmpZones()
         const a = zoneStore.Filter(zoneStore.OverlapZones(zonesToIntersert)).zones as EgoZone[]
-        console.log(a);
-        zoneStore.AddTmpZone(a)
-        overlappingZones.clear()
-        overlappingZones.replace(a)
+        zoneStore.AddTmpZone(a, true)
       }
     }
   );
@@ -69,10 +66,28 @@ export function ZonesIntersect() {
         let tmpZone: EgoZone | undefined = undefined
         let size = 0
 
+        let c = 0
+        let z: EgoZone | undefined = undefined
 
-        const overlap = zoneStore.OverlapZones(zonesToIntersert);
+        const tmpZones = zoneStore.GetAllZones()
 
-        zoneStore.AddZones([(overlap[0] as EgoZone), (overlap[1] as EgoZone), tmpZone!!])
+        for (let i = 0; i < tmpZones.length; i++) {
+          const z1 = tmpZones[i];
+
+          for (let j = i + 1; j < tmpZones.length; j++) {
+            const z2 = tmpZones[j];
+
+            const a = zoneStore.OverlapZones([z1, z2])
+            if (a.length > 0 && a[0].AllCollection.length > c) {
+              c = a[0].AllCollection.length
+              z = a[0]
+            }
+
+          }
+
+        }
+        if (z)
+          zoneStore.AddZone(z, true, false)
 
       }}>
         Add max. overlap
@@ -85,6 +100,7 @@ export function ZonesIntersect() {
             key={z.Id}
             value={z.Id}
             onChange={(v) => {
+              zoneStore.ClearTmpZones()
               if (v.target.checked) {
                 addZone(
                   zoneStore.Zones.filter((z) => z.Id === v.target.value)[0] as EgoZone
@@ -101,12 +117,6 @@ export function ZonesIntersect() {
                 zoneStore.RemoveTmpZone(customZone);
               }
               zoneStore.ColorNodesInZones(zoneStore.Zones);
-              // if (zonesToIntersert.length > 1) {
-              //   customZone = new CustomZone(intersect, `i${id.join("_")}`);
-              //   customZone.DrawZone();
-              //   zoneStore.ColorNodesInZone(customZone);
-              //   zoneStore.AddTmpZone([customZone]);
-              // }
             }}
           >
             {z.IsDrawn && (
@@ -122,10 +132,16 @@ export function ZonesIntersect() {
     </Stack>
   ));
 
-  const ZonesToAdd = observer(() =>
+  const ZonesToAdd = observer(() => {
+    const f = zoneStore.Filter(zoneStore.TmpZones)
+
+    zoneStore.ColorNodesInZones(f.zones)
+
+    return (
+
     zonesToIntersert.length === 0 ? (
-      <Stack>
-        <Heading p={5} as="h4" size="sm" pb={5}>
+        <Stack p={5}>
+          <Heading as="h4" size="sm" pb={5}>
           Nothing
         </Heading>
       </Stack>
@@ -139,7 +155,7 @@ export function ZonesIntersect() {
           </Stack>
         ) : (
           <Stack>
-                {overlappingZones.length === 0 ? (
+                  {zoneStore.TmpZones.length === 0 ? (
               <Stack p={5}>
                 <Heading as="h4" size="sm" pb={5}>
                   Nothing
@@ -147,29 +163,42 @@ export function ZonesIntersect() {
               </Stack>
             ) : (
                     <Stack>
+                        <Stack p={5}>
                 <Heading as="h4" size="md" pb={5}>
-                        {overlappingZones.length} zones
+                            {zoneStore.TmpZones.length} zones
                 </Heading>
+                        </Stack>
                       {
-                        overlappingZones.map(z => {
-                          return <ZoneItem zone={z}></ZoneItem>
-                        })
-                      }
+                          f.zones.map(z => {
+                            return <ZoneItem zone={z as EgoZone}></ZoneItem>
+                          })
+                        }
+
+                        {
+                          f.filtered.map(z => {
+                            return <ZoneItem greyed={true} zone={z as EgoZone}></ZoneItem>
+                          })
+                        }
+
               </Stack>
             )}
           </Stack>
         )}
       </Stack>
     )
-  );
+    )
+  })
 
   return (
-    <Stack p={5}>
+    <Stack>
+      <Stack p={5}>
+
       <Heading as="h4" size="md" pb={5}>
-        Intersect
+          Overlaps
       </Heading>
       <Zones />
       <Divider mb={5} mt={5} />
+      </Stack>
       <ZonesToAdd />
     </Stack>
   );

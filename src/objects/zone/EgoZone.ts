@@ -150,6 +150,7 @@ export default class EgoZone extends Zone {
 
       super.DrawZone();
       super.CTXStyle(this.Color);
+      zoneStore.ColorNodesInZone(this);
     }
   }
 
