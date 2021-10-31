@@ -15,13 +15,19 @@ import {
   Switch,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import { ImageType } from "../../../objects/export/ExportImage";
 import { cy } from "../../../objects/graph/Cytoscape";
 import Louvain from "../../../objects/utility/Modularity";
 
 export function Export() {
+
+  useEffect(() => {
+    zoneStore.Update()
+  }, [])
+
+
   const ShowTrackOptions = observer(() =>
     settingsStore.TrackZonesExport ? (
       <Stack>
@@ -71,30 +77,30 @@ export function Export() {
           </Checkbox>
         </Stack>
 
+        <Switch size="sm" defaultChecked={settingsStore.PdfExportOptions.zonesPageOverTime} paddingTop={5} paddingBottom={5} display="flex" onChange={((v) => {
+          const a = settingsStore.PdfExportOptions
 
-        <Checkbox
-          defaultChecked={settingsStore.PdfExportOptions.zonesPage}
-          onChange={(v) => {
-            const a = settingsStore.PdfExportOptions
-            a.zonesPage = v.target.checked
-            settingsStore.PdfExportOptions = a
-          }}
-        >
-          Zones
-        </Checkbox>
+          a.zonesPageOverTime = v.target.checked
+
+          settingsStore.PdfExportOptions = a
+
+        })}>      <Heading marginRight={5} as="h4" size="sm">
+            Zones (changes over time)
+          </Heading></Switch>
+
         <Stack pl={6} mt={1} spacing={1}>
           <Checkbox onChange={(v) => {
             const a = settingsStore.PdfExportOptions
             a.zonesPageOptions.image = v.target.checked
             settingsStore.PdfExportOptions = a
-          }} isDisabled={!settingsStore.PdfExportOptions.zonesPage} defaultChecked={settingsStore.PdfExportOptions.zonesPageOptions.image}>
+          }} defaultChecked={settingsStore.PdfExportOptions.zonesPageOptions.image}>
             Image
           </Checkbox>
           <Checkbox onChange={(v) => {
             const a = settingsStore.PdfExportOptions
             a.zonesPageOptions.summary = v.target.checked
             settingsStore.PdfExportOptions = a
-          }} isDisabled={!settingsStore.PdfExportOptions.zonesPage} defaultChecked={settingsStore.PdfExportOptions.zonesPageOptions.summary}>
+          }} defaultChecked={settingsStore.PdfExportOptions.zonesPageOptions.summary}>
             Summary
           </Checkbox>
         </Stack>
@@ -109,7 +115,10 @@ export function Export() {
             <NumberIncrementStepper />
             <NumberDecrementStepper />
           </NumberInputStepper>
-        </NumberInput>      </Stack>
+        </NumberInput>
+
+
+      </Stack>
     ) : (
       <p></p>
     )
@@ -118,7 +127,7 @@ export function Export() {
   const PdfButton = observer(() => (
     <Button
       isLoading={isExportingPdf}
-      isDisabled={!settingsStore.TrackZonesExport || (!settingsStore.PdfExportOptions.firstPage && !settingsStore.PdfExportOptions.zonesPage)}
+      isDisabled={!settingsStore.TrackZonesExport || (!settingsStore.PdfExportOptions.firstPage)}
       isFullWidth={true}
       onClick={() => {
         setSsExportingPdf(true)
@@ -236,7 +245,7 @@ export function Export() {
       <Divider />
 
 
-      <Switch defaultChecked={settingsStore.TrackZonesExport} paddingTop={5} placeContent="flex-end" flexDirection="row-reverse" paddingBottom={5} display="flex" onChange={((v) => {
+      <Switch defaultChecked={settingsStore.TrackZonesExport} paddingTop={5} paddingBottom={5} display="flex" onChange={((v) => {
           settingsStore.TrackZonesExport = v.target.checked;
 
       })}>      <Heading marginRight={5} as="h4" size="sm">

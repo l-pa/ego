@@ -19,7 +19,7 @@ import Zone from "../../../objects/zone/Zone";
 export function BasicNodes() {
 
   useEffect(() => {
-    zoneStore.HideAllZones()
+    zoneStore.Update()
     return () => {
       zoneStore.ClearTmpZones();
     };

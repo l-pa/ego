@@ -1,8 +1,14 @@
 import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import { zoneStore } from "../../..";
 import { cy } from "../../../objects/graph/Cytoscape";
 
 export function BasicLayout() {
+
+  useEffect(() => {
+    zoneStore.Update()
+  }, [])
+
   const layoutRef = useRef<HTMLSelectElement>(null);
   return (
     <Stack p={5}>

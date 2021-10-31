@@ -1,4 +1,4 @@
-import { settingsStore } from "../..";
+import { settingsStore, zoneStore } from "../..";
 import EgoZone from "./EgoZone";
 import Zone from "./Zone";
 
@@ -8,8 +8,6 @@ export interface IFilter {
   FilterWithParams(zones: Zone[], param: object): Zone[];
   LinkNext(handler: IFilter): IFilter;
 }
-
-export abstract class AFilter {}
 
 export default class Filter implements IFilter {
   FilterWithParams(zones: Zone[], param: object): Zone[] {
@@ -234,18 +232,25 @@ export class DuplicatesByZoneProperties implements IFilter {
   }
 }
 
-export class FilterFromExistingZones implements IFilter {
+export class FilterExceptZones implements IFilter {
   next: IFilter | undefined;
 
   Filter(zones: Zone[]): Zone[] {
-    throw new Error("Method not implemented.");
+    return this.FilterWithParams(zones, { existingZones: zoneStore.Zones });
   }
 
-  FilterWithParams(zones: Zone[], param: object): Zone[] {
-    throw new Error("Method not implemented.");
+  FilterWithParams(zones: Zone[], param: { existingZones: Zone[] }): Zone[] {
+    const zonesToReturn = zoneStore.Difference(zones, param.existingZones);
+
+    if (this.next) {
+      return this.next.Filter(zonesToReturn);
+    } else {
+      return zonesToReturn;
+    }
   }
 
   LinkNext(handler: IFilter): IFilter {
-    throw new Error("Method not implemented.");
+    this.next = handler;
+    return this.next;
   }
 }

@@ -14,9 +14,11 @@ import { createStandaloneToast } from "@chakra-ui/react";
 import Filter, {
   DuplicatesByEgo,
   DuplicatesByZoneProperties,
+  FilterExceptZones,
   ZoneSize,
 } from "../objects/zone/Filter";
 import { SortByEnum } from "./SettingsStore";
+import { arrayContainsAll } from "../objects/utility/ArrayUtils";
 
 export class ZoneStore {
   private zones: Zone[] = [];
@@ -429,7 +431,7 @@ export class ZoneStore {
    */
 
   public Update() {
-    if (settingsStore.ActiveCategory === 0) {
+    if (arrayContainsAll([0, 1, 2, 3, 8], [settingsStore.ActiveCategory])) {
       const filter = zoneStore.Filter(this.zones);
 
       filter.zones.forEach((z) => z.DrawZone());

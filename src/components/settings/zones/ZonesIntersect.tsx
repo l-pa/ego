@@ -37,7 +37,7 @@ export function ZonesIntersect() {
       if (arr.length > 1) {
         zoneStore.ClearTmpZones()
         const a = zoneStore.Filter(zoneStore.OverlapZones(zonesToIntersert)).zones as EgoZone[]
-        zoneStore.AddTmpZone(a, true)
+        zoneStore.AddTmpZone(zoneStore.Difference(a, zoneStore.Zones), true)
       }
     }
   );

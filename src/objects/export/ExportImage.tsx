@@ -287,9 +287,13 @@ export default class ExportImage {
       });
     }
 
-    if (settingsStore.PdfExportOptions.zonesPage) {
+    let i = 1
 
-      for (let i = 1; i < this.snapshots.length; i++) {
+    if (!settingsStore.PdfExportOptions.zonesPageOverTime) {
+      i = this.snapshots.length - 1
+    }
+
+    while (i < this.snapshots.length) {
         const s = this.snapshots[i];
         let initX = 55
         let initY = a4.h - 100
@@ -297,6 +301,12 @@ export default class ExportImage {
 
         if (settingsStore.PdfExportOptions.zonesPageOptions.image) {
           doc.addSVG(s.imageData, 50, 50, { assumePt: true, useCSS: true });
+
+          if (!settingsStore.PdfExportOptions.zonesPageOptions.summary && i < this.snapshots.length - 1)
+            doc.addPage({
+              size: "A4",
+            });
+
         } else {
           initY = 80
         }
@@ -308,7 +318,7 @@ export default class ExportImage {
             .text(
               `Zones: ${s.activeZones?.length}`,
               50,
-              a4.h - 120
+              a4.h - 150
             );
 
           doc.fontSize(10);
@@ -316,7 +326,7 @@ export default class ExportImage {
 
           this.snapshots[i].activeZones?.forEach((z) => {
             j++
-            if (j % 6 === 0) {
+            if (j % 5 === 0) {
               j = 1
               initY += 75
 
@@ -332,50 +342,50 @@ export default class ExportImage {
             }
 
             // @ts-ignore
-            doc.circle(initX + ((j - 1) * 100), initY, 15).fill([z.color.r, z.color.g, z.color.b])
+            doc.circle(initX + ((j - 1) * 115), initY, 15).fill([z.color.r, z.color.g, z.color.b])
 
             if (zoneStore.FindZone(z.id) instanceof EgoZone) {
-
+              const id = (zoneStore.FindZone(z.id) as EgoZone).Ego.Id
               if ((zoneStore.FindZone(z.id) as EgoZone).Ego.isProminent() === 0) {
                 doc.fillColor('black')
                   .font('Helvetica')
                   .text(
                     `Ego: `,
-                    initX + 20 + ((j - 1) * 100),
+                    initX + 20 + ((j - 1) * 115),
                     (initY - 10),
                     textOptions
-                  ).fillColor("red").font('Helvetica-Bold').text(`${(zoneStore.FindZone(z.id) as EgoZone).Ego.Id}`);
+                ).fillColor("red").font('Helvetica-Bold').text(`${id.length > 7 ? id.slice(0, 7) + '..' : id}`);
               } else if ((zoneStore.FindZone(z.id) as EgoZone).Ego.isProminent() === 1) {
                 doc.fillColor('black')
                   .font('Helvetica')
                   .text(
                     `Ego: `,
-                    initX + 20 + ((j - 1) * 100),
+                    initX + 20 + ((j - 1) * 115),
                     (initY - 10),
                     textOptions
-                  ).fillColor("yellow").font('Helvetica-Bold').text(`${(zoneStore.FindZone(z.id) as EgoZone).Ego.Id}`);
+                ).fillColor("yellow").font('Helvetica-Bold').text(`${id.length > 7 ? id.slice(0, 7) + '..' : id}`);
               } else {
                 doc.fillColor('black')
                   .font('Helvetica')
                   .text(
                     `Ego: `,
-                    initX + 20 + ((j - 1) * 100),
+                    initX + 20 + ((j - 1) * 115),
                     (initY - 10),
                     textOptions
-                  ).fillColor("black").font('Helvetica-Bold').text(`${(zoneStore.FindZone(z.id) as EgoZone).Ego.Id}`);
+                ).fillColor("black").font('Helvetica-Bold').text(`${id.length > 7 ? id.slice(0, 7) + '..' : id}`);
               }
 
               doc.fillColor('black')
                 .text(
                   `Nodes: ${z.nodes.length}`,
-                  initX + 20 + ((j - 1) * 100),
+                  initX + 20 + ((j - 1) * 115),
                   initY
                 );
 
               doc.fillColor('black')
                 .text(
                   `Emb.: ${zoneStore.FindZone(z.id).Embeddedness.toFixed(2)}`,
-                  initX + 20 + ((j - 1) * 100),
+                  initX + 20 + ((j - 1) * 115),
                   initY + 10
                 );
             }
@@ -385,8 +395,9 @@ export default class ExportImage {
               size: "A4",
             });
         }
-      }
+      i++
     }
+
 
     // get a blob when you're done
     doc.end();

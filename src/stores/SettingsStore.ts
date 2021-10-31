@@ -16,7 +16,7 @@ interface IPdfPageExportOptions {
 export interface IPdfExportOptions {
   firstPage: boolean;
   firstPageOptions: IPdfPageExportOptions;
-  zonesPage: boolean;
+  zonesPageOverTime: boolean;
   zonesPageOptions: IPdfPageExportOptions;
   zonesPerPage: number;
 }
@@ -66,7 +66,7 @@ export class SettingsStore {
       image: true,
       summary: true,
     },
-    zonesPage: true,
+    zonesPageOverTime: true,
     zonesPageOptions: { image: true, summary: true },
     zonesPerPage: 1,
   };

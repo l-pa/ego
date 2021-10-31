@@ -16,6 +16,8 @@ export const LeftPanel: React.FunctionComponent = () => {
 
   useEffect(() => {
     settingsStore.ActiveCategory = activeButton;
+    console.log(settingsStore.ActiveCategory);
+
   }, [activeButton]);
 
   const LatestRedo = observer(() => (
