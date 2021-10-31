@@ -34,7 +34,7 @@ export enum ImageType {
 }
 
 interface IActiveZone {
-  id: string;
+  zone: EgoZone;
   color: object;
   nodes: cytoscape.Collection;
 }
@@ -69,7 +69,7 @@ class Snapshot implements ISnapshot {
     zoneStore.Zones.forEach((z) => {
       if (z.IsDrawn) {
         this.activeZones?.push({
-          id: z.Id,
+          zone: z as EgoZone,
           color: (z as EgoZone).Color,
           nodes: z.AllCollection,
         });
@@ -236,21 +236,21 @@ export default class ExportImage {
       if (settingsStore.PdfExportOptions.firstPageOptions.summary) {
 
 
-        doc.font('Helvetica').text('Nodes: ', 50, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.nodes().length}`);
+        doc.font('Helvetica').text('Nodes: ', 50, a4.h - 135, textOptions).font('Helvetica-Bold').text(`${cy.nodes().length}`);
 
-        doc.font('Helvetica').text('Edges: ', 50, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${cy.edges().length}`);
+        doc.font('Helvetica').text('Edges: ', 50, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.edges().length}`);
 
-        doc.font('Helvetica').text('Max. degree: ', 125, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.nodes().maxDegree(false)}`);
+        doc.font('Helvetica').text('Max. degree: ', 125, a4.h - 135, textOptions).font('Helvetica-Bold').text(`${cy.nodes().maxDegree(false)}`);
 
-        doc.font('Helvetica').text('Avg. degree: ', 125, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${(cy.nodes().totalDegree(false) / cy.nodes().length).toFixed(2)}`);
+        doc.font('Helvetica').text('Avg. degree: ', 125, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${(cy.nodes().totalDegree(false) / cy.nodes().length).toFixed(2)}`);
 
-        doc.font('Helvetica').text('Strong-prominents: ', 235, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.StronglyProminent} (${((networkStore.Network!!.StronglyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
+        doc.font('Helvetica').text('Strong-prominents: ', 235, a4.h - 135, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.StronglyProminent} (${((networkStore.Network!!.StronglyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
 
-        doc.font('Helvetica').text('Weak-prominents: ', 235, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.WeaklyProminent} (${((networkStore.Network!!.WeaklyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
+        doc.font('Helvetica').text('Weak-prominents: ', 235, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.WeaklyProminent} (${((networkStore.Network!!.WeaklyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
 
-        doc.font('Helvetica').text('Modularity: ', 415, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${0}`);
+        doc.font('Helvetica').text('Modularity: ', 415, a4.h - 135, textOptions).font('Helvetica-Bold').text(`${0}`);
         const stats = zoneStore.Stats()
-        doc.font('Helvetica').text('Embedd.: ', 415, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${stats.embeddedness}`);
+        doc.font('Helvetica').text('Embedd.: ', 415, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${stats.embeddedness}`);
 
 
 
@@ -258,9 +258,9 @@ export default class ExportImage {
         doc.font('Helvetica').text('Inner - Max: ', 50, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.max.inner}`);
         doc.font('Helvetica').text('Outer - Max: ', 50, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.max.outer}`);
 
-        doc.font('Helvetica').text(' | Avg: ', 140, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.avg.total}`);
-        doc.font('Helvetica').text(' | Avg: ', 140, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.avg.inner}`);
-        doc.font('Helvetica').text(' | Avg: ', 140, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.avg.outer}`);
+        doc.font('Helvetica').text('(avg: ', 140, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.avg.total})`);
+        doc.font('Helvetica').text('(avg: ', 140, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.avg.inner})`);
+        doc.font('Helvetica').text('(avg: ', 140, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.avg.outer})`);
 
         doc.font('Helvetica').text('Trivial zones: ', 235, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.trivial}`);
         doc.font('Helvetica').text('Dyad zones: ', 235, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.triad}`);
@@ -318,7 +318,7 @@ export default class ExportImage {
             .text(
               `Zones: ${s.activeZones?.length}`,
               50,
-              a4.h - 150
+              a4.h - 160
             );
 
           doc.fontSize(10);
@@ -341,54 +341,73 @@ export default class ExportImage {
               }
             }
 
-            // @ts-ignore
-            doc.circle(initX + ((j - 1) * 115), initY, 15).fill([z.color.r, z.color.g, z.color.b])
 
-            if (zoneStore.FindZone(z.id) instanceof EgoZone) {
-              const id = (zoneStore.FindZone(z.id) as EgoZone).Ego.Id
-              if ((zoneStore.FindZone(z.id) as EgoZone).Ego.isProminent() === 0) {
+              // @ts-ignore
+            doc.circle(initX + ((j - 1) * 115), initY - 10, 15).fill([z.color.r, z.color.g, z.color.b])
+
+            if (z.zone.Ego.isProminent() === 0) {
                 doc.fillColor('black')
                   .font('Helvetica')
                   .text(
                     `Ego: `,
                     initX + 20 + ((j - 1) * 115),
-                    (initY - 10),
+                    (initY - 40),
                     textOptions
-                ).fillColor("red").font('Helvetica-Bold').text(`${id.length > 7 ? id.slice(0, 7) + '..' : id}`);
-              } else if ((zoneStore.FindZone(z.id) as EgoZone).Ego.isProminent() === 1) {
+              ).fillColor("red").font('Helvetica-Bold').text(`${z.zone.Ego.Id.length > 7 ? z.zone.Ego.Id.slice(0, 7) + '..' : z.zone.Ego.Id}`);
+            } else if (z.zone.Ego.isProminent() === 1) {
                 doc.fillColor('black')
                   .font('Helvetica')
                   .text(
                     `Ego: `,
                     initX + 20 + ((j - 1) * 115),
-                    (initY - 10),
+                    (initY - 40),
                     textOptions
-                ).fillColor("yellow").font('Helvetica-Bold').text(`${id.length > 7 ? id.slice(0, 7) + '..' : id}`);
+                ).fillColor("yellow").font('Helvetica-Bold').text(`${z.zone.Ego.Id.length > 7 ? z.zone.Ego.Id.slice(0, 7) + '..' : z.zone.Ego.Id}`);
               } else {
                 doc.fillColor('black')
                   .font('Helvetica')
                   .text(
                     `Ego: `,
                     initX + 20 + ((j - 1) * 115),
-                    (initY - 10),
+                    (initY - 40),
                     textOptions
-                ).fillColor("black").font('Helvetica-Bold').text(`${id.length > 7 ? id.slice(0, 7) + '..' : id}`);
+                ).fillColor("black").font('Helvetica-Bold').text(`${z.zone.Ego.Id.length > 7 ? z.zone.Ego.Id.slice(0, 7) + '..' : z.zone.Ego.Id}`);
               }
 
               doc.fillColor('black')
                 .text(
                   `Nodes: ${z.nodes.length}`,
                   initX + 20 + ((j - 1) * 115),
-                  initY
+                  initY - 30
                 );
 
+            doc.fillColor('black')
+              .text(
+                `Emb.: ${z.zone.Embeddedness.toFixed(2)}`,
+                initX + 20 + ((j - 1) * 115),
+                initY - 20
+              );
+
+            doc.fillColor('black')
+              .text(
+                `Inner: ${z.zone.InnerCollection.length}`,
+                initX + 20 + ((j - 1) * 115),
+                initY - 10
+              );
+
+            doc.fillColor('black')
+              .text(
+                `Liaison: ${z.zone.OutsideNodes[0].length}`,
+                initX + 20 + ((j - 1) * 115),
+                  initY
+            );
               doc.fillColor('black')
                 .text(
-                  `Emb.: ${zoneStore.FindZone(z.id).Embeddedness.toFixed(2)}`,
+                  `Co-liaison: ${z.zone.OutsideNodes[1].length}`,
                   initX + 20 + ((j - 1) * 115),
                   initY + 10
                 );
-            }
+
           })
           if (i < this.snapshots.length - 1)
             doc.addPage({
