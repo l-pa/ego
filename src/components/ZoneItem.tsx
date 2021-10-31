@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Stack,
   Box,
@@ -8,7 +8,6 @@ import {
   SliderThumb,
   Button,
   Tooltip,
-  Checkbox,
   Text,
   Avatar,
   Heading,
@@ -22,10 +21,9 @@ import { cy } from "../objects/graph/Cytoscape";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
-  addButton?: boolean;
   greyed?: boolean;
   filter?: boolean;
-}> = ({ zone, addButton = false, greyed = false, filter = false }) => {
+}> = ({ zone, greyed = false, filter = false }) => {
 
   const color = settingsStore.DetermineTextColor(zone.Color)
     ? "black"
@@ -221,6 +219,18 @@ export const ZoneItem: React.FunctionComponent<{
                     {zone.OutsideNodes[0].length + zone.OutsideNodes[1].length}
                   </Text>
                 </Stack>
+
+
+              </Tooltip>
+              <Tooltip
+                zIndex={2}
+                aria-label="modularity"
+                label={"XD"}
+                placement="bottom"
+              >
+                <Stack>
+                  <Text className="itemRight">XD</Text>
+                </Stack>
               </Tooltip>
             </Box>
             <Box>
@@ -251,6 +261,16 @@ export const ZoneItem: React.FunctionComponent<{
                 placement="bottom"
               >
                 <Text className="itemRight">Outside</Text>
+              </Tooltip>
+              <Tooltip
+                zIndex={2}
+                aria-label="emb"
+                label={""}
+                placement="bottom"
+              >
+                <Text className="itemRight">
+                  <span className="itemDeps">Mod</span>
+                </Text>
               </Tooltip>
             </Box>
           </Box>
@@ -291,7 +311,7 @@ export const ZoneItem: React.FunctionComponent<{
           size="lg"
           defaultIsChecked={isDrawn}
         ></Checkbox> */}
-        {!addButton && (
+        {!zoneStore.FindZone(zone.Id) ? (
           <Button
             colorScheme="red"
             isFullWidth={false}
@@ -304,8 +324,8 @@ export const ZoneItem: React.FunctionComponent<{
           >
             Remove
           </Button>
-        )}
-        {addButton && (
+        ) :
+          (
           <Button
             colorScheme="primary"
             size="sm"

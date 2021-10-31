@@ -5,10 +5,14 @@ import Zone from "./Zone";
 export interface IFilter {
   next: IFilter | undefined;
   Filter(zones: Zone[]): Zone[];
+  FilterWithParams(zones: Zone[], param: object): Zone[];
   LinkNext(handler: IFilter): IFilter;
 }
 
 export default class Filter implements IFilter {
+  FilterWithParams(zones: Zone[], param: object): Zone[] {
+    throw new Error("Use specific filter object");
+  }
   next: IFilter | undefined;
   LinkNext(handler: IFilter): IFilter {
     this.next = handler;
@@ -25,15 +29,10 @@ export default class Filter implements IFilter {
 }
 
 export class ZoneSize implements IFilter {
-  next: IFilter | undefined;
-  LinkNext(handler: IFilter): IFilter {
-    this.next = handler;
-    return this.next;
-  }
-  Filter(zones: Zone[]): Zone[] {
+  FilterWithParams(zones: Zone[], param: { zoneMinSize: number }): Zone[] {
     const zonesToReturn: Zone[] = [];
     zones.forEach((element) => {
-      if (element.AllCollection.length >= settingsStore.MinNodesZoneShow) {
+      if (element.AllCollection.length >= param.zoneMinSize) {
         zonesToReturn.push(element);
       }
     });
@@ -44,68 +43,78 @@ export class ZoneSize implements IFilter {
       return zonesToReturn;
     }
   }
+  next: IFilter | undefined;
+  LinkNext(handler: IFilter): IFilter {
+    this.next = handler;
+    return this.next;
+  }
+  Filter(zones: Zone[]): Zone[] {
+    return this.FilterWithParams(zones, {
+      zoneMinSize: settingsStore.MinNodesZoneShow,
+    });
+  }
 }
 
 export class DuplicatesByEgo implements IFilter {
-  next: IFilter | undefined;
-
-  LinkNext(handler: IFilter): IFilter {
-    this.next = handler;
-    return handler;
-  }
-  Filter(zones: Zone[]): Zone[] {
+  FilterWithParams(zones: Zone[], param: { duplicates: string }): Zone[] {
     let zonesToReturn: Zone[] = [];
-    if (settingsStore.Duplicates === "all") {
-      if (this.next) {
-        return this.next.Filter(zones);
-      } else {
-        return zones;
-      }
-    }
 
-    if (settingsStore.Duplicates === "de") {
-      for (let i = 0; i < zones.length; i++) {
-        const z1 = zones[i];
+    switch (param.duplicates) {
+      case "all":
+        if (this.next) {
+          return this.next.Filter(zones);
+        } else {
+          return zones;
+        }
+        break;
 
-        for (let j = i + 1; j < zones.length; j++) {
-          const z2 = zones[j];
-          if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
-            if (
-              z1.InnerCollection.union(z1.OutsideCollection).difference(
-                z2.InnerCollection.union(z2.OutsideCollection)
-              ).length === 0 &&
-              z2.InnerCollection.union(z2.OutsideCollection).difference(
-                z1.InnerCollection.union(z1.OutsideCollection)
-              ).length === 0
-            ) {
-              if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
-                zonesToReturn.push(z2);
+      case "de":
+        for (let i = 0; i < zones.length; i++) {
+          const z1 = zones[i];
+
+          for (let j = i + 1; j < zones.length; j++) {
+            const z2 = zones[j];
+            if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
+              if (
+                z1.InnerCollection.union(z1.OutsideCollection).difference(
+                  z2.InnerCollection.union(z2.OutsideCollection)
+                ).length === 0 &&
+                z2.InnerCollection.union(z2.OutsideCollection).difference(
+                  z1.InnerCollection.union(z1.OutsideCollection)
+                ).length === 0
+              ) {
+                if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
+                  zonesToReturn.push(z2);
+                }
               }
             }
           }
         }
-      }
-    }
+        break;
 
-    if (settingsStore.Duplicates === "me") {
-      for (let i = 0; i < zones.length; i++) {
-        const z1 = zones[i];
-        for (let j = i + 1; j < zones.length; j++) {
-          const z2 = zones[j];
-          if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
-            if (
-              z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.Id).length ===
-                1 &&
-              z1.InnerCollection.subtract(z2.InnerCollection).length === 0 &&
-              z2.InnerCollection.subtract(z1.InnerCollection).length === 0
-            ) {
-              if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
-                zonesToReturn.push(z2);
+      case "me":
+        for (let i = 0; i < zones.length; i++) {
+          const z1 = zones[i];
+          for (let j = i + 1; j < zones.length; j++) {
+            const z2 = zones[j];
+            if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
+              if (
+                z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.Id).length ===
+                  1 &&
+                z1.InnerCollection.subtract(z2.InnerCollection).length === 0 &&
+                z2.InnerCollection.subtract(z1.InnerCollection).length === 0
+              ) {
+                if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
+                  zonesToReturn.push(z2);
+                }
               }
             }
           }
         }
-      }
+        break;
+
+      default:
+        break;
     }
 
     zonesToReturn = zones.filter(
@@ -118,9 +127,99 @@ export class DuplicatesByEgo implements IFilter {
       return zonesToReturn;
     }
   }
+  next: IFilter | undefined;
+
+  LinkNext(handler: IFilter): IFilter {
+    this.next = handler;
+    return handler;
+  }
+  Filter(zones: Zone[]): Zone[] {
+    return this.FilterWithParams(zones, {
+      duplicates: settingsStore.Duplicates,
+    });
+  }
 }
 
 export class DuplicatesByZoneProperties implements IFilter {
+  FilterWithParams(zones: Zone[], param: { zoneSize: string }): Zone[] {
+    let zonesToReturn: Zone[] = [];
+
+    switch (param.zoneSize) {
+      case "all":
+        if (this.next) {
+          return this.next.Filter(zones);
+        } else {
+          return zones;
+        }
+        break;
+
+      case "moreInner":
+        for (let i = 0; i < zones.length; i++) {
+          const z1 = zones[i];
+
+          if (z1 instanceof EgoZone) {
+            if (z1.InnerCollection.length > z1.OutsideCollection.length) {
+              if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
+                zonesToReturn.push(z1);
+              }
+            }
+          }
+        }
+        break;
+
+      case "moreOuter":
+        for (let i = 0; i < zones.length; i++) {
+          const z1 = zones[i];
+
+          if (z1 instanceof EgoZone) {
+            if (z1.InnerCollection.length < z1.OutsideCollection.length) {
+              if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
+                zonesToReturn.push(z1);
+              }
+            }
+          }
+        }
+        break;
+
+      case "sameBoth":
+        for (let i = 0; i < zones.length; i++) {
+          const z1 = zones[i];
+
+          if (z1 instanceof EgoZone) {
+            if (z1.InnerCollection.length === z1.OutsideCollection.length) {
+              if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
+                zonesToReturn.push(z1);
+              }
+            }
+          }
+        }
+        break;
+
+      case "withoutOuter":
+        for (let i = 0; i < zones.length; i++) {
+          const z1 = zones[i];
+          console.log(z1);
+
+          if (z1 instanceof EgoZone) {
+            if (z1.OutsideCollection.length === 0) {
+              if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
+                zonesToReturn.push(z1);
+              }
+            }
+          }
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    if (this.next) {
+      return this.next.Filter(zonesToReturn);
+    } else {
+      return zonesToReturn;
+    }
+  }
   next: IFilter | undefined;
 
   LinkNext(handler: IFilter): IFilter {
@@ -129,77 +228,6 @@ export class DuplicatesByZoneProperties implements IFilter {
   }
 
   Filter(zones: Zone[]): Zone[] {
-    let zonesToReturn: Zone[] = [];
-
-    if (settingsStore.ZoneSizes === "all") {
-      if (this.next) {
-        return this.next.Filter(zones);
-      } else {
-        return zones;
-      }
-    }
-
-    if (settingsStore.ZoneSizes === "moreInner") {
-      for (let i = 0; i < zones.length; i++) {
-        const z1 = zones[i];
-
-        if (z1 instanceof EgoZone) {
-          if (z1.InnerCollection.length > z1.OutsideCollection.length) {
-            if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
-              zonesToReturn.push(z1);
-            }
-          }
-        }
-      }
-    }
-
-    if (settingsStore.ZoneSizes === "moreOuter") {
-      for (let i = 0; i < zones.length; i++) {
-        const z1 = zones[i];
-
-        if (z1 instanceof EgoZone) {
-          if (z1.InnerCollection.length < z1.OutsideCollection.length) {
-            if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
-              zonesToReturn.push(z1);
-            }
-          }
-        }
-      }
-    }
-
-    if (settingsStore.ZoneSizes === "sameBoth") {
-      for (let i = 0; i < zones.length; i++) {
-        const z1 = zones[i];
-
-        if (z1 instanceof EgoZone) {
-          if (z1.InnerCollection.length === z1.OutsideCollection.length) {
-            if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
-              zonesToReturn.push(z1);
-            }
-          }
-        }
-      }
-    }
-
-    if (settingsStore.ZoneSizes === "withoutOuter") {
-      for (let i = 0; i < zones.length; i++) {
-        const z1 = zones[i];
-        console.log(z1);
-
-        if (z1 instanceof EgoZone) {
-          if (z1.OutsideCollection.length === 0) {
-            if (zonesToReturn.filter((z) => z.Id === z1.Id).length === 0) {
-              zonesToReturn.push(z1);
-            }
-          }
-        }
-      }
-    }
-
-    if (this.next) {
-      return this.next.Filter(zonesToReturn);
-    } else {
-      return zonesToReturn;
-    }
+    return this.FilterWithParams(zones, { zoneSize: settingsStore.ZoneSizes });
   }
 }

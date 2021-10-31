@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Stack, Button, Checkbox, Divider, Heading } from "@chakra-ui/react";
+import { Stack, Button, Checkbox, Divider, Heading, Select } from "@chakra-ui/react";
 import { ZoneItem } from "../../ZoneItem";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import { observer } from "mobx-react-lite";
@@ -7,6 +7,7 @@ import EgoZone from "../../../objects/zone/EgoZone";
 import CustomZone from "../../../objects/zone/CustomZone";
 import { ZoneItemCustom } from "../../ZoneItemCustom";
 import { autorun, reaction } from "mobx";
+import { SortByEnum } from "../../../stores/SettingsStore";
 
 export const BasicZones: React.FunctionComponent = () => {
 
@@ -19,6 +20,19 @@ export const BasicZones: React.FunctionComponent = () => {
 
   const Zones = observer(() => (
     <Stack>
+      <Stack p={5}>
+
+        <Heading as="h4" size="sm" pt={5}>
+          Sort by
+        </Heading>
+        <Select onChange={(e) => {
+          settingsStore.SortBy = Number.parseInt(e.target.value)
+        }}>
+          <option value={SortByEnum.TotalSize}>Total size</option>
+          <option value={SortByEnum.InnerSize}>Inner size</option>
+          <option value={SortByEnum.OuterSize}>Outer size</option>
+        </Select>
+      </Stack>
       {zoneStore
         .Filter(zoneStore.Zones.filter((z) => z instanceof EgoZone)).zones
         .map((z, i) => {

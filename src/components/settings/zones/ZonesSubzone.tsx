@@ -24,7 +24,7 @@ export function ZonesSubzone() {
   const Zones = observer(() => (
     <div>
       {
-        zoneStore.Difference(zoneStore.Filter(zoneStore.TmpZones).zones, zoneStore.Zones).sort((b: Zone, a: Zone) =>
+        zoneStore.Difference(zoneStore.Filter(zoneStore.TmpZones.concat(zoneStore.Zones)).zones, zoneStore.Zones).sort((b: Zone, a: Zone) =>
             a.AllCollection.length - b.AllCollection.length
         ).map((z) => {
           return (<ZoneItem addButton={true} zone={z as EgoZone}></ZoneItem>)

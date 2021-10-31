@@ -1,5 +1,4 @@
 import { computed, makeObservable, observable } from "mobx";
-import { zoneStore } from "../..";
 import { cy } from "../graph/Cytoscape";
 import {
   Subtract,

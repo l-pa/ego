@@ -2,6 +2,7 @@ import { Loader } from "./Loader";
 import Network from "../objects/network/Network";
 import Node from "../objects/network/Node";
 import parse from "csv-parse/lib/sync";
+import { arrayContainsAll } from "../objects/utility/ArrayUtils";
 
 export class CSVLoader extends Loader {
   public async GetNetwork(directed?: boolean) {
@@ -10,11 +11,13 @@ export class CSVLoader extends Loader {
     await fetch(super.GetUrl()).then((res) =>
       res.text().then((text) => {
         const parsed = parse(text, {
-          delimiter: ";",
+          delimiter: ",",
           columns: false,
           skip_empty_lines: true,
         });
-        console.log(parsed);
+
+        if (arrayContainsAll(parsed[0], ["source", "target", "value"]))
+          parsed.shift();
         if (parsed[2]) {
           parsed.forEach((element: any) => {
             network.addEdge(

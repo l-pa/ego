@@ -1,4 +1,4 @@
-import cytoscape from "cytoscape";
+import cytoscape, { Collection } from "cytoscape";
 import { networkStore, settingsStore, zoneStore } from "../..";
 import { cy } from "../graph/Cytoscape";
 import Zone from "../zone/Zone";
@@ -206,6 +206,7 @@ export default class ExportImage {
   }
 
   public getPdf(): Promise<void> {
+    console.log(zoneStore.Stats());
 
     const doc = new PDFDocument({
       size: [a4.w, a4.h],
@@ -235,20 +236,40 @@ export default class ExportImage {
       if (settingsStore.PdfExportOptions.firstPageOptions.summary) {
 
 
-        doc.font('Helvetica').text('Nodes - ', 50, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.nodes().length}`);
+        doc.font('Helvetica').text('Nodes: ', 50, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.nodes().length}`);
 
-        doc.font('Helvetica').text('Edges - ', 50, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${cy.edges().length}`);
+        doc.font('Helvetica').text('Edges: ', 50, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${cy.edges().length}`);
 
-        doc.font('Helvetica').text('Max. degree - ', 125, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.nodes().maxDegree(false)}`);
+        doc.font('Helvetica').text('Max. degree: ', 125, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${cy.nodes().maxDegree(false)}`);
 
-        doc.font('Helvetica').text('Avg. degree - ', 125, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${(cy.nodes().totalDegree(false) / cy.nodes().length).toFixed(2)}`);
+        doc.font('Helvetica').text('Avg. degree: ', 125, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${(cy.nodes().totalDegree(false) / cy.nodes().length).toFixed(2)}`);
 
-        doc.font('Helvetica').text('Strong-prominents - ', 235, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.StronglyProminent}, (${((networkStore.Network!!.StronglyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
+        doc.font('Helvetica').text('Strong-prominents: ', 235, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.StronglyProminent} (${((networkStore.Network!!.StronglyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
 
-        doc.font('Helvetica').text('Weak-prominents - ', 235, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.WeaklyProminent}, (${((networkStore.Network!!.WeaklyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
+        doc.font('Helvetica').text('Weak-prominents: ', 235, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.WeaklyProminent} (${((networkStore.Network!!.WeaklyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
 
-        doc.font('Helvetica').text('Modularity - ', 415, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${0}`);
-        doc.font('Helvetica').text('Embeddedness - ', 415, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${0}`);
+        doc.font('Helvetica').text('Modularity: ', 415, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${0}`);
+        const stats = zoneStore.Stats()
+        doc.font('Helvetica').text('Embedd.: ', 415, a4.h - 165, textOptions).font('Helvetica-Bold').text(`${stats.embeddedness}`);
+
+
+
+        doc.font('Helvetica').text('Total - Max: ', 50, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.max.total}`);
+        doc.font('Helvetica').text('Inner - Max: ', 50, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.max.inner}`);
+        doc.font('Helvetica').text('Outer - Max: ', 50, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.max.outer}`);
+
+        doc.font('Helvetica').text(' | Avg: ', 140, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.avg.total}`);
+        doc.font('Helvetica').text(' | Avg: ', 140, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.avg.inner}`);
+        doc.font('Helvetica').text(' | Avg: ', 140, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.avg.outer}`);
+
+        doc.font('Helvetica').text('Trivial zones: ', 235, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.trivial}`);
+        doc.font('Helvetica').text('Dyad zones: ', 235, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.triad}`);
+        doc.font('Helvetica').text('Triad zones: ', 235, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.dyad}`);
+
+        doc.font('Helvetica').text('ME: ', 390, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.multiego.count}`);
+        doc.font('Helvetica').text('ME Max: ', 390, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.multiego.max}`);
+        doc.font('Helvetica').text('ME Avg: ', 390, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.multiego.avg}`);
+
 
 
       }
@@ -353,7 +374,7 @@ export default class ExportImage {
 
               doc.fillColor('black')
                 .text(
-                  `Embedd.: ${zoneStore.FindZone(z.id).Embeddedness.toFixed(2)}`,
+                  `Emb.: ${zoneStore.FindZone(z.id).Embeddedness.toFixed(2)}`,
                   initX + 20 + ((j - 1) * 100),
                   initY + 10
                 );

@@ -1,26 +1,31 @@
 import {
+  Button,
   Checkbox,
   Divider,
   Heading,
-  ListItem,
   Stack,
-  UnorderedList,
 } from "@chakra-ui/react";
 import { action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { zoneStore } from "../../..";
 import { cy } from "../../../objects/graph/Cytoscape";
-import CustomZone from "../../../objects/zone/CustomZone";
-import Zone from "../../../objects/zone/Zone";
 import EgoZone from "../../../objects/zone/EgoZone";
+import { ZoneItem } from "../../ZoneItem";
 
 export function ZonesIntersect() {
-  const zonesToIntersert: Zone[] = observable([]);
 
-  let intersect: cytoscape.Collection = cy.collection();
+  useEffect(() => {
+    zoneStore.ClearTmpZones()
+    return (() => {
+      zoneStore.ClearTmpZones()
+    })
+  })
 
-  let customZone: CustomZone;
+  const zonesToIntersert: EgoZone[] = observable([]);
+  const overlappingZones = observable.array<EgoZone>([], { deep: false });
+
+  let customZone: EgoZone;
 
   let id: string[] = [];
 
@@ -28,55 +33,51 @@ export function ZonesIntersect() {
     () => zonesToIntersert.map((a) => a),
     (arr) => {
       zoneStore.Zones.forEach((z) => z.HideZone());
+
       if (arr.length > 1) {
-        intersect = cy.collection();
-        const firstZone = arr[0];
-        if (firstZone instanceof EgoZone || firstZone instanceof CustomZone)
-          intersect = intersect.union(firstZone.AllCollection);
-        for (let i = 1; i < arr.length; i++) {
-          const element = arr[i];
-          if (element instanceof EgoZone || element instanceof CustomZone)
-            intersect = intersect.intersect(element.AllCollection);
-        }
-      } else {
-        console.log("< 2");
+
+        const a = zoneStore.Filter(zoneStore.OverlapZones(zonesToIntersert)).zones as EgoZone[]
+        console.log(a);
+        zoneStore.AddTmpZone(a)
+        overlappingZones.clear()
+        overlappingZones.replace(a)
       }
-      console.log(arr);
-      zoneStore.ColorNodesInZones(arr);
     }
   );
 
-  const addZone = action((zone: Zone) => {
+
+  const addZone = action((zone: EgoZone) => {
     zonesToIntersert.push(zone);
-    // zone.DrawZone();
     id.push(zone.Id);
-    // zone.DrawZone();
   });
-  const removeZone = action((zone: Zone) => {
+  const removeZone = action((zone: EgoZone) => {
     zonesToIntersert.splice(zonesToIntersert.indexOf(zone), 1);
     id = id.filter((i) => i !== zone.Id);
-    // zone.ClearZone();
   });
 
   useEffect(() => {
-    // zoneStore.Zones.forEach((z) => {
-    //   z.ClearZone();
-    // });
-
     return () => {
-      // zonesToIntersert.forEach((z) => z.ClearZone());
       if (customZone) {
         customZone.ClearZone();
       }
-      // zoneStore.Zones.forEach((z) => {
-      //   z.DrawZone();
-      // });
-
       r();
     };
   });
   const Zones = observer(() => (
     <Stack>
+      <Button onClick={() => {
+        let tmpZone: EgoZone | undefined = undefined
+        let size = 0
+
+
+        const overlap = zoneStore.OverlapZones(zonesToIntersert);
+
+        zoneStore.AddZones([(overlap[0] as EgoZone), (overlap[1] as EgoZone), tmpZone!!])
+
+      }}>
+        Add max. overlap
+      </Button>
+      <Divider paddingBottom={5} />
       {zoneStore.Zones.map((z, i) => {
         return (
           <Checkbox
@@ -86,7 +87,7 @@ export function ZonesIntersect() {
             onChange={(v) => {
               if (v.target.checked) {
                 addZone(
-                  zoneStore.Zones.filter((z) => z.Id === v.target.value)[0]
+                  zoneStore.Zones.filter((z) => z.Id === v.target.value)[0] as EgoZone
                 );
               } else {
                 removeZone(
@@ -100,12 +101,12 @@ export function ZonesIntersect() {
                 zoneStore.RemoveTmpZone(customZone);
               }
               zoneStore.ColorNodesInZones(zoneStore.Zones);
-              if (zonesToIntersert.length > 1) {
-                customZone = new CustomZone(intersect, `i${id.join("_")}`);
-                customZone.DrawZone();
-                zoneStore.ColorNodesInZone(customZone);
-                zoneStore.AddTmpZone([customZone]);
-              }
+              // if (zonesToIntersert.length > 1) {
+              //   customZone = new CustomZone(intersect, `i${id.join("_")}`);
+              //   customZone.DrawZone();
+              //   zoneStore.ColorNodesInZone(customZone);
+              //   zoneStore.AddTmpZone([customZone]);
+              // }
             }}
           >
             {z.IsDrawn && (
@@ -138,32 +139,22 @@ export function ZonesIntersect() {
           </Stack>
         ) : (
           <Stack>
-            {intersect.length === 0 ? (
+                {overlappingZones.length === 0 ? (
               <Stack p={5}>
                 <Heading as="h4" size="sm" pb={5}>
                   Nothing
                 </Heading>
               </Stack>
             ) : (
-              <Stack p={5}>
+                    <Stack>
                 <Heading as="h4" size="md" pb={5}>
-                  {intersect.length} nodes
+                        {overlappingZones.length} zones
                 </Heading>
-                <UnorderedList>
-                  {intersect.nodes().map((e) => {
-                    return <ListItem>{e.id()}</ListItem>;
-                  })}
-                </UnorderedList>
-
-                {/* <Button
-                  isFullWidth={true}
-                  onClick={() => {
-                    id = [];
-                    zoneStore.AddZone(customZone);
-                  }}
-                >
-                  Add intersect
-                </Button> */}
+                      {
+                        overlappingZones.map(z => {
+                          return <ZoneItem zone={z}></ZoneItem>
+                        })
+                      }
               </Stack>
             )}
           </Stack>

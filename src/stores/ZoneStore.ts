@@ -16,6 +16,7 @@ import Filter, {
   DuplicatesByZoneProperties,
   ZoneSize,
 } from "../objects/zone/Filter";
+import { SortByEnum } from "./SettingsStore";
 
 export class ZoneStore {
   private zones: Zone[] = [];
@@ -98,6 +99,282 @@ export class ZoneStore {
   }
 
   /**
+   * GetAllZones, returns zone for every node in the network
+   */
+  public GetAllZones() {}
+
+  /**
+   * GetZonesFromNodes, returns zones of which nodes are in @param nodes only, sorted by total size
+   */
+  public GetZonesFromNodes(nodes: NodeCollection) {
+    const zones: EgoZone[] = [];
+
+    nodes.forEach((n) => {
+      const z = new EgoZone(networkStore.Network!!.Nodes[n.id()]);
+      if (z.AllCollection.difference(nodes).length === 0) {
+        zones.push(z);
+      }
+    });
+    this.SortZones(zones, SortByEnum.TotalSize);
+    return zones;
+  }
+
+  /**
+   * MaxOverlapZones
+   */
+  public OverlapZones(tmpZones: EgoZone[]) {
+    let egos: NodeCollection = cy.collection();
+    let aaa = true;
+    let intersect = cy.collection();
+
+    tmpZones.forEach((z) => {
+      egos = egos.add(cy.$id(z.Ego.Id));
+    });
+
+    tmpZones.forEach((z) => {
+      egos.forEach((e) => {
+        if (z.Ego.Id !== e.id()) {
+          if (z.InnerCollection.has(e)) {
+            aaa = false;
+          }
+        }
+      });
+    });
+
+    if (aaa) {
+      intersect = tmpZones[0].AllCollection.intersect(
+        tmpZones[1].AllCollection
+      );
+
+      for (let i = 2; i < tmpZones.length; i++) {
+        const x = tmpZones[i].AllCollection;
+
+        intersect = intersect.intersect(x);
+      }
+    }
+
+    return this.GetZonesFromNodes(intersect);
+
+    // for (let i = 0; i < tmpZones.length; i++) {
+    //   const z1 = tmpZones[i];
+
+    //   for (let j = i + 1; j < tmpZones.length; j++) {
+    //     const z2 = tmpZones[j];
+
+    //     const intersect = z1.AllCollection.intersect(z2.AllCollection);
+
+    //     if (
+    //       !z1.InnerCollection.has(cy.$id(z2.Ego.Id)) &&
+    //       !z2.InnerCollection.has(cy.$id(z1.Ego.Id))
+    //     ) {
+    //       zones.push();
+    //     }
+    //   }
+    // }
+
+    // return [max1, max2, max1!!.AllCollection.intersect(max2!!.AllCollection)];
+  }
+
+  /**
+   * Stats
+   */
+  public Stats() {
+    let tmpZones: EgoZone[] = [];
+    let totalMax = 0;
+    let innerMax = 0;
+    let outerMax = 0;
+
+    let totalAvg = 0;
+    let innerAvg = 0;
+    let outerAvg = 0;
+
+    let embeddedness = 0;
+
+    let trivial = 0;
+    let dyad = 0;
+    let triad = 0;
+
+    let meCount = 0;
+    let meMax = 0;
+    let meAvg = 0;
+
+    Object.keys(networkStore.Network!!.Nodes).forEach((k) => {
+      const z = new EgoZone(networkStore.Network!!.Nodes[k]);
+      tmpZones.push(z);
+    });
+    // tmpZones = new DuplicatesByEgo().FilterWithParams(tmpZones, {
+    //   duplicates: "de",
+    // }) as EgoZone[];
+    tmpZones.forEach((z) => {
+      if (z.AllCollection.length === 1) {
+        trivial++;
+      }
+      if (z.AllCollection.length === 2) {
+        dyad++;
+      }
+      if (z.AllCollection.length === 3) {
+        triad++;
+      }
+    });
+
+    tmpZones.sort((a: EgoZone, b: EgoZone) => {
+      if (a.AllCollection.length > b.AllCollection.length) return -1;
+      else return 1;
+    });
+
+    totalMax = tmpZones[0].AllCollection.length;
+
+    tmpZones.sort((a: EgoZone, b: EgoZone) => {
+      if (a.InnerCollection.length > b.InnerCollection.length) return -1;
+      else return 1;
+    });
+
+    innerMax = tmpZones[0].InnerCollection.length;
+
+    tmpZones.sort((a: EgoZone, b: EgoZone) => {
+      if (a.OutsideCollection.length > b.OutsideCollection.length) return -1;
+      else return 1;
+    });
+
+    outerMax = tmpZones[0].OutsideCollection.length;
+
+    let tmp = 0;
+
+    tmpZones.forEach((n) => {
+      tmp += n.AllCollection.length;
+    });
+
+    totalAvg = tmp / tmpZones.length;
+
+    tmp = 0;
+    tmpZones.forEach((n) => {
+      tmp += n.OutsideCollection.length;
+    });
+
+    outerAvg = tmp / tmpZones.length;
+
+    tmp = 0;
+    tmpZones.forEach((n) => {
+      tmp += n.InnerCollection.length;
+    });
+
+    innerAvg = tmp / tmpZones.length;
+
+    tmp = 0;
+
+    tmpZones.forEach((n) => {
+      tmp += n.Embeddedness;
+    });
+
+    embeddedness = tmp / tmpZones.length;
+
+    const mes = new DuplicatesByEgo().FilterWithParams(tmpZones, {
+      duplicates: "me",
+    }) as EgoZone[];
+
+    const mesDiff = tmpZones.filter(
+      (zTmp) => !mes.some((zMe) => zTmp.Ego.Id === zMe.Ego.Id)
+    );
+
+    mesDiff.sort((a: EgoZone, b: EgoZone) => {
+      if (a.AllCollection.length > b.AllCollection.length) return -1;
+      else return 1;
+    });
+
+    tmp = 0;
+
+    mesDiff.forEach((z) => {
+      tmp += z.AllCollection.length;
+    });
+
+    meCount = tmpZones.length - mes.length;
+    meMax = mesDiff[0].AllCollection.length;
+    meAvg = tmp / mesDiff.length;
+
+    return {
+      avg: {
+        total: totalAvg.toFixed(2),
+        inner: innerAvg.toFixed(2),
+        outer: outerAvg.toFixed(2),
+      },
+      max: {
+        total: totalMax,
+        inner: innerMax,
+        outer: outerMax,
+      },
+      trivial: trivial,
+      dyad: dyad,
+      triad: triad,
+      embeddedness: embeddedness.toFixed(2),
+      multiego: {
+        count: meCount,
+        max: meMax.toFixed(2),
+        avg: meAvg.toFixed(2),
+      },
+    };
+  }
+
+  /**
+   * SortZones in zoneStore.Zones
+   */
+  public SortZones(
+    zones: Zone[] = zoneStore.Zones,
+    option = settingsStore.SortBy
+  ) {
+    let sortFunction: (a: Zone, b: Zone) => number;
+
+    switch (option) {
+      case SortByEnum.TotalSize:
+        sortFunction = (a: Zone, b: Zone) => {
+          if (a.AllCollection.length > b.AllCollection.length) {
+            return -1;
+          } else {
+            return 1;
+          }
+        };
+        break;
+
+      case SortByEnum.InnerSize:
+        sortFunction = (a, b) => {
+          if (
+            (a as EgoZone).InnerCollection.length >
+            (b as EgoZone).InnerCollection.length
+          ) {
+            return -1;
+          } else {
+            return 1;
+          }
+        };
+        break;
+
+      case SortByEnum.OuterSize:
+        sortFunction = (a, b) => {
+          if (
+            (a as EgoZone).OutsideCollection.length >
+            (b as EgoZone).OutsideCollection.length
+          ) {
+            return -1;
+          } else {
+            return 1;
+          }
+        };
+        break;
+
+      default:
+        sortFunction = (a: Zone, b: Zone) => {
+          if (a.AllCollection.length > b.AllCollection.length) {
+            return -1;
+          } else {
+            return 1;
+          }
+        };
+        break;
+    }
+
+    zones.sort(sortFunction);
+  }
+
+  /**
    * Adds new zone
    * @param zone Zone to be added
    */
@@ -125,6 +402,7 @@ export class ZoneStore {
       });
     }
     if (addSnapshot) settingsStore.ExportSnapshot.TakeSnapshot();
+    this.SortZones();
   }
 
   /**
@@ -168,7 +446,7 @@ export class ZoneStore {
    */
 
   public UpdateTmp() {
-    const filter = zoneStore.Filter(this.tmpZones);
+    const filter = zoneStore.Filter(this.tmpZones.concat(this.Zones));
 
     filter.zones.forEach((z) => z.DrawZone());
 

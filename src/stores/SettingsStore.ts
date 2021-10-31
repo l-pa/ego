@@ -5,7 +5,7 @@ import EgoZone from "../objects/zone/EgoZone";
 import { cy } from "../objects/graph/Cytoscape";
 import Export, { ImageType } from "../objects/export/ExportImage";
 import { IExportSettings } from "./IExportSettings";
-
+import Zone from "../objects/zone/Zone";
 
 interface IPdfPageExportOptions {
   title?: boolean;
@@ -19,6 +19,12 @@ export interface IPdfExportOptions {
   zonesPage: boolean;
   zonesPageOptions: IPdfPageExportOptions;
   zonesPerPage: number;
+}
+
+export enum SortByEnum {
+  TotalSize,
+  InnerSize,
+  OuterSize,
 }
 
 /**
@@ -50,6 +56,8 @@ export class SettingsStore {
   private isLatestRedo: boolean = true;
   private trackZonesExport: boolean = false;
   private snapshots: Export;
+
+  private sortZonesBy: SortByEnum = SortByEnum.TotalSize;
 
   private pdfExportOptions: IPdfExportOptions = {
     firstPage: true,
@@ -88,6 +96,11 @@ export class SettingsStore {
       this.snapshots.TakeSnapshot();
       this.trackZonesExport = v;
     }
+  }
+
+  public set SortBy(v: SortByEnum) {
+    this.sortZonesBy = v;
+    zoneStore.SortZones();
   }
 
   /**

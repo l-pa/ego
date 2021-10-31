@@ -250,9 +250,6 @@ export default class Cytoscape {
       for (const [key, value] of Object.entries(c())) {
         cy.$id(key).attr("louvain", value)
       }
-
-      console.log(Centrality.Clustering());
-
     }
   }
 }
