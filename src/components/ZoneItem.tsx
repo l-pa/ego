@@ -24,7 +24,6 @@ export const ZoneItem: React.FunctionComponent<{
   greyed?: boolean;
   filter?: boolean;
 }> = ({ zone, greyed = false, filter = false }) => {
-
   const color = settingsStore.DetermineTextColor(zone.Color)
     ? "black"
     : "white";
@@ -32,11 +31,11 @@ export const ZoneItem: React.FunctionComponent<{
   const mouseLeaveFunction = () => {
     cy.nodes().difference(zone.AllCollection.nodes()).removeClass("tmpHide");
 
-    zoneStore.Update()
+    zoneStore.Update();
   };
 
   const mouseEnterFunction = () => {
-    zoneStore.HideAllZones()
+    zoneStore.HideAllZones();
     zone.DrawZone();
 
     // zoneStore.Update()
@@ -62,7 +61,7 @@ export const ZoneItem: React.FunctionComponent<{
           />
         ) : zone.Ego.isProminent() === 1 ? (
           <Avatar
-              name={zone.Id.split("").join(" ")}
+            name={zone.Id.split("").join(" ")}
             backgroundColor={!greyed ? "yellow.400" : "grey"}
             colorScheme={"primary"}
             onMouseEnter={(e) => {
@@ -74,7 +73,7 @@ export const ZoneItem: React.FunctionComponent<{
           />
         ) : (
           <Avatar
-                name={zone.Id.split("").join(" ")}
+            name={zone.Id.split("").join(" ")}
             backgroundColor={!greyed ? "green.400" : "grey"}
             colorScheme={"primary"}
             onMouseEnter={(e) => {
@@ -217,17 +216,15 @@ export const ZoneItem: React.FunctionComponent<{
                     {zone.OutsideNodes[0].length + zone.OutsideNodes[1].length}
                   </Text>
                 </Stack>
-
-
               </Tooltip>
               <Tooltip
                 zIndex={2}
                 aria-label="modularity"
-                label={"XD"}
+                label={"-"}
                 placement="bottom"
               >
                 <Stack>
-                  <Text className="itemRight">XD</Text>
+                  <Text className="itemRight">-</Text>
                 </Stack>
               </Tooltip>
             </Box>
@@ -317,19 +314,17 @@ export const ZoneItem: React.FunctionComponent<{
             aria-label="Remove zone"
             onClick={() => {
               zoneStore.RemoveZone(zone);
-
             }}
           >
             Remove
           </Button>
-        ) :
-          (
+        ) : (
           <Button
             colorScheme="primary"
             size="sm"
             aria-label="Add zone"
             onClick={() => {
-              zoneStore.RemoveTmpZone(zone)
+              zoneStore.RemoveTmpZone(zone);
               zoneStore.AddZone(zone);
             }}
           >
@@ -338,5 +333,5 @@ export const ZoneItem: React.FunctionComponent<{
         )}
       </Stack>
     </Box>
-  )
+  );
 };
