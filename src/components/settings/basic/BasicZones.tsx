@@ -8,6 +8,7 @@ import CustomZone from "../../../objects/zone/CustomZone";
 import { ZoneItemCustom } from "../../ZoneItemCustom";
 import { autorun, reaction } from "mobx";
 import { SortByEnum } from "../../../stores/SettingsStore";
+import { NodeProminency } from "../../../objects/network/Node";
 
 export const BasicZones: React.FunctionComponent = () => {
 
@@ -88,7 +89,7 @@ export const BasicZones: React.FunctionComponent = () => {
             const zones: EgoZone[] = [];
             Object.keys(networkStore.Network!!.Nodes).forEach(function (key) {
               const n = networkStore.Network!!.Nodes[key]
-              if (n.isProminent() === 0) {
+              if (n.isProminent() === NodeProminency.StronglyProminent) {
                 zones.push(new EgoZone(n));
               }
             })
@@ -103,7 +104,7 @@ export const BasicZones: React.FunctionComponent = () => {
             const zones: EgoZone[] = [];
             Object.keys(networkStore.Network!!.Nodes).forEach(function (key) {
               const n = networkStore.Network!!.Nodes[key]
-              if (n.isProminent() === 1) {
+              if (n.isProminent() === NodeProminency.WeaklyProminent) {
                 zones.push(new EgoZone(n));
               }
             });

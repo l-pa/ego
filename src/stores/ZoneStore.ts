@@ -431,15 +431,19 @@ export class ZoneStore {
    */
 
   public Update() {
-    if (arrayContainsAll([0, 1, 2, 3, 8], [settingsStore.ActiveCategory])) {
+    if (arrayContainsAll([0, 1, 2, 3, 8, 9], [settingsStore.ActiveCategory])) {
       const filter = zoneStore.Filter(this.zones);
 
       filter.zones.forEach((z) => z.DrawZone());
       filter.filtered.forEach((z) => z.HideZone());
 
       zoneStore.HideNodesOutsideZones();
-      zoneStore.ColorNodesInZones(filter.zones);
+      console.log("A");
+      
+      zoneStore.ColorNodesInZones(zoneStore.Zones);
     } else {
+      console.log("B");
+
       const filter = zoneStore.Filter(this.tmpZones);
 
       filter.zones.forEach((z) => z.DrawZone());
@@ -548,6 +552,7 @@ export class ZoneStore {
     // arrB[2] = Number.parseFloat(arrB[2]);
 
     // let c = { r: 0, g: 0, b: 0, a: 0 };
+    
     cy.batch(() => {
       e.not(".hide").classes(e.data("edgeType"));
     });
@@ -558,6 +563,10 @@ export class ZoneStore {
    */
   private EdgeColors(z: EgoZone | CustomZone, hover: boolean = false) {
     cy.edges().style("line-color", "");
+    
+    cy.edges()
+    .not(".hide")
+    .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp ");
 
     if (!hover) {
       let nodes: cytoscape.Collection = cy.collection();
@@ -570,12 +579,15 @@ export class ZoneStore {
         if (z instanceof EgoZone || z instanceof CustomZone)
           if (z.IsDrawn) nodes = nodes.union(z.AllCollection);
       });
+
       cy.batch(() => {
         nodes
           .nodes()
           .edgesWith(nodes)
           .forEach((e) => {
-            e.classes(e.data("edgeType"));
+            console.log(e.data("edgeType"));
+            
+            e.addClass(e.data("edgeType"));
           });
       });
     } else {
@@ -583,21 +595,65 @@ export class ZoneStore {
         z.AllCollection.nodes()
           .edgesWith(z.AllCollection)
           .forEach((e) => {
-            e.classes(e.data("edgeType"));
+            e.addClass(e.data("edgeType"));
           });
       });
     }
   }
 
   /**
-   * ColorNodesInZones
+   * ColorZoneType, colors based on zone type, yellow inner / blue outside
    */
-
-  public ColorNodesInZones(zones: Zone[]) {
+  public ColorZoneType(zones: Zone[]) {
     if (cy) {
       cy.batch(() => {
-        cy.nodes().not(".hide").classes("");
-        cy.edges().not(".hide").classes("");
+        cy.nodes()
+          .not(".hide")
+          .removeClass(
+            "stronglyProminent weaklyProminent nonProminent liaisons coliaisons"
+          );
+        cy.edges()
+          .not(".hide")
+          .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp ");
+      });
+
+      zones.forEach((z) => {
+        if (z instanceof EgoZone) {
+          z.InnerCollection.not(".hide").forEach((n) => {
+            n.addClass("weaklyProminent");
+          });
+
+          z.InnerCollection[0].addClass("stronglyProminent");
+
+          z.OutsideNodes[0].forEach((n) => {
+            networkStore.Network?.getNode(n.Id)
+              .not(".hide")
+              .addClass("liaisons");
+          });
+
+          z.OutsideNodes[1].forEach((n) => {
+            networkStore.Network?.getNode(n.Id)
+              .not(".hide")
+              .addClass("coliaisons");
+          });
+
+          this.EdgeColors(z);
+        }
+      });
+    }
+  }
+
+  private colorNodesInZones(zones: Zone[]) {
+    if (cy) {
+      cy.batch(() => {
+        cy.nodes()
+          .not(".hide")
+          .removeClass(
+            "stronglyProminent weaklyProminent nonProminent liaisons coliaisons"
+          );
+        cy.edges()
+          .not(".hide")
+          .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp ");
       });
 
       if (zoneStore.Zones.length === 0 && zoneStore.TmpZones.length === 0) {
@@ -631,6 +687,18 @@ export class ZoneStore {
   }
 
   /**
+   * ColorNodesInZones
+   */
+
+  public ColorNodesInZones(zones: Zone[]) {
+    if (settingsStore.DemoSettings.showZoneNodeColors) {
+      zoneStore.ColorZoneType(zones)
+    } else {
+        this.colorNodesInZones(zones)
+    }
+  }
+
+  /**
    * ColorAllNodes
    */
   private ColorAllNodes() {
@@ -660,27 +728,32 @@ export class ZoneStore {
    * ColorNodesInZone
    */
   public ColorNodesInZone(z: Zone) {
-    cy.nodes().not(".hide").classes("");
-    cy.edges().not(".hide").classes("");
+    cy.batch(() => {
+      cy.nodes()
+        .not(".hide")
+        .removeClass(
+          "stronglyProminent weaklyProminent nonProminent liaisons coliaisons"
+        );
+      cy.edges()
+        .not(".hide")
+        .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp ");
+    });
 
     if (z instanceof EgoZone) {
       z.InnerCollection.not(".hide").forEach((n) => {
-        n.classes("weaklyProminent");
+        n.addClass("weaklyProminent");
       });
 
       z.InnerCollection[0].addClass("stronglyProminent");
 
-      if (networkStore.Network) {
-        z.OutsideNodes[0].forEach((n) => {
-          networkStore.Network?.getNode(n.Id).not(".hide").classes("liaisons");
-        });
+      z.OutsideNodes[0].forEach((n) => {
+        networkStore.Network?.getNode(n.Id).not(".hide").addClass("liaisons");
+      });
 
-        z.OutsideNodes[1].forEach((n) => {
-          networkStore.Network?.getNode(n.Id)
-            .not(".hide")
-            .classes("coliaisons");
-        });
-      }
+      z.OutsideNodes[1].forEach((n) => {
+        networkStore.Network?.getNode(n.Id).not(".hide").addClass("coliaisons");
+      });
+
       this.EdgeColors(z, true);
     }
   }

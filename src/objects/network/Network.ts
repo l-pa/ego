@@ -43,6 +43,18 @@ export default class Network {
     return cy.edges(`[source = "${source.toString()}"]`);
   }
 
+  public getEdgeByNodes(nodeAid: string, nodeBid: string): Edge | undefined {
+    const id1 = nodeAid + nodeBid;
+    const id2 = nodeBid + nodeAid;
+
+    const e1 = this.Edges[id1];
+    const e2 = this.Edges[id2];
+
+    if (e1) return e1;
+    else if (e2) return e2;
+    else return undefined;
+  }
+
   /**
    * Adds an edge to the network.
    *

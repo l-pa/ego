@@ -18,6 +18,7 @@ import { settingsStore, zoneStore } from "..";
 import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
+import { NodeProminency } from "../objects/network/Node";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
@@ -46,7 +47,7 @@ export const ZoneItem: React.FunctionComponent<{
   return (
     <Box zIndex={1} bg={!greyed ? zone.StringColorRGB() : "grey"} p={4}>
       <Box display={"flex"}>
-        {zone.Ego.isProminent() === 0 ? (
+        {zone.Ego.isProminent() === NodeProminency.StronglyProminent ? (
           <Avatar
             name={zone.Id.split("").join(" ")}
             backgroundColor={!greyed ? "red.400" : "grey"}
@@ -59,7 +60,7 @@ export const ZoneItem: React.FunctionComponent<{
               mouseLeaveFunction();
             }}
           />
-        ) : zone.Ego.isProminent() === 1 ? (
+        ) : zone.Ego.isProminent() === NodeProminency.WeaklyProminent ? (
           <Avatar
             name={zone.Id.split("").join(" ")}
             backgroundColor={!greyed ? "yellow.400" : "grey"}

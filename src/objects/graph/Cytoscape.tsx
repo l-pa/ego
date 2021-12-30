@@ -1,5 +1,5 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
-import { networkStore, zoneStore } from "../..";
+import { networkStore, settingsStore, zoneStore } from "../..";
 import Edge from "../network/Edge";
 import Centrality from "../utility/Centrality";
 import Louvain from "../utility/Modularity";
@@ -49,10 +49,22 @@ export default class Cytoscape {
           // the stylesheet for the graph
           {
             selector: "node",
+
             style: {
-              label: "data(id)",
               "text-valign": "center",
               "text-halign": "center",
+            },
+          },
+          {
+            selector: ".nodeLabelId",
+            style: {
+              label: "data(id)"
+            },
+          },
+          {
+            selector: ".nodeLabelText",
+            style: {
+              label: "data(label)"
             },
           },
           {
@@ -71,7 +83,6 @@ export default class Cytoscape {
             selector: ".weaklyProminent",
             style: {
               "background-color": "yellow",
-              label: "data(id)",
             },
           },
 
@@ -79,7 +90,6 @@ export default class Cytoscape {
             selector: ".stronglyProminent",
             style: {
               "background-color": "red",
-              label: "data(id)",
             },
           },
 
@@ -87,14 +97,12 @@ export default class Cytoscape {
             selector: ".nonProminent",
             style: {
               "background-color": "lime",
-              label: "data(id)",
             },
           },
           {
             selector: ".coliaisons",
             style: {
               "background-color": "cyan",
-              label: "data(id)",
             },
           },
 
@@ -102,7 +110,6 @@ export default class Cytoscape {
             selector: ".liaisons",
             style: {
               "background-color": "blue",
-              label: "data(id)",
             },
           },
 
@@ -167,8 +174,6 @@ export default class Cytoscape {
           {
             selector: ".owindep",
             style: {
-              "target-arrow-color": "#ccc",
-              "target-arrow-shape": "triangle",
               "curve-style": "straight",
             },
           },
@@ -186,6 +191,33 @@ export default class Cytoscape {
               width: 3,
             },
           },
+          {
+            selector: ".edgeDependencyLabel",
+            style: {
+              "source-label": 'data(sourceDependency)',
+              "target-label": 'data(targetDependency)',
+              // @ts-ignore
+              "source-text-rotation": "autorotate",
+              // @ts-ignore
+              "target-text-rotation": "autorotate",
+              "source-text-offset": 35,
+              "target-text-offset": 35
+            },
+          },
+          {
+            selector: ".edgeDependencyTargetArrow",
+            style: {
+              "curve-style": "bezier",
+              "target-arrow-shape": "triangle",
+            },
+          },
+          {
+            selector: ".edgeDependencySourceArrow",
+            style: {
+              "curve-style": "bezier",
+              "source-arrow-shape": "triangle",
+            },
+          },
         ],
       });
 
@@ -201,7 +233,9 @@ export default class Cytoscape {
       });
 
       cy.on("mouseout", "node", (event) => {
+
         zoneStore.ColorNodesInZones(zoneStore.Zones.concat(zoneStore.TmpZones));
+
         z = undefined;
       });
 

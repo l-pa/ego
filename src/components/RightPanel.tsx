@@ -11,6 +11,7 @@ import { ZonesSubzone } from "./settings/zones/ZonesSubzone";
 import { ZonesSuperzone } from "./settings/zones/ZonesSuperzone";
 import { Filters } from "../components/Filters";
 import { Export } from "./settings/utils/Export";
+import Demo from "./settings/utils/Demo";
 
 export const RightPanel: React.FunctionComponent = () => {
   const Settings = observer(() => (
@@ -35,6 +36,8 @@ export const RightPanel: React.FunctionComponent = () => {
             return <ZonesIntersect />;
           case 8:
             return <Export />;
+          case 9:
+            return <Demo />;
           default:
             return <p>None</p>;
         }

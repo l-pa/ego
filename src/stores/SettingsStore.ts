@@ -1,5 +1,5 @@
 import { autorun, makeAutoObservable } from "mobx";
-import { zoneStore } from "..";
+import { networkStore, zoneStore } from "..";
 import CustomZone from "../objects/zone/CustomZone";
 import EgoZone from "../objects/zone/EgoZone";
 import { cy } from "../objects/graph/Cytoscape";
@@ -19,6 +19,13 @@ export interface IPdfExportOptions {
   zonesPageOverTime: boolean;
   zonesPageOptions: IPdfPageExportOptions;
   zonesPerPage: number;
+}
+
+export interface IDemoOptions {
+  showDependencyValues: boolean;
+  showZoneNodeColors: boolean;
+  showEdgeArrows: boolean;
+  showDependencyOnlyOnActive: boolean;
 }
 
 export enum SortByEnum {
@@ -56,6 +63,13 @@ export class SettingsStore {
   private isLatestRedo: boolean = true;
   private trackZonesExport: boolean = false;
   private snapshots: Export;
+
+  private demoOptions: IDemoOptions = {
+    showDependencyValues: false,
+    showEdgeArrows: false,
+    showZoneNodeColors: false,
+    showDependencyOnlyOnActive: false,
+  };
 
   private sortZonesBy: SortByEnum = SortByEnum.TotalSize;
 
@@ -95,6 +109,73 @@ export class SettingsStore {
       }
       this.snapshots.TakeSnapshot();
       this.trackZonesExport = v;
+    }
+  }
+
+  public get DemoSettings(): IDemoOptions {
+    return this.demoOptions;
+  }
+
+  public set DemoSettings(v: IDemoOptions) {
+    this.demoOptions = v;
+
+    if (v.showDependencyValues) {
+      cy.batch(() => {
+        cy.edges().addClass("edgeDependencyLabel");
+      });
+    } else {
+      cy.batch(() => {
+        cy.edges().removeClass("edgeDependencyLabel");
+      });
+    }
+
+    if (v.showEdgeArrows) {
+      cy.batch(() => {
+        cy.edges().forEach((e) => {
+          if (parseFloat(e.data("targetDependency")) >= 0.5) {
+            e.addClass("edgeDependencyTargetArrow");
+          }
+
+          if (parseFloat(e.data("sourceDependency")) >= 0.5) {
+            e.addClass("edgeDependencySourceArrow");
+          }
+        });
+      });
+    } else {
+      cy.batch(() => {
+        cy.edges().removeClass("edgeDependencyTargetArrow");
+        cy.edges().removeClass("edgeDependencySourceArrow");
+      });
+    }
+
+    // "sptowp sptosp wptowp wptonp sptonp nptonp "
+
+    if (this.demoOptions.showDependencyOnlyOnActive) {
+      if (this.demoOptions.showDependencyValues) {
+        cy.edges().forEach((e) => {
+          if (
+            e.hasClass("sptowp") ||
+            e.hasClass("sptosp") ||
+            e.hasClass("wptowp") ||
+            e.hasClass("wptonp") ||
+            e.hasClass("sptonp") ||
+            e.hasClass("nptonp")
+          ) {
+          } else {
+            e.removeClass("edgeDependencyLabel");
+          }
+        });
+      } else {
+        cy.batch(() => {
+          cy.edges().removeClass("edgeDependencyLabel");
+        });
+
+        cy.batch(() => {
+          cy.edges().addClass("edgeDependencyLabel");
+        });
+      }
+
+      zoneStore.ColorNodesInZones(zoneStore.Zones);
     }
   }
 
@@ -183,9 +264,19 @@ export class SettingsStore {
 
     switch (this.nodeLabel) {
       case "id":
+        cy.batch(() => {
+          cy.nodes().removeClass("nodeLabelText");
+          cy.nodes().addClass("nodeLabelId");
+        });
+
         break;
 
       case "label":
+        cy.batch(() => {
+          cy.nodes().removeClass("nodeLabelId");
+          cy.nodes().addClass("nodeLabelText");
+        });
+
         break;
 
       default:

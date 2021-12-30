@@ -1,5 +1,6 @@
 import type Network from "./Network";
 import type Node from "./Node";
+import { NodeProminency } from "./Node";
 
 export default class Matrix {
   private network: Network;
@@ -18,24 +19,22 @@ export default class Matrix {
    *
    */
   public dependencyMatrix() {
-      Object.keys(this.network.Edges).forEach((key) => {
-        const e = this.network.Edges[key];
-        if (this.CommonNeighbors.has(e.GetNodeA().Id)) {
-          this.CommonNeighbors.get(e.GetNodeA().Id)?.push(e.GetNodeB());
+    Object.keys(this.network.Edges).forEach((key) => {
+      const e = this.network.Edges[key];
+      if (this.CommonNeighbors.has(e.GetNodeA().Id)) {
+        this.CommonNeighbors.get(e.GetNodeA().Id)?.push(e.GetNodeB());
+      } else {
+        this.CommonNeighbors.set(e.GetNodeA().Id, [e.GetNodeB()]);
+      }
+
+      if (!this.network.Directed) {
+        if (this.CommonNeighbors.has(e.GetNodeB().Id)) {
+          this.CommonNeighbors.get(e.GetNodeB().Id)?.push(e.GetNodeA());
         } else {
-          this.CommonNeighbors.set(e.GetNodeA().Id, [e.GetNodeB()]);
+          this.CommonNeighbors.set(e.GetNodeB().Id, [e.GetNodeA()]);
         }
-
-        if (!this.network.Directed) {
-          if (this.CommonNeighbors.has(e.GetNodeB().Id)) {
-            this.CommonNeighbors.get(e.GetNodeB().Id)?.push(e.GetNodeA());
-          } else {
-            this.CommonNeighbors.set(e.GetNodeB().Id, [e.GetNodeA()]);
-          }
-        }
-      });
-    
-
+      }
+    });
 
     // const DependencyMatrix: number[][] = new Array(
     //   this.network.Nodes.length + 1
@@ -43,16 +42,12 @@ export default class Matrix {
     //   .fill(-1)
     //   .map(() => new Array(this.network.Nodes.length).fill(-1));
 
-    const DependencyMatrix: Map<
-      string,
-      { node: Node; dependency: number }[]
-    > = new Map();
+    const DependencyMatrix: Map<string, { node: Node; dependency: number }[]> =
+      new Map();
 
     Object.keys(this.network.Edges).forEach((key) => {
-      const edge = this.network.Edges[key]
+      const edge = this.network.Edges[key];
 
-
-      
       if (!DependencyMatrix.has(edge.GetNodeA().Id)) {
         DependencyMatrix.set(edge.GetNodeA().Id, [
           {
@@ -66,7 +61,7 @@ export default class Matrix {
           dependency: this.isDependent(edge.GetNodeA(), edge.GetNodeB()),
         });
       }
-      
+
       if (!this.network.Directed) {
         if (!DependencyMatrix.has(edge.GetNodeB().Id)) {
           DependencyMatrix.set(edge.GetNodeB().Id, [
@@ -82,12 +77,12 @@ export default class Matrix {
           });
         }
       }
-    })
-      
-      return DependencyMatrix;
-    }
-    
-    public nodesDependency() {
+    });
+
+    return DependencyMatrix;
+  }
+
+  public nodesDependency() {
     const dependencyMatrix = this.dependencyMatrix();
 
     dependencyMatrix.forEach(
@@ -113,14 +108,11 @@ export default class Matrix {
                 .get(element.node.Id)
                 ?.some(
                   (v) =>
-                    v.node.Id ===
-                      this.network.Nodes[key].Id &&
+                    v.node.Id === this.network.Nodes[key].Id &&
                     v.dependency === 0
                 )
             ) {
-              owdep.push(
-                this.network.Nodes[element.node.Id]
-              );
+              owdep.push(this.network.Nodes[element.node.Id]);
             }
 
             if (
@@ -129,14 +121,11 @@ export default class Matrix {
                 .get(element.node.Id)
                 ?.some(
                   (v) =>
-                    v.node.Id ===
-                      this.network.Nodes[key].Id &&
+                    v.node.Id === this.network.Nodes[key].Id &&
                     v.dependency === 1
                 )
             ) {
-              owindep.push(
-                this.network.Nodes[element.node.Id]
-              );
+              owindep.push(this.network.Nodes[element.node.Id]);
             }
 
             if (
@@ -145,14 +134,11 @@ export default class Matrix {
                 .get(element.node.Id)
                 ?.some(
                   (v) =>
-                    v.node.Id ===
-                      this.network.Nodes[key].Id &&
+                    v.node.Id === this.network.Nodes[key].Id &&
                     v.dependency === 1
                 )
             ) {
-              twdep.push(
-                this.network.Nodes[element.node.Id]
-              );
+              twdep.push(this.network.Nodes[element.node.Id]);
             }
 
             if (
@@ -161,14 +147,11 @@ export default class Matrix {
                 .get(element.node.Id)
                 ?.some(
                   (v) =>
-                    v.node.Id ===
-                      this.network.Nodes[key].Id &&
+                    v.node.Id === this.network.Nodes[key].Id &&
                     v.dependency === 0
                 )
             ) {
-              twindep.push(
-                this.network.Nodes[element.node.Id]
-              );
+              twindep.push(this.network.Nodes[element.node.Id]);
             }
           }
         });
@@ -185,11 +168,11 @@ export default class Matrix {
 
         const p = this.network.Nodes[key].isProminent();
 
-        if (p === 0) {
+        if (p === NodeProminency.StronglyProminent) {
           this.network.StronglyProminent++;
         }
 
-        if (p === 1) {
+        if (p === NodeProminency.WeaklyProminent) {
           this.network.WeaklyProminent++;
         }
       }
@@ -209,20 +192,19 @@ export default class Matrix {
    */
   private weight(nodeA: Node, nodeB: Node): number {
     if (this.network.Directed) {
-      const r = this.network.Edges[nodeA.Id+nodeB.Id]
+      const r = this.network.Edges[nodeA.Id + nodeB.Id];
 
       return r ? r.GetWeight() : 1;
-
     } else {
-      const a = this.network.Edges[nodeA.Id+nodeB.Id]
-      const b = this.network.Edges[nodeB.Id+nodeA.Id]
+      const a = this.network.Edges[nodeA.Id + nodeB.Id];
+      const b = this.network.Edges[nodeB.Id + nodeA.Id];
       if (a) {
-        return a.GetWeight()
+        return a.GetWeight();
       } else {
         if (b) {
-          return b.GetWeight()
+          return b.GetWeight();
         }
-        return 1
+        return 1;
       }
     }
   }
@@ -242,12 +224,12 @@ export default class Matrix {
   }
 
   /**
-   * Calculates the dependency between two nodes.
+   * Calculates the dependency between node A to B.
    *
    *
    * @param nodeA - First node
    * @param nodeB - Second node
-   * @returns Numeric dependency between input nodes.
+   * @returns Numeric dependency between node A to B.
    *
    */
 
@@ -287,6 +269,19 @@ export default class Matrix {
     threshold: number = 0.5
   ): number {
     const d = this.dependency(nodeA, nodeB);
+
+    this.network.Nodes[nodeA.Id].AddNeighbor(nodeB, d);
+
+    const e = this.network.getEdgeByNodes(nodeA.Id, nodeB.Id);
+
+    if (e) {
+      if (e.GetNodeA().Id === nodeA.Id) {
+        e.SetDependencyTarget(d);
+      } else {
+        e.SetDependencySource(d);
+      }
+    }
+
     return d >= threshold ? 1 : 0;
   }
 }

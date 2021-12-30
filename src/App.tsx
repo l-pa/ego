@@ -93,7 +93,6 @@ function App() {
                   onClick={() => {
                     const json = new JSONLoader()
 
-
                     json.SetUrl("https://raw.githubusercontent.com/l-pa/network-app/master/src/networks/karate.json")
 
                     json.GetNetwork(directed.current?.checked).then(network => {
@@ -147,8 +146,6 @@ function App() {
                   Lesmiserables
                 </Button>
               </div>
-
-
                 </div>
           </div>
         )}

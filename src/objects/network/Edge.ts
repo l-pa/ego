@@ -1,12 +1,16 @@
 import type Node from "./Node";
 import type { EdgeDataDefinition, ElementDefinition } from "cytoscape";
 import { networkStore } from "../..";
+import { NodeProminency } from "./Node";
 
 export default class Edge implements ElementDefinition {
   private Id: string | number;
   private NodeA: Node;
   private NodeB: Node;
   private Weight: number = 1;
+
+  private sourceDependency: number = -1;
+  private targetDependency: number = -1;
 
   data: EdgeDataDefinition;
   classes = "";
@@ -23,7 +27,6 @@ export default class Edge implements ElementDefinition {
     };
 
     this.Weight = weight;
-    
   }
 
   public GetNodeA() {
@@ -46,38 +49,72 @@ export default class Edge implements ElementDefinition {
     return Object.assign({}, this);
   }
 
+  public SetDependencySource(source: number) {
+    this.sourceDependency = source;
+    this.data.sourceDependency = parseFloat(source.toString()).toFixed(2);
+  }
+
+  public SetDependencyTarget(target: number) {
+    this.targetDependency = target;
+    this.data.targetDependency = parseFloat(target.toString()).toFixed(2);
+  }
+
   public UpdateClasses() {
-    const source: number | undefined =
+    const source: string | undefined =
       networkStore.Network?.Nodes[this.NodeA.Id].isProminent();
-    const target: number | undefined =
+    const target: string | undefined =
       networkStore.Network?.Nodes[this.NodeB.Id].isProminent();
 
-    if (source === 0 && target === 0) {
+    if (
+      source === NodeProminency.StronglyProminent &&
+      target === NodeProminency.StronglyProminent
+    ) {
       // this.classes = "sptosp";
       this.data.edgeType = "sptosp";
     }
 
-    if (source === 1 && target === 1) {
+    if (
+      source === NodeProminency.WeaklyProminent &&
+      target === NodeProminency.WeaklyProminent
+    ) {
       // this.classes = "wptowp";
       this.data.edgeType = "wptowp";
     }
 
-    if (source === -1 && target === -1) {
+    if (
+      source === NodeProminency.NonProminent &&
+      target === NodeProminency.NonProminent
+    ) {
       // this.classes = "nptonp";
       this.data.edgeType = "nptonp";
     }
 
-    if ((source === 0 && target === 1) || (source === 1 && target === 0)) {
+    if (
+      (source === NodeProminency.StronglyProminent &&
+        target === NodeProminency.WeaklyProminent) ||
+      (source === NodeProminency.WeaklyProminent &&
+        target === NodeProminency.StronglyProminent)
+    ) {
       // this.classes = "sptowp";
       this.data.edgeType = "sptowp";
     }
 
-    if ((source === 0 && target === -1) || (source === -1 && target === 0)) {
+    if (
+      (source === NodeProminency.StronglyProminent &&
+        target === NodeProminency.NonProminent) ||
+      (source === NodeProminency.NonProminent &&
+        target === NodeProminency.StronglyProminent)
+    ) {
       // this.classes = "sptonp";
       this.data.edgeType = "sptonp";
     }
 
-    if ((source === 1 && target === -1) || (source === -1 && target === 1)) {
+    if (
+      (source === NodeProminency.WeaklyProminent &&
+        target === NodeProminency.NonProminent) ||
+      (source === NodeProminency.NonProminent &&
+        target === NodeProminency.WeaklyProminent)
+    ) {
       // this.classes = "wptonp";
       this.data.edgeType = "wptonp";
     }

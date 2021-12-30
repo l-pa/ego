@@ -7,6 +7,7 @@ import C2S from "@bokeh/canvas2svg";
 import "../../register-files";
 import EgoZone from "../zone/EgoZone";
 import { ZoneStore } from "../../stores/ZoneStore";
+import { NodeProminency } from "../network/Node";
 
 const PDFDocument = require("pdfkit").default;
 const SVGtoPDF = require("svg-to-pdfkit");
@@ -345,7 +346,7 @@ export default class ExportImage {
               // @ts-ignore
             doc.circle(initX + ((j - 1) * 115), initY - 10, 15).fill([z.color.r, z.color.g, z.color.b])
 
-            if (z.zone.Ego.isProminent() === 0) {
+            if (z.zone.Ego.isProminent() === NodeProminency.StronglyProminent) {
                 doc.fillColor('black')
                   .font('Helvetica')
                   .text(
@@ -354,7 +355,7 @@ export default class ExportImage {
                     (initY - 40),
                     textOptions
               ).fillColor("red").font('Helvetica-Bold').text(`${z.zone.Ego.Id.length > 7 ? z.zone.Ego.Id.slice(0, 7) + '..' : z.zone.Ego.Id}`);
-            } else if (z.zone.Ego.isProminent() === 1) {
+            } else if (z.zone.Ego.isProminent() === NodeProminency.WeaklyProminent) {
                 doc.fillColor('black')
                   .font('Helvetica')
                   .text(

@@ -1,6 +1,12 @@
 import type { ElementDefinition, NodeDataDefinition } from "cytoscape";
 import { networkStore } from "../..";
 
+export enum NodeProminency {
+  StronglyProminent = "stronglyProminent",
+  WeaklyProminent = "weaklyProminent",
+  NonProminent = "nonProminent",
+}
+
 export default class Node implements ElementDefinition {
   public Id: string;
   public Label?: string;
@@ -13,13 +19,28 @@ export default class Node implements ElementDefinition {
   private twDep: Node[] = [];
   private twInDep: Node[] = [];
 
+  private neighbors: { [id: string]: [Node, number] } = {};
+
   public UpdateClass() {
-    this.classes = this.data.nodeType =
-      this.isProminent() !== -1
-        ? this.isProminent() === 1
-          ? "weaklyProminent"
-          : "stronglyProminent"
-        : "nonProminent";
+    switch (this.isProminent()) {
+      case NodeProminency.StronglyProminent:
+        this.classes += " " + NodeProminency.StronglyProminent;
+        this.data.nodeType = NodeProminency.StronglyProminent;
+        break;
+
+      case NodeProminency.WeaklyProminent:
+        this.classes += " " + NodeProminency.WeaklyProminent;
+        this.data.nodeType = NodeProminency.WeaklyProminent;
+        break;
+
+      case NodeProminency.NonProminent:
+        this.classes += " " + NodeProminency.NonProminent;
+        this.data.nodeType = NodeProminency.NonProminent;
+        break;
+
+      default:
+        break;
+    }
   }
 
   public set OwDep(nodes: Node[]) {
@@ -55,8 +76,9 @@ export default class Node implements ElementDefinition {
     this.Id = id;
     this.Label = label;
     this.data.id = this.Id.toString();
+    this.data.label = this.Label;
     this.data.nodeType = "";
-    this.classes = "";
+    this.classes = "nodeLabelId";
   }
 
   public PlainObject(): ElementDefinition {
@@ -64,17 +86,22 @@ export default class Node implements ElementDefinition {
   }
 
   /**
+   * AddNeighbor
+   */
+  public AddNeighbor(nodeB: Node, dependency: number) {
+    this.neighbors[nodeB.Id] = [nodeB, dependency];
+  }
+
+  /**
    * Returns prominency of the node.
    *
-   * @returns 0 for strongly prominent node,
-   *          1 for weakly prominent node,
-   *          -1 if the node is not prominent.
+   * @returns Enum value - strongly/weakly/non prominent
    */
-  public isProminent(): number {
+  public isProminent(): string {
     return this.owInDep.length > 0
       ? this.owDep.length === 0 && this.twDep.length === 0
-        ? 0
-        : 1
-      : -1;
+        ? NodeProminency.StronglyProminent
+        : NodeProminency.WeaklyProminent
+      : NodeProminency.NonProminent;
   }
 }

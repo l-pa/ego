@@ -190,8 +190,18 @@ export const LeftPanel: React.FunctionComponent = () => {
         justifyContent="space-around"
         alignItems="center"
       >
-        {/* <LatestRedo /> */}
       </Stack>
+      <Divider />
+      <Button
+        isActive={activeButton === 9}
+        colorScheme="primary"
+        variant="ghost"
+        onClick={() => {
+          setActiveButton(9);
+        }}
+      >
+        Demo mode
+      </Button>
     </Stack>
   );
 };
