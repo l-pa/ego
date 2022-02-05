@@ -1,11 +1,9 @@
+import Network from "../objects/network/Network";
+
 export abstract class Loader {
-  url: string = "";
-
-  public SetUrl(url: string) {
-    this.url = url;
-  }
-
-  public GetUrl() {
-    return this.url;
-  }
+  public abstract GetNetworkURL(
+    url: string,
+    directed?: boolean
+  ): Promise<Network>;
+  public abstract GetNetworkFile(data: any, directed?: boolean): Network;
 }

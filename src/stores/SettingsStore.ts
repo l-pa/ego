@@ -150,8 +150,8 @@ export class SettingsStore {
 
     // "sptowp sptosp wptowp wptonp sptonp nptonp "
 
-    if (this.demoOptions.showDependencyOnlyOnActive) {
-      if (this.demoOptions.showDependencyValues) {
+    if (this.demoOptions.showDependencyValues) {
+      if (this.demoOptions.showDependencyOnlyOnActive) {
         cy.edges().forEach((e) => {
           if (
             e.hasClass("sptowp") ||
@@ -159,13 +159,16 @@ export class SettingsStore {
             e.hasClass("wptowp") ||
             e.hasClass("wptonp") ||
             e.hasClass("sptonp") ||
-            e.hasClass("nptonp")
+            e.hasClass("nptonp") ||
+            e.hasClass("blended")
           ) {
           } else {
             e.removeClass("edgeDependencyLabel");
           }
         });
-      } else {
+      }
+    } else {
+      if (this.demoOptions.showDependencyOnlyOnActive) {
         cy.batch(() => {
           cy.edges().removeClass("edgeDependencyLabel");
         });
@@ -174,9 +177,9 @@ export class SettingsStore {
           cy.edges().addClass("edgeDependencyLabel");
         });
       }
-
-      zoneStore.ColorNodesInZones(zoneStore.Zones);
     }
+
+    zoneStore.ColorNodesInZones(zoneStore.Zones);
   }
 
   public set SortBy(v: SortByEnum) {

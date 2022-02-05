@@ -20,6 +20,20 @@ export default class Network {
   }
 
   /**
+   * NodesLength
+   */
+  public NodesLength() {
+    return Object.keys(this.Nodes).length;
+  }
+
+  /**
+   * EdgesLength
+   */
+  public EdgesLength() {
+    return Object.keys(this.Edges).length;
+  }
+
+  /**
    * Adds a node to the network.
    *
    * @param node - Node to be added to the network.

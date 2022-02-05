@@ -1,10 +1,7 @@
 import { useContext, useRef } from "react";
 import "./App.css";
 import CSVReader from "react-csv-reader";
-import Matrix from "./objects/network/DependencyMatrix";
 import { Graph } from "./components/Graph";
-import Node from "./objects/network/Node";
-import Network from "./objects/network/Network";
 import { Context } from ".";
 import { observer } from "mobx-react-lite";
 import { CSVLoader } from './loaders/CSVLoader'
@@ -26,34 +23,12 @@ import { RightPanel } from "./components/RightPanel";
 import theme from "./theme";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import { JSONLoader } from "./loaders/JSONLoader";
+import { Loader } from "./loaders/Loader";
 
 function App() {
   const context = useContext(Context);
   const toast = createStandaloneToast();
   const directed = useRef<HTMLInputElement>(null);
-
-  const loadNetwork = (networkName: string, csvData: any[]) => {
-    const network = new Network([], []);
-
-    if (directed.current?.checked) {
-      network.Directed = true;
-    }
-
-    console.log(networkName, csvData);
-    for (let i = 0; i < csvData.length; i++) {
-      const element: Array<string> = csvData[i];
-      if (element.length > 1 && element[0] !== "Source") {
-        network.addEdge(
-          new Node(element[0]),
-          new Node(element[1]),
-          Number.parseFloat(element[2])
-        );
-      }
-    }
-    new Matrix(network).nodesDependency();
-    context.network.Network = network;
-
-  }
 
   const App = observer(() => {
     return (
@@ -76,7 +51,33 @@ function App() {
                     });
                   }}
                   onFileLoaded={(data, fileInfo) => {
-                    loadNetwork(fileInfo.name, data)
+                    let loader: Loader | undefined
+
+                    switch (fileInfo.name.split('.').pop()) {
+                      case 'csv':
+                        loader = new CSVLoader();
+                        break;
+
+                      case 'json':
+                        loader = new JSONLoader();
+                        break;
+
+                      default:
+                        loader = undefined
+                        break;
+                    }
+
+                    if (loader) {
+                      context.network.Network = loader.GetNetworkFile(data)
+                    } else {
+                      toast({
+                        title: "Unknown file type",
+                        description: "Couldnt recognize the file type, supported (CSV, JSON)",
+                        status: "error",
+                        duration: 5000,
+                        isClosable: true,
+                      });
+                    }
                   }}
                 />
 
@@ -92,19 +93,19 @@ function App() {
                   variant="outline"
                   onClick={() => {
                     const json = new JSONLoader()
+                    json.GetNetworkURL("https://raw.githubusercontent.com/l-pa/network-app/master/src/networks/karate.json", directed.current?.checked).then(network => {
 
-                    json.SetUrl("https://raw.githubusercontent.com/l-pa/network-app/master/src/networks/karate.json")
+                      context.network.Network = network;
 
-                    json.GetNetwork(directed.current?.checked).then(network => {
-                    new Matrix(network).nodesDependency();
                     console.log(network);
-                    
-                    context.network.Network = network;
+                      console.log(Object.keys(network.Nodes));
+
+
                     toast({
                       title: "Network loaded.",
                       description: `${"KARATE"} - ${
-                        network.Nodes.length
-                      } nodes - ${network.Edges.length} egdes -  ${
+                        network.NodesLength()
+                        } nodes - ${network.EdgesLength()} egdes -  ${
                         network.Directed ? "✅" : "❌"
                       } directed`,
                       status: "success",
@@ -124,17 +125,16 @@ function App() {
                   variant="outline"
                   onClick={() => {
                     const csv = new CSVLoader()
-                    csv.SetUrl("https://raw.githubusercontent.com/graphistry/pygraphistry/master/demos/data/lesmiserables.csv")
 
-                    csv.GetNetwork(directed.current?.checked).then(network => {
-                      new Matrix(network).nodesDependency();
+                    csv.GetNetworkURL("https://raw.githubusercontent.com/graphistry/pygraphistry/master/demos/data/lesmiserables.csv", directed.current?.checked).then(network => {
+                      // new Matrix(network).nodesDependency();
                       console.log(network);
                     
                       context.network.Network = network;
                       toast({
                         title: "Network loaded.",
-                        description: `${"KARATE"} - ${network.Nodes.length
-                          } nodes - ${network.Edges.length} egdes -  ${network.Directed ? "✅" : "❌"
+                        description: `${"lesmiserables"} - ${network.NodesLength()
+                          } nodes - ${network.EdgesLength()} egdes -  ${network.Directed ? "✅" : "❌"
                           } directed`,
                         status: "success",
                         duration: 5000,

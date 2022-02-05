@@ -525,6 +525,9 @@ export class ZoneStore {
   }
 
   private EdgeColorCalc(e: EdgeSingular) {
+
+    cy.edges().style("line-color", "");
+
     // const a = networkStore.Network?.getNode(e.data("source")).style(
     //   "background-color"
     // );
@@ -558,16 +561,48 @@ export class ZoneStore {
     });
   }
 
+  private blendEdgesBetweenNodes(collection: Collection) {
+
+
+    cy.batch(() => {
+      collection.nodes()
+        .edgesWith(collection)
+        .forEach((e) => {
+          const sourceColor = e
+            .source()
+            .style("background-color")
+            .match(/\d+/g);
+          const targetColor = e
+            .target()
+            .style("background-color")
+            .match(/\d+/g);
+
+          e.style(
+            "line-color",
+            `rgb(${
+              parseFloat(sourceColor[0]) * 0.5 +
+              parseFloat(targetColor[0]) * 0.5
+            },${
+              parseFloat(sourceColor[1]) * 0.5 +
+              parseFloat(targetColor[1]) * 0.5
+            },${
+              parseFloat(sourceColor[2]) * 0.5 +
+              parseFloat(targetColor[2]) * 0.5
+            })`
+          );
+
+          e.addClass("blended")
+
+          // e.addClass(e.data("edgeType"));
+        });
+    });
+    
+  }
+
   /**
    * EdgeColors
    */
   private EdgeColors(z: EgoZone | CustomZone, hover: boolean = false) {
-    cy.edges().style("line-color", "");
-    
-    cy.edges()
-    .not(".hide")
-    .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp ");
-
     if (!hover) {
       let nodes: cytoscape.Collection = cy.collection();
 
@@ -580,24 +615,22 @@ export class ZoneStore {
           if (z.IsDrawn) nodes = nodes.union(z.AllCollection);
       });
 
-      cy.batch(() => {
-        nodes
+      if (settingsStore.DemoSettings.showZoneNodeColors) {
+        this.blendEdgesBetweenNodes(nodes)
+      } else {
+
+        
+        cy.batch(() => {
+          nodes
           .nodes()
           .edgesWith(nodes)
           .forEach((e) => {
-            console.log(e.data("edgeType"));
-            
             e.addClass(e.data("edgeType"));
           });
-      });
+        });
+      }
     } else {
-      cy.batch(() => {
-        z.AllCollection.nodes()
-          .edgesWith(z.AllCollection)
-          .forEach((e) => {
-            e.addClass(e.data("edgeType"));
-          });
-      });
+      this.blendEdgesBetweenNodes(z.AllCollection)
     }
   }
 
@@ -606,17 +639,6 @@ export class ZoneStore {
    */
   public ColorZoneType(zones: Zone[]) {
     if (cy) {
-      cy.batch(() => {
-        cy.nodes()
-          .not(".hide")
-          .removeClass(
-            "stronglyProminent weaklyProminent nonProminent liaisons coliaisons"
-          );
-        cy.edges()
-          .not(".hide")
-          .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp ");
-      });
-
       zones.forEach((z) => {
         if (z instanceof EgoZone) {
           z.InnerCollection.not(".hide").forEach((n) => {
@@ -645,17 +667,6 @@ export class ZoneStore {
 
   private colorNodesInZones(zones: Zone[]) {
     if (cy) {
-      cy.batch(() => {
-        cy.nodes()
-          .not(".hide")
-          .removeClass(
-            "stronglyProminent weaklyProminent nonProminent liaisons coliaisons"
-          );
-        cy.edges()
-          .not(".hide")
-          .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp ");
-      });
-
       if (zoneStore.Zones.length === 0 && zoneStore.TmpZones.length === 0) {
         this.ColorAllNodes();
         this.ColorAllEdges();
@@ -691,11 +702,28 @@ export class ZoneStore {
    */
 
   public ColorNodesInZones(zones: Zone[]) {
-    if (settingsStore.DemoSettings.showZoneNodeColors) {
-      zoneStore.ColorZoneType(zones)
-    } else {
-        this.colorNodesInZones(zones)
-    }
+    
+    if (cy) {
+
+      cy.edges().style("line-color", "");
+      
+      cy.batch(() => {
+        cy.nodes()
+        .not(".hide")
+        .removeClass(
+          "stronglyProminent weaklyProminent nonProminent liaisons coliaisons"
+          );
+          cy.edges()
+          .not(".hide")
+          .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp blended ");
+        });
+          
+        if (settingsStore.DemoSettings.showZoneNodeColors) {
+          zoneStore.ColorZoneType(zones)
+        } else {
+          this.colorNodesInZones(zones)
+        }
+      }
   }
 
   /**
@@ -736,7 +764,7 @@ export class ZoneStore {
         );
       cy.edges()
         .not(".hide")
-        .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp ");
+        .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp blended ");
     });
 
     if (z instanceof EgoZone) {

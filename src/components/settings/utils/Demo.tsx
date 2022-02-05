@@ -1,4 +1,4 @@
-import { CheckboxGroup, Stack, Switch } from "@chakra-ui/react";
+import { Button, CheckboxGroup, Stack, Switch } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { settingsStore, zoneStore } from "../../..";
 import { cy } from "../../../objects/graph/Cytoscape";
@@ -36,6 +36,9 @@ export default function Export() {
             settingsStore.DemoSettings = a
 
         }}>Show dependency only on active edges</Switch>
+
+        <Button>Load ground-truth</Button>
+
     </Stack>
     )
 }

@@ -1,11 +1,12 @@
 import { makeAutoObservable } from "mobx";
 import { settingsStore } from "..";
+import Matrix from "../objects/network/DependencyMatrix";
 import Network from "../objects/network/Network";
 
-  /**
-   * Storing loaded network.
-   *
-   */
+/**
+ * Storing loaded network.
+ *
+ */
 
 export class NetworkStore {
   constructor() {
@@ -24,7 +25,10 @@ export class NetworkStore {
 
   public set Network(v: Network | undefined) {
     this.network = v;
-    if (v) settingsStore.MinNodesZoneShow = 0;
+    if (v) {
+      new Matrix(v).nodesDependency();
+      settingsStore.MinNodesZoneShow = 0;
+    }
   }
 
   public get Loaded(): boolean {
