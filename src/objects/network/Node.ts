@@ -110,7 +110,7 @@ export default class Node {
   constructor(id: string, label?: string) {
     this.Id = id;
     this.Label = label;
-    this.data.id = this.Id.toString();
+    this.data.id = this.Id;
     this.data.label = this.Label;
     this.data.nodeType = "";
   }

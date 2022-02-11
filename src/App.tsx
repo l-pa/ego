@@ -1,6 +1,5 @@
 import { useContext, useRef } from "react";
 import "./App.css";
-import CSVReader from "react-csv-reader";
 import { Graph } from "./components/Graph";
 import { Context } from ".";
 import { observer } from "mobx-react-lite";
@@ -40,50 +39,64 @@ function App() {
                 <Text fontSize="6xl" fontWeight="extrabold" pb={10}>
                   Ego-zones
                 </Text>
-                <CSVReader
-                  onError={(err) => {
-                    toast({
-                      title: "Failed to load the network",
-                      description: err.message,
-                      status: "error",
-                      duration: 5000,
-                      isClosable: true,
-                    });
-                  }}
-                  onFileLoaded={(data, fileInfo) => {
-                    let loader: Loader | undefined
+                <Stack>
 
-                    switch (fileInfo.name.split('.').pop()) {
-                      case 'csv':
-                        loader = new CSVLoader();
-                        break;
+                  <input type="file" id="networkPicker"
+                    accept=".csv,.json" onChange={(event => {
+                      const reader = new FileReader()
+                      const file = event.target.files
+                      if (file)
+                        reader.readAsText(file[0], "UTF-8")
 
-                      case 'json':
-                        loader = new JSONLoader();
-                        break;
+                      reader.onload = (e) => {
+                        let loader: Loader | undefined
 
-                      default:
-                        loader = undefined
-                        break;
-                    }
+                        if (file)
+                          switch (file[0].name.split('.').pop()) {
+                            case 'csv':
+                              loader = new CSVLoader();
+                              break;
 
-                    if (loader) {
-                      context.network.Network = loader.GetNetworkFile(data)
-                    } else {
-                      toast({
-                        title: "Unknown file type",
-                        description: "Couldnt recognize the file type, supported (CSV, JSON)",
-                        status: "error",
-                        duration: 5000,
-                        isClosable: true,
-                      });
-                    }
-                  }}
-                />
+                          case 'json':
+                            loader = new JSONLoader();
+                            break;
+
+                          default:
+                            loader = undefined
+                            break;
+                        }
+
+                        if (loader) {
+                        context.network.Network = loader.GetNetworkFile(e.target?.result)
+                      } else {
+                        toast({
+                          title: "Unknown file type",
+                          description: "Couldnt recognize the file type, supported (CSV, JSON)",
+                          status: "error",
+                          duration: 5000,
+                          isClosable: true,
+                        });
+                      }
+                      }
+
+                      reader.onerror = (e) => {
+                        toast({
+                          title: "Failed to load the network",
+                          description: e.target?.error,
+                          status: "error",
+                          duration: 5000,
+                          isClosable: true,
+                        });
+
+                      }
+
+
+                    })}></input>
 
                 <Checkbox pt={3} ref={directed}>
                   Directed
                 </Checkbox>
+                </Stack>
 
 
                 <Divider mt={5} mb={5} />
