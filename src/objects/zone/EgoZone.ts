@@ -1,11 +1,12 @@
 import type Node from "../network/Node";
 import cytoscape, { Collection } from "cytoscape";
 
-import { settingsStore, zoneStore } from "../..";
+import { networkStore, settingsStore, zoneStore } from "../..";
 
 import { cy } from "../graph/Cytoscape";
 import Zone, { IColor } from "./Zone";
 import { reaction } from "mobx";
+import { NodeDisplay } from "../network/Node";
 
 export default class EgoZone extends Zone {
   private ego: Node;
@@ -128,11 +129,10 @@ export default class EgoZone extends Zone {
    * DrawZone
    */
   public DrawZone() {
-    
     if (settingsStore.HideOutsideZones) {
       this.AllCollection.removeClass("hide");
     }
-    
+
     if (!this.IsDrawn) {
       this.automove = (cy as any).automove({
         nodesMatching: this.innerCollection
@@ -150,6 +150,28 @@ export default class EgoZone extends Zone {
 
       super.DrawZone();
       super.CTXStyle(this.Color);
+
+      this.InnerNodes.forEach((node) => {
+        networkStore.Network?.Nodes[node.Id].SetClass(
+          "NodeDisplay",
+          NodeDisplay.Visible
+        );
+      });
+
+      this.OutsideNodes[0].forEach((node) => {
+        networkStore.Network?.Nodes[node.Id].SetClass(
+          "NodeDisplay",
+          NodeDisplay.Visible
+        );
+      });
+
+      this.OutsideNodes[1].forEach((node) => {
+        networkStore.Network?.Nodes[node.Id].SetClass(
+          "NodeDisplay",
+          NodeDisplay.Visible
+        );
+      });
+
       zoneStore.ColorNodesInZone(this);
     }
   }

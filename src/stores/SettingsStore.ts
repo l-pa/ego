@@ -265,10 +265,11 @@ export class SettingsStore {
   public set NodeLabel(v: string) {
     this.nodeLabel = v;
 
+    cy.nodes().removeClass("nodeLabelText nodeLabelId nodeLabelNone");
+
     switch (this.nodeLabel) {
       case "id":
         cy.batch(() => {
-          cy.nodes().removeClass("nodeLabelText");
           cy.nodes().addClass("nodeLabelId");
         });
 
@@ -276,8 +277,14 @@ export class SettingsStore {
 
       case "label":
         cy.batch(() => {
-          cy.nodes().removeClass("nodeLabelId");
           cy.nodes().addClass("nodeLabelText");
+        });
+
+        break;
+
+      case "none":
+        cy.batch(() => {
+          cy.nodes().addClass("nodeLabelNone");
         });
 
         break;

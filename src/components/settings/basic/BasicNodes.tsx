@@ -218,6 +218,7 @@ export function BasicNodes() {
     }}>
       <option value="id">Id</option>
       <option value="label">Label</option>
+      <option value="none">None</option>
     </Select>
 
   ));

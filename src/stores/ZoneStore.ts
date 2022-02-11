@@ -3,6 +3,7 @@ import EgoZone from "../objects/zone/EgoZone";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { cy } from "../objects/graph/Cytoscape";
 import {
+  ClassNames,
   Collection,
   EdgeSingular,
   NodeCollection,
@@ -19,6 +20,8 @@ import Filter, {
 } from "../objects/zone/Filter";
 import { SortByEnum } from "./SettingsStore";
 import { arrayContainsAll } from "../objects/utility/ArrayUtils";
+import { NodeDisplay, NodeProminency } from "../objects/network/Node";
+import { EdgeType } from "../objects/network/Edge";
 
 export class ZoneStore {
   private zones: Zone[] = [];
@@ -133,6 +136,8 @@ export class ZoneStore {
    * MaxOverlapZones
    */
   public OverlapZones(tmpZones: EgoZone[]) {
+    console.log(tmpZones);
+
     let egos: NodeCollection = cy.collection();
     let aaa = true;
     let intersect = cy.collection();
@@ -395,7 +400,10 @@ export class ZoneStore {
 
       if (zone instanceof EgoZone) {
         cy.batch(() => {
-          zone.AllCollection.removeClass("hide");
+          for (const key in networkStore.Network?.Nodes) {
+            const node = networkStore.Network?.Nodes[key];
+            node?.SetClass("NodeDisplay", NodeDisplay.Visible);
+          }
         });
       }
 
@@ -439,7 +447,7 @@ export class ZoneStore {
 
       zoneStore.HideNodesOutsideZones();
       console.log("A");
-      
+
       zoneStore.ColorNodesInZones(zoneStore.Zones);
     } else {
       console.log("B");
@@ -525,78 +533,31 @@ export class ZoneStore {
   }
 
   private EdgeColorCalc(e: EdgeSingular) {
-
-    cy.edges().style("line-color", "");
-
-    // const a = networkStore.Network?.getNode(e.data("source")).style(
-    //   "background-color"
-    // );
-
-    // const arrA = a
-    //   .substring(4, a.length - 1)
-    //   .replace(/ /g, "")
-    //   .split(",");
-
-    // const b = networkStore.Network?.getNode(e.data("target")).style(
-    //   "background-color"
-    // );
-
-    // const arrB = b
-    //   .substring(4, b.length - 1)
-    //   .replace(/ /g, "")
-    //   .split(",");
-
-    // arrA[0] = Number.parseFloat(arrA[0]);
-    // arrA[1] = Number.parseFloat(arrA[1]);
-    // arrA[2] = Number.parseFloat(arrA[2]);
-
-    // arrB[0] = Number.parseFloat(arrB[0]);
-    // arrB[1] = Number.parseFloat(arrB[1]);
-    // arrB[2] = Number.parseFloat(arrB[2]);
-
-    // let c = { r: 0, g: 0, b: 0, a: 0 };
-    
-    cy.batch(() => {
-      e.not(".hide").classes(e.data("edgeType"));
-    });
+    networkStore.Network?.Edges[e.source().id() + e.target().id()].ResetClass();
   }
 
   private blendEdgesBetweenNodes(collection: Collection) {
+    collection
+      .nodes()
+      .edgesWith(collection)
+      .forEach((e) => {
+        const nodeA = networkStore.Network!!.Nodes[e.source().id()];
+        const nodeB = networkStore.Network!!.Nodes[e.target().id()];
+        const edge = networkStore.Network?.getEdgeByNodes(nodeA.Id, nodeB.Id);
 
+        const edgetype = edge!!.NodesClassType(nodeA, nodeB);
 
-    cy.batch(() => {
-      collection.nodes()
-        .edgesWith(collection)
-        .forEach((e) => {
-          const sourceColor = e
-            .source()
-            .style("background-color")
-            .match(/\d+/g);
-          const targetColor = e
-            .target()
-            .style("background-color")
-            .match(/\d+/g);
+        if (edgetype) {
+          edge?.SetClass("EdgeType", edgetype);
+          return;
+        }
+        const edgetype2 = edge!!.NodesClassType(nodeB, nodeA);
+        if (edgetype2) {
+          edge?.SetClass("EdgeType", edgetype2);
+        }
 
-          e.style(
-            "line-color",
-            `rgb(${
-              parseFloat(sourceColor[0]) * 0.5 +
-              parseFloat(targetColor[0]) * 0.5
-            },${
-              parseFloat(sourceColor[1]) * 0.5 +
-              parseFloat(targetColor[1]) * 0.5
-            },${
-              parseFloat(sourceColor[2]) * 0.5 +
-              parseFloat(targetColor[2]) * 0.5
-            })`
-          );
-
-          e.addClass("blended")
-
-          // e.addClass(e.data("edgeType"));
-        });
-    });
-    
+        // e.addClass(e.data("edgeType"));
+      });
   }
 
   /**
@@ -616,21 +577,23 @@ export class ZoneStore {
       });
 
       if (settingsStore.DemoSettings.showZoneNodeColors) {
-        this.blendEdgesBetweenNodes(nodes)
+        this.blendEdgesBetweenNodes(nodes);
       } else {
-
-        
         cy.batch(() => {
           nodes
-          .nodes()
-          .edgesWith(nodes)
-          .forEach((e) => {
-            e.addClass(e.data("edgeType"));
-          });
+            .nodes()
+            .edgesWith(nodes)
+            .forEach((e) => {
+              const edge = networkStore.Network?.getEdgeByNodes(
+                e.source().id(),
+                e.target().id()
+              );
+              edge?.ResetClass();
+            });
         });
       }
     } else {
-      this.blendEdgesBetweenNodes(z.AllCollection)
+      this.blendEdgesBetweenNodes(z.AllCollection);
     }
   }
 
@@ -641,22 +604,20 @@ export class ZoneStore {
     if (cy) {
       zones.forEach((z) => {
         if (z instanceof EgoZone) {
-          z.InnerCollection.not(".hide").forEach((n) => {
-            n.addClass("weaklyProminent");
+          z.InnerNodes.forEach((n) => {
+            n.SetClass("NodeProminency", NodeProminency.WeaklyProminent);
           });
-
-          z.InnerCollection[0].addClass("stronglyProminent");
+          z.InnerNodes[0].SetClass(
+            "NodeProminency",
+            NodeProminency.StronglyProminent
+          );
 
           z.OutsideNodes[0].forEach((n) => {
-            networkStore.Network?.getNode(n.Id)
-              .not(".hide")
-              .addClass("liaisons");
+            n.SetClass("NodeProminency", NodeProminency.Liaison);
           });
 
           z.OutsideNodes[1].forEach((n) => {
-            networkStore.Network?.getNode(n.Id)
-              .not(".hide")
-              .addClass("coliaisons");
+            n.SetClass("NodeProminency", NodeProminency.Coliaison);
           });
 
           this.EdgeColors(z);
@@ -672,26 +633,35 @@ export class ZoneStore {
         this.ColorAllEdges();
       } else {
         cy.batch(() => {
+          for (const key in networkStore.Network?.Nodes) {
+            const node = networkStore.Network?.Nodes[key];
+            node?.SetClass("NodeProminency", NodeProminency.Blank);
+          }
+
+          for (const key in networkStore.Network?.Edges) {
+            const edge = networkStore.Network?.Edges[key];
+            edge?.SetClass("EdgeType", EdgeType.Blank);
+          }
+
           zones.forEach((element) => {
-            if (
-              element.IsDrawn &&
-              (element instanceof EgoZone || element instanceof CustomZone)
-            ) {
-              element.AllCollection.not(".hide")?.forEach((n) => {
-                n.classes(
-                  networkStore.Network?.Nodes[
-                    (n as { [key: string]: any })["_private"]["data"][
-                      "id"
-                    ] as string
-                  ].classes
-                );
+            if (element.IsDrawn && element instanceof EgoZone) {
+              element.InnerNodes.forEach((n) => {
+                n.ResetClasses();
+              });
+
+              element.OutsideNodes[0].forEach((n) => {
+                n.ResetClasses();
+              });
+
+              element.OutsideNodes[1].forEach((n) => {
+                n.ResetClasses();
               });
             }
           });
-        });
-        zones.forEach((z) => {
-          if (z instanceof EgoZone || z instanceof CustomZone)
-            this.EdgeColors(z);
+          zones.forEach((z) => {
+            if (z instanceof EgoZone || z instanceof CustomZone)
+              this.EdgeColors(z);
+          });
         });
       }
     }
@@ -702,28 +672,13 @@ export class ZoneStore {
    */
 
   public ColorNodesInZones(zones: Zone[]) {
-    
     if (cy) {
-
-      cy.edges().style("line-color", "");
-      
-      cy.batch(() => {
-        cy.nodes()
-        .not(".hide")
-        .removeClass(
-          "stronglyProminent weaklyProminent nonProminent liaisons coliaisons"
-          );
-          cy.edges()
-          .not(".hide")
-          .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp blended ");
-        });
-          
-        if (settingsStore.DemoSettings.showZoneNodeColors) {
-          zoneStore.ColorZoneType(zones)
-        } else {
-          this.colorNodesInZones(zones)
-        }
+      if (settingsStore.DemoSettings.showZoneNodeColors) {
+        zoneStore.ColorZoneType(zones);
+      } else {
+        this.colorNodesInZones(zones);
       }
+    }
   }
 
   /**
@@ -731,14 +686,12 @@ export class ZoneStore {
    */
   private ColorAllNodes() {
     cy.batch(() => {
-      cy.nodes().not(".hide").classes("");
-      cy.nodes().forEach((n) => {
-        n.classes(
-          networkStore.Network?.Nodes[
-            (n as { [key: string]: any })["_private"]["data"]["id"] as string
-          ].classes
-        );
-      });
+      for (let key in networkStore.Network?.Nodes) {
+        let node = networkStore.Network?.Nodes[key];
+        if (node && node.GetClass("NodeDisplay") !== NodeDisplay.Hidden) {
+          node.ResetClasses();
+        }
+      }
     });
   }
 
@@ -757,29 +710,32 @@ export class ZoneStore {
    */
   public ColorNodesInZone(z: Zone) {
     cy.batch(() => {
-      cy.nodes()
-        .not(".hide")
-        .removeClass(
-          "stronglyProminent weaklyProminent nonProminent liaisons coliaisons"
-        );
-      cy.edges()
-        .not(".hide")
-        .removeClass("sptowp sptosp wptowp wptonp sptonp nptonp blended ");
+      for (const key in networkStore.Network?.Nodes) {
+        const node = networkStore.Network?.Nodes[key];
+        node?.SetClass("NodeProminency", NodeProminency.Blank);
+      }
+
+      for (const key in networkStore.Network?.Edges) {
+        const edge = networkStore.Network?.Edges[key];
+        edge?.SetClass("EdgeType", EdgeType.Blank);
+      }
     });
 
     if (z instanceof EgoZone) {
-      z.InnerCollection.not(".hide").forEach((n) => {
-        n.addClass("weaklyProminent");
+      z.InnerNodes.forEach((n) => {
+        n.SetClass("NodeProminency", NodeProminency.WeaklyProminent);
       });
-
-      z.InnerCollection[0].addClass("stronglyProminent");
+      z.InnerNodes[0].SetClass(
+        "NodeProminency",
+        NodeProminency.StronglyProminent
+      );
 
       z.OutsideNodes[0].forEach((n) => {
-        networkStore.Network?.getNode(n.Id).not(".hide").addClass("liaisons");
+        n.SetClass("NodeProminency", NodeProminency.Liaison);
       });
 
       z.OutsideNodes[1].forEach((n) => {
-        networkStore.Network?.getNode(n.Id).not(".hide").addClass("coliaisons");
+        n.SetClass("NodeProminency", NodeProminency.Coliaison);
       });
 
       this.EdgeColors(z, true);
@@ -803,8 +759,11 @@ export class ZoneStore {
 
       const nodesOutside = cy.nodes().difference(nodesInZones);
 
-      cy.batch(function () {
-        nodesOutside.addClass("hide");
+      nodesOutside.forEach((node) => {
+        networkStore.Network?.Nodes[node.id()].SetClass(
+          "NodeDisplay",
+          NodeDisplay.Hidden
+        );
       });
 
       if (cy.nodes(".hide").length === cy.nodes().length) {
@@ -818,10 +777,13 @@ export class ZoneStore {
         });
       }
     } else {
-      if (cy)
-        cy.batch(function () {
-          cy.nodes().removeClass("hide");
-        });
+      if (cy) {
+        for (const key in networkStore.Network?.Nodes) {
+          const node = networkStore.Network?.Nodes[key];
+
+          node?.SetClass("NodeDisplay", NodeDisplay.Visible);
+        }
+      }
     }
   }
 

@@ -62,6 +62,11 @@ export default class Cytoscape {
             },
           },
           {
+            selector: ".nodeLabelNone",
+            style: {
+            },
+          },
+          {
             selector: ".nodeLabelText",
             style: {
               label: "data(label)"
@@ -132,7 +137,7 @@ export default class Cytoscape {
           {
             selector: ".sptowp",
             style: {
-              "line-color": "orange",
+              "line-color": "rgb(255, 128, 0)",
             },
           },
 
@@ -153,21 +158,68 @@ export default class Cytoscape {
           {
             selector: ".wptonp",
             style: {
-              "line-color": "lime",
+              "line-color": "rgb(128, 255, 0)",
             },
           },
 
           {
             selector: ".sptonp",
             style: {
-              "line-color": "brown",
+              "line-color": "rgb(128, 128, 0)",
             },
           },
 
           {
             selector: ".nptonp",
             style: {
-              "line-color": "green",
+              "line-color": "rgb(0, 255, 0)",
+            },
+          },
+
+          {
+            selector: ".egotoinner",
+            style: {
+              "line-color": "rgb(255, 128, 0)",
+            },
+          }, {
+            selector: ".egotoliaison",
+            style: {
+              "line-color": "rgb(128, 0, 128)",
+            },
+          }, {
+            selector: ".egotocoliaison",
+            style: {
+              "line-color": "rgb(128, 128, 128)",
+            },
+          }, {
+            selector: ".innertoinner",
+            style: {
+              "line-color": "yellow",
+            },
+          }, {
+            selector: ".innertoliaison",
+            style: {
+              "line-color": "rgb(128, 128, 128)",
+            },
+          }, {
+            selector: ".innertocoliaison",
+            style: {
+              "line-color": "rgb(128, 255, 128)",
+            },
+          }, {
+            selector: ".liaisontocoliaison",
+            style: {
+              "line-color": "rgb(0, 128, 255)",
+            },
+          }, {
+            selector: ".liaisontoliaison",
+            style: {
+              "line-color": "blue",
+            },
+          }, {
+            selector: ".coliaisontocoliaison",
+            style: {
+              "line-color": "cyan",
             },
           },
 

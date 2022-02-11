@@ -5,7 +5,6 @@ import { Loader } from "./Loader";
 export class JSONLoader extends Loader {
   public GetNetworkFile(data: any, directed?: boolean): Network {
     const network = new Network([], [], directed);
-    console.log(data);
 
     const d = JSON.parse(data);
 

@@ -31,7 +31,8 @@ export function BasicLayout() {
         onClick={() => {
           switch (layoutRef.current?.value) {
             case "cola":
-              cy.layout({ name: "cola" }).run();
+              //@ts-ignore
+              cy.layout({ name: "cola", nodeSpacing: function (node) { return 20; }, }).run();
               break;
             case "random":
               cy.layout({ name: "random" }).run();
@@ -41,7 +42,10 @@ export function BasicLayout() {
               break;
 
             case "fcose":
-              cy.layout({ name: "fcose" }).run();
+              cy.layout({
+                // @ts-ignore
+                name: "fcose", quality: "default", nodeRepulsion: node => 5500, idealEdgeLength: edge => 100, edgeElasticity: edge => 0.5, numIter: 4000
+              }).run();
               break;
 
             case "euler":

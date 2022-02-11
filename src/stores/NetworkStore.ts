@@ -24,6 +24,8 @@ export class NetworkStore {
   }
 
   public set Network(v: Network | undefined) {
+    console.log(v);
+    
     this.network = v;
     if (v) {
       new Matrix(v).nodesDependency();

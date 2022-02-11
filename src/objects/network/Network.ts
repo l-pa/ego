@@ -1,6 +1,7 @@
 import type Node from "./Node";
 import Edge from "./Edge";
 import { cy } from "../graph/Cytoscape";
+import { networkStore } from "../..";
 
 export default class Network {
   public Nodes: { [id: string]: Node } = {};
@@ -47,26 +48,24 @@ export default class Network {
     return cy.getElementById(nodeId);
   }
 
-  public getEdge(source: number, target: number): cytoscape.EdgeCollection {
-    return cy.$(
-      `edge[source = "${source.toString()}"][target = "${target.toString()}"]`
-    );
+  public getEdge(source: string, target: string): cytoscape.EdgeCollection {
+    return cy.$(`edge[source = "${source}"][target = "${target}"]`);
   }
 
-  public getEdges(source: number): cytoscape.EdgeCollection {
-    return cy.edges(`[source = "${source.toString()}"]`);
+  public getEdges(source: string): cytoscape.EdgeCollection {
+    return cy.edges(`[source = "${source}"]`);
   }
 
   public getEdgeByNodes(nodeAid: string, nodeBid: string): Edge | undefined {
     const id1 = nodeAid + nodeBid;
-    const id2 = nodeBid + nodeAid;
-
     const e1 = this.Edges[id1];
-    const e2 = this.Edges[id2];
-
     if (e1) return e1;
-    else if (e2) return e2;
-    else return undefined;
+
+    if (!networkStore.Network?.Directed) {
+      const id2 = nodeBid + nodeAid;
+      const e2 = this.Edges[id2];
+      if (e2) return e2;
+    }
   }
 
   /**

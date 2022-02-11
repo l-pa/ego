@@ -69,8 +69,6 @@ export const BasicZones: React.FunctionComponent = () => {
     </div>
   ));
 
-  console.log(Zones);
-
   const a = reaction(
     () => zoneStore.Zones,
     (zones) => console.log(zones)
