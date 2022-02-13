@@ -1,7 +1,8 @@
 import type Node from "./Node";
 import Edge from "./Edge";
 import { cy } from "../graph/Cytoscape";
-import { networkStore } from "../..";
+import { networkStore, zoneStore } from "../..";
+import EgoZone from "../zone/EgoZone";
 
 export default class Network {
   public Nodes: { [id: string]: Node } = {};
@@ -24,7 +25,7 @@ export default class Network {
    * NodesLength
    */
   public NodesLength() {
-    return Object.keys(this.Nodes).length;
+    return Object.keys(this.Nodes).length || 0;
   }
 
   /**
@@ -81,5 +82,42 @@ export default class Network {
     this.addNode(nodeB);
     const e = new Edge(nodeA, nodeB, nodeA.Id + nodeB.Id, weight ? weight : 1);
     this.Edges[e.GetId()] = e;
+  }
+
+  /**
+   * GetCurrentZonesParticipation
+   */
+  public GetCurrentZonesParticipation() {
+    const participation: { [key: string]: Set<number> } = {};
+
+    for (let i = 0; i < zoneStore.Zones.length; i++) {
+      const zone = zoneStore.Zones[i] as EgoZone;
+
+      zone.InnerNodes.forEach((n) => {
+        if (participation[n.Id]) {
+          participation[n.Id].add(i);
+        } else {
+          participation[n.Id] = new Set<number>([i]);
+        }
+      });
+
+      zone.OutsideNodes[0].forEach((n) => {
+        if (participation[n.Id]) {
+          participation[n.Id].add(i);
+        } else {
+          participation[n.Id] = new Set<number>([i]);
+        }
+      });
+
+      zone.OutsideNodes[1].forEach((n) => {
+        if (participation[n.Id]) {
+          participation[n.Id].add(i);
+        } else {
+          participation[n.Id] = new Set<number>([i]);
+        }
+      });
+    }
+
+    return participation;
   }
 }

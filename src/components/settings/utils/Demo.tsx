@@ -1,7 +1,7 @@
 import { Button, CheckboxGroup, Stack, Switch } from "@chakra-ui/react";
 import { useEffect } from "react";
-import { settingsStore, zoneStore } from "../../..";
-import { cy } from "../../../objects/graph/Cytoscape";
+import { networkStore, settingsStore, zoneStore } from "../../..";
+import { NMI, OmegaIndex } from "../../../objects/utility/Metrics";
 
 export default function Export() {
     useEffect(() => {
@@ -37,7 +37,12 @@ export default function Export() {
 
         }}>Show dependency only on active edges</Switch>
 
-        <Button>Load ground-truth</Button>
+        <Button onClick={() => {
+            console.log(networkStore.Network?.GetCurrentZonesParticipation());
+            const omega = new OmegaIndex().CalcMetric(networkStore.Network!!.GetCurrentZonesParticipation(), networkStore.Network!!.GetCurrentZonesParticipation())
+            console.log(omega);
+            new NMI().CalcMetric(networkStore.Network!!.GetCurrentZonesParticipation(), networkStore.Network!!.GetCurrentZonesParticipation())
+        }}>Load ground-truth</Button>
 
     </Stack>
     )
