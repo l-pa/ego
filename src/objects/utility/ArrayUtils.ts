@@ -1,5 +1,5 @@
 export let arrayContainsAll = (arr: Array<any>, target: Array<any>) =>
-  target.every((v) => arr.includes(v));
+  target.some((v) => arr.includes(v));
 
 export function combinationsOfTwo(n: Array<any>): Array<any> {
   let retArr: Array<any> = [];

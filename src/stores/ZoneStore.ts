@@ -821,8 +821,8 @@ export class ZoneStore {
     });
   }
 
-  public async SuperzoneOfZone(zone: Zone) {
-    const superzones: Array<Zone> = [];
+  public async SuperzoneOfZone(zone: EgoZone) {
+    const superzones: Array<EgoZone> = [];
 
     cy.nodes()
       .difference(`#${zone.Id}`)
@@ -835,7 +835,7 @@ export class ZoneStore {
           }
         }
       });
-    return this.Filter(superzones);
+    return superzones;
   }
 
   /**

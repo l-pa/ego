@@ -84,12 +84,19 @@ export class OmegaIndex implements IMetric {
       t1Counts[num] = t1Counts[num] ? t1Counts[num] + 1 : 1;
     }
 
-    for (const num of Object.values(t1)) {
+    for (const num of Object.values(t2)) {
       t2Counts[num] = t2Counts[num] ? t2Counts[num] + 1 : 1;
     }
     let exp = 0;
-    for (let i = 0; i < Math.min(K, J) + 1; i++) {
-      exp += (t1Counts[i] * t2Counts[i]) / (N * N);
+
+    if (Object.values(t1).length < Object.values(t2).length) {
+      for (const i of Object.values(t1)) {
+        exp += (t1Counts[i] * t2Counts[i]) / (N * N);
+      }
+    } else {
+      for (const i of Object.values(t2)) {
+        exp += (t1Counts[i] * t2Counts[i]) / (N * N);
+      }
     }
 
     if (exp === 1 && obs === 1) return 1;
@@ -130,9 +137,6 @@ export class NMI implements IMetric {
       inputMatrix.push({ ...networkObject });
       groundMatrix.push({ ...networkObject });
     }
-    console.log(inputNetwork);
-    console.log(noInputCommunities);
-
     for (const [k, v] of Object.entries(inputNetwork)) {
       v.forEach((i) => {
         inputMatrix[i][k] = 1;
@@ -145,38 +149,19 @@ export class NMI implements IMetric {
       });
     }
 
-    let sumConditionalE12 = 0;
-    let sumConditionalE21 = 0;
+    const sumConditionalE12 = this.compareCovers(inputMatrix, groundMatrix);
+    const sumConditionalE21 = this.compareCovers(groundMatrix, inputMatrix);
 
-    for (let i = 0; i < noInputCommunities.size; i++) {
-      const vec1 = Object.values(inputMatrix[i]);
-      let min = 99999999;
+    const entropyX = this.entropy(inputMatrix);
+    const entropyY = this.entropy(groundMatrix);
 
-      for (let j = 0; j < noGroundTruthCommunities.size; j++) {
-        const vec2 = Object.values(groundMatrix[j]);
-        const e = this.conditionalEntropy(vec1, vec2);
-        if (e < min) min = e;
-      }
-      sumConditionalE12 += min;
-    }
+    let i = 0.5 * (entropyX - sumConditionalE12 + entropyY - sumConditionalE21);
 
-    for (let i = 0; i < noGroundTruthCommunities.size; i++) {
-      const vec1 = Object.values(groundMatrix[i]);
-      let min = 99999999;
-
-      for (let j = 0; j < noInputCommunities.size; j++) {
-        const vec2 = Object.values(inputMatrix[j]);
-        const e = this.conditionalEntropy(vec1, vec2);
-        if (e < min) min = e;
-      }
-      sumConditionalE21 += min;
-    }
-
-    return 1;
+    return i / Math.max(entropyX, entropyY);
   }
 
-  private h(w: number, n: number) {
-    return -w * Math.log2(w / n);
+  private h(p: number, n: number) {
+    return -(p / n) * Math.log2(p / n);
   }
 
   private abcd(vec1: Array<number>, vec2: Array<number>) {
@@ -199,40 +184,63 @@ export class NMI implements IMetric {
     return { a: a, b: b, c: c, d: d };
   }
 
-  private compareVectorWithK(vec: number[], k: { [id: string]: number }[]) {
-    for (let i = 0; i < noGroundTruthCommunities.size; i++) {
-      const vec1 = Object.values(groundMatrix[i]);
-      let min = 99999999;
+  private compareCovers(
+    cov: { [id: string]: number }[],
+    refCov: { [id: string]: number }[]
+  ) {
+    let toSum: number[] = [];
 
-      for (let j = 0; j < noInputCommunities.size; j++) {
-        const vec2 = Object.values(inputMatrix[j]);
-        const e = this.conditionalEntropy(vec1, vec2);
-        if (e < min) min = e;
+    for (let i = 0; i < cov.length; i++) {
+      const cover1 = cov[i];
+      let compareValue = 9999;
+
+      for (let j = 0; j < refCov.length; j++) {
+        const cover2 = refCov[j];
+        const res = this.conditionalEntropy(
+          Object.values(cover1),
+          Object.values(cover2)
+        );
+
+        if (res < compareValue) compareValue = res;
       }
-      sumConditionalE21 += min;
+
+      toSum.push(compareValue);
     }
+
+    return toSum.reduce((partialSum, a) => partialSum + a, 0);
   }
 
   private conditionalEntropy(vec1: number[], vec2: number[]) {
     const abcd = this.abcd(vec1, vec2);
     const n = Object.values(vec1).length;
 
-    if (
-      this.h(abcd.a, n) + this.h(abcd.d, n) >=
-      this.h(abcd.b, n) + this.h(abcd.c, n)
-    ) {
-      return -this.h(abcd.b + abcd.d, n) - this.h(abcd.a + abcd.c, n);
+    const entropyA = this.h(abcd.a, n) || 0;
+    const entropyB = this.h(abcd.b, n) || 0;
+    const entropyC = this.h(abcd.c, n) || 0;
+    const entropyD = this.h(abcd.d, n) || 0;
+
+    if (entropyA + entropyD >= entropyC + entropyB) {
+      return (
+        entropyA +
+        entropyB +
+        entropyC +
+        entropyD -
+        (this.h(vec2.filter((x) => x === 1).length, n) +
+          this.h(vec2.filter((x) => x === 0).length, n))
+      );
     } else {
-      return this.h(abcd.c + abcd.d, n) - this.h(abcd.a + abcd.b, n);
+      return this.h(entropyC + entropyD, n) + this.h(entropyA + entropyB, n);
     }
   }
 
   private entropy(input: { [id: string]: number }[]) {
     let sum = 0;
+
     for (let i = 0; i < input.length; i++) {
       const vector = input[i];
       const ones = Object.values(vector).filter((x) => x === 1).length;
       const zeroes = Object.values(vector).filter((x) => x === 0).length;
+
       sum +=
         this.h(ones, Object.values(vector).length) +
         this.h(zeroes, Object.values(vector).length);

@@ -72,12 +72,12 @@ export function ZonesSuperzone() {
               .SuperzoneOfZone(
                 zoneStore.Zones.filter(
                   (z) => z.Id.toString() === e.target.value
-                )[0]
+                )[0] as EgoZone
               )
               .then((res) => {
-                const filtered = zoneStore.Difference(res.zones, zoneStore.Zones);
+                const filtered = zoneStore.Difference(res, zoneStore.Zones);
 
-                if (res.zones.length > 0) {
+                if (res.length > 0) {
                   zoneStore.AddTmpZone(filtered, true);
                   //res[1].forEach((z) => addZone(z));
                 }

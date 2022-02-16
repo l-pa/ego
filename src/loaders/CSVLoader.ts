@@ -14,7 +14,16 @@ export class CSVLoader extends Loader {
       skip_empty_lines: true,
     });
 
-    if (arrayContainsAll(parsed[0], ["source", "target", "value"]))
+    if (
+      arrayContainsAll(parsed[0], [
+        "source",
+        "target",
+        "value",
+        "Source",
+        "Target",
+        "Value",
+      ])
+    )
       parsed.shift();
     if (parsed[2]) {
       parsed.forEach((element: any) => {

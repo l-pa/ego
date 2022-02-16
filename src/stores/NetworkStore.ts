@@ -14,6 +14,7 @@ export class NetworkStore {
   }
   private network: Network | undefined = undefined;
   private loaded: boolean = false;
+  private groundTruth: { [key: string]: Set<number> } = {};
 
   public get Network(): Network | undefined {
     return this.network;
@@ -25,7 +26,7 @@ export class NetworkStore {
 
   public set Network(v: Network | undefined) {
     console.log(v);
-    
+
     this.network = v;
     if (v) {
       new Matrix(v).nodesDependency();
@@ -39,5 +40,13 @@ export class NetworkStore {
 
   public set Loaded(v: boolean) {
     this.loaded = v;
+  }
+
+  public get GroundTruth(): { [key: string]: Set<number> } {
+    return this.groundTruth;
+  }
+
+  public set GroundTruth(v: { [key: string]: Set<number> }) {
+    this.groundTruth = v;
   }
 }
