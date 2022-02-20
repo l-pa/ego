@@ -3,7 +3,7 @@ import Node from "../objects/network/Node";
 import { Loader } from "./Loader";
 
 export class JSONLoader extends Loader {
-  public GetNetworkFile(data: any, directed?: boolean): Network {
+  public GetNetworkFromFile(data: any, directed?: boolean): Network {
     const network = new Network([], [], directed);
 
     const d = JSON.parse(data);
@@ -18,10 +18,10 @@ export class JSONLoader extends Loader {
 
     return network;
   }
-  public async GetNetworkURL(url: string, directed?: boolean) {
+  public async GetNetworkFromURL(url: string, directed?: boolean) {
     return await fetch(url).then((res) => {
       return res.text().then((text) => {
-        return this.GetNetworkFile(text, directed);
+        return this.GetNetworkFromFile(text, directed);
       });
     });
   }

@@ -14,6 +14,7 @@ import { observer, useLocalObservable } from "mobx-react-lite";
 import { useEffect } from "react";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import { cy } from "../../../objects/graph/Cytoscape";
+import { NodeLabel } from "../../../objects/network/Node";
 import Zone from "../../../objects/zone/Zone";
 
 export function BasicNodes() {
@@ -214,11 +215,11 @@ export function BasicNodes() {
   const Label = observer(() => (
 
     <Select defaultValue={settingsStore.NodeLabel} onChange={(e) => {
-      settingsStore.NodeLabel = e.target.value
+      settingsStore.NodeLabel = e.target.value as NodeLabel
     }}>
-      <option value="id">Id</option>
-      <option value="label">Label</option>
-      <option value="none">None</option>
+      <option value={NodeLabel.Id}>Id</option>
+      <option value={NodeLabel.Label}>Label</option>
+      <option value={NodeLabel.None}>None</option>
     </Select>
 
   ));

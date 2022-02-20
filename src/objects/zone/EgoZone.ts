@@ -95,6 +95,8 @@ export default class EgoZone extends Zone {
   }
 
   public set EnableAutomove(enable: boolean) {
+    console.log(enable);
+    
     if (enable) {
       this.automove.enable();
     } else {

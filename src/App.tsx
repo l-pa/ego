@@ -23,6 +23,7 @@ import theme from "./theme";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import { JSONLoader } from "./loaders/JSONLoader";
 import { Loader } from "./loaders/Loader";
+import { GDFLoader } from "./loaders/GDFLoader";
 
 function App() {
   const context = useContext(Context);
@@ -42,7 +43,7 @@ function App() {
                 <Stack>
 
                   <input type="file" id="networkPicker"
-                    accept=".csv,.json" onChange={(event => {
+                    accept=".csv,.json,.gdf" onChange={(event => {
                       const reader = new FileReader()
                       const file = event.target.files
                       if (file)
@@ -61,13 +62,17 @@ function App() {
                             loader = new JSONLoader();
                             break;
 
+                            case 'gdf':
+                              loader = new GDFLoader();
+                              break;
+
                           default:
                             loader = undefined
                             break;
                         }
 
                         if (loader) {
-                        context.network.Network = loader.GetNetworkFile(e.target?.result)
+                          context.network.Network = loader.GetNetworkFromFile(e.target?.result)
                       } else {
                         toast({
                           title: "Unknown file type",
@@ -106,7 +111,7 @@ function App() {
                   variant="outline"
                   onClick={() => {
                     const json = new JSONLoader()
-                    json.GetNetworkURL("https://raw.githubusercontent.com/l-pa/network-app/master/src/networks/karate.json", directed.current?.checked).then(network => {
+                    json.GetNetworkFromURL("https://raw.githubusercontent.com/l-pa/network-app/master/src/networks/karate.json", directed.current?.checked).then(network => {
 
                       context.network.Network = network;
 
@@ -139,7 +144,7 @@ function App() {
                   onClick={() => {
                     const csv = new CSVLoader()
 
-                    csv.GetNetworkURL("https://raw.githubusercontent.com/graphistry/pygraphistry/master/demos/data/lesmiserables.csv", directed.current?.checked).then(network => {
+                    csv.GetNetworkFromURL("https://raw.githubusercontent.com/graphistry/pygraphistry/master/demos/data/lesmiserables.csv", directed.current?.checked).then(network => {
                       // new Matrix(network).nodesDependency();
                       console.log(network);
                     

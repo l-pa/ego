@@ -29,6 +29,10 @@ import euler from 'cytoscape-euler';
 
 // @ts-ignore
 import contextMenus from "cytoscape-context-menus";
+
+// @ts-ignore
+import avsdf from 'cytoscape-avsdf';
+
 import { configure, spy } from "mobx";
 
 interface IStore {
@@ -53,6 +57,8 @@ cytoscape.use(svg);
 cytoscape.use(cise);
 cytoscape.use(fcose);
 cytoscape.use(euler);
+cytoscape.use(coseBilkent);
+cytoscape.use(avsdf);
 
 
 configure({

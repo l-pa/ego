@@ -49,6 +49,7 @@ export default class Edge {
       source: this.NodeA.Id,
       target: this.NodeB.Id,
       edgeType: "",
+      weight: weight,
     };
 
     this.Weight = weight;

@@ -69,7 +69,7 @@ export default class Cytoscape {
           {
             selector: ".nodeLabelText",
             style: {
-              label: "data(label)"
+              label: "data(label)",
             },
           },
           {
@@ -240,7 +240,7 @@ export default class Cytoscape {
           {
             selector: "edge",
             style: {
-              width: 3,
+              width: "data(weight)",
             },
           },
           {

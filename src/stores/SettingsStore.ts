@@ -6,6 +6,7 @@ import { cy } from "../objects/graph/Cytoscape";
 import Export, { ImageType } from "../objects/export/ExportImage";
 import { IExportSettings } from "./IExportSettings";
 import Zone from "../objects/zone/Zone";
+import { NodeLabel } from "../objects/network/Node";
 
 interface IPdfPageExportOptions {
   title?: boolean;
@@ -53,7 +54,7 @@ export class SettingsStore {
   private minNodesZoneShow: number = 1;
   private selectedEdgeBlend: string = "normal";
   private nodeSize: string = "fixed";
-  private nodeLabel: string = "id";
+  private nodeLabel: NodeLabel = NodeLabel.Id;
   private defaultCategory: number = 0;
 
   private filterChanged: boolean = false;
@@ -258,39 +259,16 @@ export class SettingsStore {
     return this.nodeSize;
   }
 
-  public get NodeLabel(): string {
+  public get NodeLabel(): NodeLabel {
     return this.nodeLabel;
   }
 
-  public set NodeLabel(v: string) {
+  public set NodeLabel(v: NodeLabel) {
     this.nodeLabel = v;
 
-    cy.nodes().removeClass("nodeLabelText nodeLabelId nodeLabelNone");
-
-    switch (this.nodeLabel) {
-      case "id":
-        cy.batch(() => {
-          cy.nodes().addClass("nodeLabelId");
-        });
-
-        break;
-
-      case "label":
-        cy.batch(() => {
-          cy.nodes().addClass("nodeLabelText");
-        });
-
-        break;
-
-      case "none":
-        cy.batch(() => {
-          cy.nodes().addClass("nodeLabelNone");
-        });
-
-        break;
-
-      default:
-        break;
+    for (const key in networkStore.Network?.Nodes) {
+      const node = networkStore.Network?.Nodes[key];
+      node?.SetClass("NodeLabel", this.nodeLabel);
     }
   }
 
@@ -302,7 +280,7 @@ export class SettingsStore {
     return this.filterChanged;
   }
 
-  public SetNodeSize(v: string, maxA: number = 80, minA: number = 20) {
+  public SetNodeSize(v: string, maxA: number = 40, minA: number = 20) {
     this.nodeSize = v;
 
     if (this.nodeSize === "fixed") {

@@ -22,34 +22,54 @@ export function BasicLayout() {
         <option value="cise">Cise</option>
         <option value="fcose">Fcose</option>
         <option value="euler">Euler</option>
+        <option value="cose-bilkent">Cose-bilkent</option>
+        <option value="concentric">concentric</option>
+        <option value="avsdf">avsdf </option>
+
 
 
       </Select>
-
       <Button
         isFullWidth={true}
         onClick={() => {
           switch (layoutRef.current?.value) {
             case "cola":
               //@ts-ignore
-              cy.layout({ name: "cola", nodeSpacing: function (node) { return 20; }, }).run();
+              cy.layout({ name: "cola", nodeSpacing: function (node) { return 25; }, edgeLength: function (e) { return 5; } }).run();
+              break;
+            case "avsdf":
+              //@ts-ignore
+              cy.layout({ name: "avsdf", nodeSeparation: 60 }).run();
+              break;
+            case "concentric":
+              //@ts-ignore
+              cy.layout({ name: "concentric" }).run();
+              break;
+            case "cose-bilkent":
+              cy.layout({
+                //@ts-ignore
+                name: "cose-bilkent", nodeRepulsion: 4500, idealEdgeLength: 300, edgeElasticity: 0.4, nestingFactor: 0.5, numIter: 5000, gravityRange: 10,
+                initialEnergyOnIncremental: 0.1
+              }).run();
               break;
             case "random":
               cy.layout({ name: "random" }).run();
               break;
             case "cise":
-              cy.layout({ name: "cise" }).run();
+              //@ts-ignore
+              cy.layout({ name: "cise", animate: true, idealEdgeLength: 500, animationDuration: 1, nodeSeparation: 15, idealInterClusterEdgeLengthCoefficient: 2, allowNodesInsideCircle: false, maxRatioOfNodesInsideCircle: 0.1, springCoeff: 0.15, nodeRepulsion: 3000, gravity: 0.1, gravityRange: 3.8 }).run();
               break;
 
             case "fcose":
               cy.layout({
                 // @ts-ignore
-                name: "fcose", quality: "default", nodeRepulsion: node => 5500, idealEdgeLength: edge => 100, edgeElasticity: edge => 0.5, numIter: 4000
+                name: "fcose", quality: "proof", nodeRepulsion: node => 5500, idealEdgeLength: edge => 100, edgeElasticity: edge => 0.5, numIter: 4000
               }).run();
               break;
 
             case "euler":
-              cy.layout({ name: "euler" }).run();
+              // @ts-ignore
+              cy.layout({ name: "euler", springCoeff: edge => 0.0005, springLength: edge => 120, gravity: -2 }).run();
               break;
             case "stack":
               cy.nodes().forEach((n, i) => {

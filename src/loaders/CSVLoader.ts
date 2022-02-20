@@ -5,7 +5,7 @@ import parse from "csv-parse/lib/sync";
 import { arrayContainsAll } from "../objects/utility/ArrayUtils";
 
 export class CSVLoader extends Loader {
-  public GetNetworkFile(data: any, directed?: boolean): Network {
+  public GetNetworkFromFile(data: any, directed?: boolean): Network {
     const network = new Network([], [], directed);
 
     const parsed = parse(data, {
@@ -42,13 +42,13 @@ export class CSVLoader extends Loader {
     return network;
   }
 
-  public async GetNetworkURL(
+  public async GetNetworkFromURL(
     url: string,
     directed?: boolean
   ): Promise<Network> {
     return await fetch(url).then((res) =>
       res.text().then((text) => {
-        return this.GetNetworkFile(text, directed);
+        return this.GetNetworkFromFile(text, directed);
       })
     );
   }

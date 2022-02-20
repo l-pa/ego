@@ -98,7 +98,8 @@ export class OmegaIndex implements IMetric {
         exp += (t1Counts[i] * t2Counts[i]) / (N * N);
       }
     }
-
+    console.log(obs, exp);
+    
     if (exp === 1 && obs === 1) return 1;
     else return (obs - exp) / (1 - exp);
   }

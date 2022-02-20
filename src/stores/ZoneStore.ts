@@ -1,4 +1,12 @@
-import { makeAutoObservable, reaction } from "mobx";
+import {
+  action,
+  computed,
+  makeAutoObservable,
+  makeObservable,
+  observable,
+  reaction,
+  spy,
+} from "mobx";
 import EgoZone from "../objects/zone/EgoZone";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { cy } from "../objects/graph/Cytoscape";
@@ -55,14 +63,14 @@ export class ZoneStore {
    */
 
   public AddTmpZone(zonesToAdd: Zone[], draw: boolean = false) {
-    this.tmpZones.forEach((z) => {
+    this.TmpZones.forEach((z) => {
       z.HideZone();
     });
 
     zonesToAdd
-      .filter((x) => !this.tmpZones.some((y) => y.Id === x.Id))
+      .filter((x) => !this.TmpZones.some((y) => y.Id === x.Id))
       .forEach((zone) => {
-        this.tmpZones.push(zone);
+        this.TmpZones.push(zone);
       });
 
     zonesToAdd = this.Difference(zonesToAdd, this.zones);
@@ -89,7 +97,7 @@ export class ZoneStore {
    */
 
   public RemoveTmpZone(z: Zone) {
-    this.tmpZones.splice(this.tmpZones.indexOf(z), 1);
+    this.TmpZones.splice(this.TmpZones.indexOf(z), 1);
   }
 
   /**
@@ -97,10 +105,10 @@ export class ZoneStore {
    * @public
    */
   public ClearTmpZones() {
-    this.tmpZones.forEach((z) => {
+    this.TmpZones.forEach((z) => {
       z.DeleteZone();
     });
-    this.tmpZones.length = 0;
+    this.TmpZones.length = 0;
   }
 
   /**
@@ -136,8 +144,6 @@ export class ZoneStore {
    * MaxOverlapZones
    */
   public OverlapZones(tmpZones: EgoZone[]) {
-    console.log(tmpZones);
-
     let egos: NodeCollection = cy.collection();
     let aaa = true;
     let intersect = cy.collection();
@@ -452,7 +458,7 @@ export class ZoneStore {
     } else {
       console.log("B");
 
-      const filter = zoneStore.Filter(this.tmpZones);
+      const filter = zoneStore.Filter(this.TmpZones);
 
       filter.zones.forEach((z) => z.DrawZone());
       filter.filtered.forEach((z) => z.HideZone());
@@ -467,7 +473,7 @@ export class ZoneStore {
    */
 
   public UpdateTmp() {
-    const filter = zoneStore.Filter(this.tmpZones);
+    const filter = zoneStore.Filter(this.TmpZones);
 
     filter.zones.forEach((z) => z.DrawZone());
 
@@ -790,9 +796,13 @@ export class ZoneStore {
   /**
    * SubzonesOfZone
    */
-  public SubzonesOfZone(zone: Zone[]) {
+  public SubzonesOfZone(
+    zone: Zone[],
+    exceptEgos: NodeCollection = cy.collection()
+  ) {
     return new Promise<EgoZone[]>((res) => {
       const subzones: Array<EgoZone> = [];
+
       let egosCollection = cy.collection();
       let zonesCollection = cy.collection();
 
@@ -808,29 +818,40 @@ export class ZoneStore {
         }
       });
 
-      zonesCollection.difference(egosCollection).forEach((node) => {
-        const n = networkStore.Network?.Nodes[node.data("id")];
-        if (n) {
-          const newZone = new EgoZone(n);
-          if (newZone.AllCollection.subtract(zonesCollection).length === 0) {
-            subzones.push(newZone);
+      zonesCollection
+        .difference(exceptEgos)
+        .difference(egosCollection)
+        .forEach((node) => {
+          const n = networkStore.Network?.Nodes[node.data("id")];
+          if (n) {
+            const newZone = new EgoZone(n);
+            if (
+              newZone.AllCollection.difference(zonesCollection).length === 0
+            ) {
+              subzones.push(newZone);
+            }
           }
-        }
-      });
+        });
       res(subzones);
     });
   }
 
-  public async SuperzoneOfZone(zone: EgoZone) {
+  public async SuperzoneOfZone(
+    zone: EgoZone,
+    exceptEgos: NodeCollection = cy.collection()
+  ) {
     const superzones: Array<EgoZone> = [];
 
     cy.nodes()
+      .difference(exceptEgos)
       .difference(`#${zone.Id}`)
       .forEach((node) => {
         const n = networkStore.Network?.Nodes[node.data("id")];
         if (n) {
           const newZone = new EgoZone(n);
-          if (zone.AllCollection.subtract(newZone.AllCollection).length === 0) {
+          if (
+            zone.AllCollection.difference(newZone.AllCollection).length === 0
+          ) {
             superzones.push(newZone);
           }
         }

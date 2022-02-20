@@ -9,7 +9,6 @@ import { action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 import { zoneStore } from "../../..";
-import { cy } from "../../../objects/graph/Cytoscape";
 import EgoZone from "../../../objects/zone/EgoZone";
 import { ZoneItem } from "../../ZoneItem";
 
@@ -63,9 +62,6 @@ export function ZonesIntersect() {
   const Zones = observer(() => (
     <Stack>
       <Button onClick={() => {
-        let tmpZone: EgoZone | undefined = undefined
-        let size = 0
-
         let c = 0
         let z: EgoZone | undefined = undefined
 

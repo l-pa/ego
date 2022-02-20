@@ -128,9 +128,12 @@ export default class Node {
     value: NodeProminency | NodeDisplay | NodeLabel
   ) {
     this.classes[type] = value;
-
-    networkStore.Network?.getNode(this.Id).classes(
-      Object.values(this.classes).join(" ")
+    const node = networkStore.Network?.getNode(this.Id);
+    node!!.classes(Object.values(this.classes).join(" "));
+    // TODO - add settings
+    node!!.style(
+      "font-size",
+      (Number.parseInt(node!!.style("height")) - 10).toString() + "px"
     );
   }
 
