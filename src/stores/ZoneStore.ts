@@ -1,29 +1,14 @@
-import {
-  action,
-  computed,
-  makeAutoObservable,
-  makeObservable,
-  observable,
-  reaction,
-  spy,
-} from "mobx";
+import { makeAutoObservable, reaction } from "mobx";
 import EgoZone from "../objects/zone/EgoZone";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { cy } from "../objects/graph/Cytoscape";
-import {
-  ClassNames,
-  Collection,
-  EdgeSingular,
-  NodeCollection,
-  NodeSingular,
-} from "cytoscape";
+import { Collection, EdgeSingular, NodeCollection } from "cytoscape";
 import Zone from "../objects/zone/Zone";
 import CustomZone from "../objects/zone/CustomZone";
 import { createStandaloneToast } from "@chakra-ui/react";
 import Filter, {
   DuplicatesByEgo,
   DuplicatesByZoneProperties,
-  FilterExceptZones,
   ZoneSize,
 } from "../objects/zone/Filter";
 import { SortByEnum } from "./SettingsStore";
@@ -40,7 +25,7 @@ export class ZoneStore {
     makeAutoObservable(this);
 
     reaction(
-      () => this.tmpZones.slice(),
+      () => this.TmpZones.slice(),
       () => {
         this.ColorNodesInZones(this.tmpZones);
       }

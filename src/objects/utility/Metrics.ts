@@ -1,6 +1,4 @@
-import { networkStore, zoneStore } from "../..";
-import Network from "../network/Network";
-import EgoZone from "../zone/EgoZone";
+import { networkStore } from "../..";
 import { combinationsOfTwo } from "./ArrayUtils";
 
 export interface IMetric {
@@ -10,9 +8,10 @@ export interface IMetric {
   ): number;
 }
 
-export const intersectSet = (set1: Set<any>, set2: Set<any>) => {
+export const intersectSet = (set1: Set<number>, set2: Set<number>) => {
   try {
-    return [...set1].filter((num) => set2.has(num)).length;
+    const set2Arr = Array.from(set2);
+    return Array.from(set1).filter((num) => set2Arr.includes(num)).length;
   } catch (error) {
     return 0;
   }
@@ -23,36 +22,44 @@ export class OmegaIndex implements IMetric {
     inputNetwork: { [key: string]: Set<number> },
     groundTruth: { [key: string]: Set<number> }
   ): number {
+    console.log("Input", inputNetwork);
+    console.log("Ground", groundTruth);
+
     let N = 0;
     let t1: { [key: string]: number } = {};
+    let t2: { [key: string]: number } = {};
     let J = 0;
+    let K = 0;
 
-    for (const comb of combinationsOfTwo(
-      Object.keys(networkStore.Network!!.Nodes)
-    )) {
+    const nodes = new Set<string>();
+
+    for (const key in inputNetwork) {
+      nodes.add(key);
+    }
+
+    for (const key in groundTruth) {
+      nodes.add(key);
+    }
+
+    for (const comb of combinationsOfTwo(Array.from(nodes))) {
       N += 1;
       const intersectLength = intersectSet(
         inputNetwork[comb[0]],
         inputNetwork[comb[1]]
       );
 
-      t1[String(comb)] = intersectLength;
+      t1[comb] = intersectLength;
       if (J < intersectLength) {
         J = intersectLength;
       }
     }
 
-    let t2: { [key: string]: number } = {};
-    let K = 0;
-
-    for (const comb of combinationsOfTwo(
-      Object.keys(networkStore.Network!!.Nodes)
-    )) {
+    for (const comb of combinationsOfTwo(Array.from(nodes))) {
       const intersectLength = intersectSet(
         groundTruth[comb[0]],
         groundTruth[comb[1]]
       );
-      t2[String(comb)] = intersectLength;
+      t2[comb] = intersectLength;
 
       if (K < intersectLength) {
         K = intersectLength;
@@ -87,19 +94,15 @@ export class OmegaIndex implements IMetric {
     for (const num of Object.values(t2)) {
       t2Counts[num] = t2Counts[num] ? t2Counts[num] + 1 : 1;
     }
+
     let exp = 0;
 
-    if (Object.values(t1).length < Object.values(t2).length) {
-      for (const i of Object.values(t1)) {
-        exp += (t1Counts[i] * t2Counts[i]) / (N * N);
-      }
-    } else {
-      for (const i of Object.values(t2)) {
-        exp += (t1Counts[i] * t2Counts[i]) / (N * N);
-      }
+    for (let i = 0; i < Math.min(J, K) + 1; i++) {
+      exp += (t1Counts[i] * t2Counts[i]) / (N * N);
     }
-    console.log(obs, exp);
-    
+
+    // console.log(J, K, N, obs, exp);
+
     if (exp === 1 && obs === 1) return 1;
     else return (obs - exp) / (1 - exp);
   }
@@ -114,18 +117,20 @@ export class NMI implements IMetric {
     const groundMatrix: { [id: string]: number }[] = [];
     const networkObject: { [id: string]: number } = {};
 
-    const noInputCommunities = new Set<number>();
+    const noInputCommunitiesI = new Set<number>();
+    const noInputCommunitiesG = new Set<number>();
+
     const noGroundTruthCommunities = new Set<number>();
 
     Object.values(inputNetwork).forEach((s) => {
       s.forEach((v) => {
-        noInputCommunities.add(v);
+        noInputCommunitiesI.add(v);
       });
     });
 
     Object.values(groundTruth).forEach((s) => {
       s.forEach((v) => {
-        noGroundTruthCommunities.add(v);
+        noInputCommunitiesG.add(v);
       });
     });
 
@@ -134,10 +139,14 @@ export class NMI implements IMetric {
       if (node) networkObject[node.Id] = 0;
     }
 
-    for (let i = 0; i < noInputCommunities.size; i++) {
+    for (let i = 0; i < noInputCommunitiesI.size; i++) {
       inputMatrix.push({ ...networkObject });
+    }
+
+    for (let i = 0; i < noInputCommunitiesG.size; i++) {
       groundMatrix.push({ ...networkObject });
     }
+
     for (const [k, v] of Object.entries(inputNetwork)) {
       v.forEach((i) => {
         inputMatrix[i][k] = 1;
@@ -161,20 +170,30 @@ export class NMI implements IMetric {
     return i / Math.max(entropyX, entropyY);
   }
 
+  private H(x: number, n: number) {
+    if (x === 0 || n === 0) return 0;
+    return -x * Math.log2(x / n);
+  }
+
   private h(p: number, n: number) {
-    return -(p / n) * Math.log2(p / n);
+    if (p === 0) return 0;
+    return -p * Math.log2(p);
   }
 
   private abcd(vec1: Array<number>, vec2: Array<number>) {
-    if (vec1.length !== vec2.length) throw new Error("Different length");
+    const itLength = vec1.length > vec2.length ? vec1.length : vec2.length;
+
     let a = 0,
       b = 0,
       c = 0,
       d = 0;
 
-    for (let i = 0; i < vec1.length; i++) {
-      const e1 = vec1[i];
-      const e2 = vec2[i];
+    for (let i = 0; i < itLength; i++) {
+      let e1 = 0;
+      let e2 = 0;
+      if (i < vec1.length) e1 = vec1[i];
+
+      if (i < vec2.length) e2 = vec2[i];
 
       if (e1 === 0 && e2 === 0) a += 1;
       if (e1 === 0 && e2 === 1) b += 1;
@@ -215,22 +234,29 @@ export class NMI implements IMetric {
     const abcd = this.abcd(vec1, vec2);
     const n = Object.values(vec1).length;
 
-    const entropyA = this.h(abcd.a, n) || 0;
-    const entropyB = this.h(abcd.b, n) || 0;
-    const entropyC = this.h(abcd.c, n) || 0;
-    const entropyD = this.h(abcd.d, n) || 0;
+    const entropyA = this.H(abcd.a, n) || 0;
+    const entropyB = this.H(abcd.b, n) || 0;
+    const entropyC = this.H(abcd.c, n) || 0;
+    const entropyD = this.H(abcd.d, n) || 0;
 
-    if (entropyA + entropyD >= entropyC + entropyB) {
+    if (
+      this.h(abcd.a, n) + this.h(abcd.d, n) >=
+      this.h(abcd.c, n) + this.h(abcd.b, n)
+    ) {
       return (
         entropyA +
         entropyB +
         entropyC +
         entropyD -
-        (this.h(vec2.filter((x) => x === 1).length, n) +
-          this.h(vec2.filter((x) => x === 0).length, n))
+        (this.H(vec2.filter((x) => x === 1).length, n) +
+          this.H(vec2.filter((x) => x === 0).length, n))
       );
     } else {
-      return this.h(entropyC + entropyD, n) + this.h(entropyA + entropyB, n);
+      // return this.H(entropyC + entropyD, n) + this.H(entropyA + entropyB, n);
+      return (
+        this.H(vec1.filter((x) => x === 1).length, n) +
+        this.H(vec1.filter((x) => x === 0).length, n)
+      );
     }
   }
 
@@ -243,8 +269,8 @@ export class NMI implements IMetric {
       const zeroes = Object.values(vector).filter((x) => x === 0).length;
 
       sum +=
-        this.h(ones, Object.values(vector).length) +
-        this.h(zeroes, Object.values(vector).length);
+        this.H(ones, Object.values(vector).length) +
+        this.H(zeroes, Object.values(vector).length);
     }
     return sum;
   }

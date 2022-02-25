@@ -94,6 +94,10 @@ export class SettingsStore {
     return this.defaultCategory;
   }
 
+  public set DefaultSettingsCategory(i: number) {
+    this.defaultCategory = i;
+  }
+
   public get TrackZonesExport(): boolean {
     return this.trackZonesExport;
   }

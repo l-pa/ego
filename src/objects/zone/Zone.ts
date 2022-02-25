@@ -49,7 +49,6 @@ export default abstract class Zone {
 
     makeObservable<this, "isDrawn">(this, {
       isDrawn: observable,
-      IsDrawn: computed,
     });
   }
 
