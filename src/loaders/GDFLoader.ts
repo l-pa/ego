@@ -3,8 +3,15 @@ import Node from "../objects/network/Node";
 import { Loader } from "./Loader";
 
 export class GDFLoader extends Loader {
-  public GetNetworkFromURL(url: string, directed?: boolean): Promise<Network> {
-    throw new Error("Method not implemented.");
+  public async GetNetworkFromURL(
+    url: string,
+    directed?: boolean
+  ): Promise<Network> {
+    return await fetch(url).then((res) =>
+      res.text().then((text) => {
+        return this.GetNetworkFromFile(text, directed);
+      })
+    );
   }
   public GetNetworkFromFile(data: any, directed?: boolean): Network {
     const network = new Network([], [], directed);

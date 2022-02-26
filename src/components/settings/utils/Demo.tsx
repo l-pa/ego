@@ -1,5 +1,5 @@
 import { Button, CheckboxGroup, Heading, Input, Stack, Switch, Text } from "@chakra-ui/react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import parse from "csv-parse/lib/sync";
 import { NMI, OmegaIndex } from "../../../objects/utility/Metrics";
@@ -35,16 +35,19 @@ export default function Export() {
     }
 
     const calcEgoMetrics = async () => {
-        let tmpZone: EgoZone[] = zoneStore.Zones as EgoZone[]
+        let tmpZone: EgoZone[] = []
 
-        // for (const key in networkStore.Network?.Nodes) {
-        //     const node = networkStore.Network?.Nodes[key];
-        //     if (node)
-        //         tmpZone.push(new EgoZone(node))
-        // }
+        for (const key in networkStore.Network?.Nodes) {
+            const node = networkStore.Network?.Nodes[key];
+            if (node)
+                tmpZone.push(new EgoZone(node))
+        }
 
         const allZonesCopy = [...tmpZone]
         tmpZone = new DuplicatesByEgo().FilterWithParams(tmpZone, { duplicates: "me" }) as EgoZone[]
+
+        console.log(tmpZone);
+
 
         const duplicates = zoneStore.Difference(allZonesCopy, new DuplicatesByEgo().FilterWithParams(allZonesCopy, { duplicates: "de" }))
         const multiego = zoneStore.Difference(allZonesCopy, new DuplicatesByEgo().FilterWithParams(allZonesCopy, { duplicates: "me" }))
@@ -54,6 +57,9 @@ export default function Export() {
         multiego.forEach((e) => {
             exceptEgos = exceptEgos.add(cy.nodes(`#${(e as EgoZone).Ego.Id}`))
         })
+
+        console.log(exceptEgos);
+
 
         let maxZoneSize = -1
         let minZoneSize = 9999999
@@ -81,7 +87,7 @@ export default function Export() {
 
         let maxSubzoneCount = -1
         let minSubzoneCount = 999999
-        let avgSubzoneCount = 0
+        let avgSubzoneSum = 0
 
         let maxSuperzoneSize = -1
         let minSuperzoneSize = 999999
@@ -101,10 +107,16 @@ export default function Export() {
         let minEmbededdness = 999999
         let avgEmbededdness = 0
 
+        let subzonesCount = 0
+        let subzonesSizesSum = 0
+
+        let superzonesCount = 0
+        let superzonesSizesSum = 0
+
         avgDegree = cy.nodes().totalDegree(false) / cy.nodes().length
 
 
-        await tmpZone.forEach(z => {
+        await tmpZone.forEach(async (z) => {
             if (z.AllCollection.length > maxZoneSize)
                 maxZoneSize = z.AllCollection.length
             if (z.AllCollection.length < minZoneSize)
@@ -139,7 +151,9 @@ export default function Export() {
 
 
 
-            zoneStore.SubzonesOfZone([z], exceptEgos).then(zones => {
+
+
+            await zoneStore.SubzonesOfZone([z], exceptEgos).then(zones => {
 
                 const sorted = zones.sort((b: EgoZone, a: EgoZone) =>
                     a.AllCollection.length - b.AllCollection.length
@@ -152,10 +166,11 @@ export default function Export() {
                         minSubzoneSize = sorted[sorted.length - 1].AllCollection.length
 
                     sorted.forEach(sortedZone => {
-                        avgSubzoneSize += sortedZone.AllCollection.length
+                        subzonesSizesSum += sortedZone.AllCollection.length
+                        subzonesCount++
                     })
-                    avgSubzoneSize /= tmpZone.length
                 }
+
 
                 if (zones.length > maxSubzoneCount) {
                     maxSubzoneCount = zones.length
@@ -164,10 +179,14 @@ export default function Export() {
                     minSubzoneCount = zones.length
                 }
 
-                avgSubzoneCount += (zones.length / tmpZone.length)
             })
 
-            zoneStore.SuperzoneOfZone(z, exceptEgos).then(zones => {
+
+
+
+
+
+            await zoneStore.SuperzoneOfZone(z, exceptEgos).then(zones => {
                 const sorted = zones.sort((b: EgoZone, a: EgoZone) =>
                     a.AllCollection.length - b.AllCollection.length
                 )
@@ -179,19 +198,17 @@ export default function Export() {
                         minSuperzoneSize = sorted[sorted.length - 1].AllCollection.length
 
                     sorted.forEach(sortedZone => {
-                        avgSuperzoneSize += sortedZone.AllCollection.length
+                        superzonesSizesSum += sortedZone.AllCollection.length
+                        superzonesCount++
                     })
-                    avgSuperzoneSize /= tmpZone.length
                 }
+
                 if (zones.length > maxSuperzoneCount) {
                     maxSuperzoneCount = zones.length
                 }
                 if (zones.length < minSuperzoneCount) {
                     minSuperzoneCount = zones.length
                 }
-                console.log(z.Id, zones.length);
-
-                avgSuperzoneCount += (zones.length / tmpZone.length)
             })
 
 
@@ -212,14 +229,19 @@ export default function Export() {
         })
 
 
-        console.log(duplicates);
-        console.log(multiego);
-
         let maxDuplicateZoneSize = -1
         let minDuplicateZoneSize = 9999999999
         let avgDuplicateZoneSize = 0
 
-        duplicates.forEach(d => {
+        let maxEgoZoneSize = -1
+        let minEgoZoneSize = 999999999
+        let avgEgoZoneSize = 0
+
+        let globalWeaklyProminentLength = 0
+        let globalStronglyProminentLength = 0
+        let globalProminentLength = 0
+
+        await duplicates.forEach(d => {
             if (d.AllCollection.length > maxDuplicateZoneSize) {
                 maxDuplicateZoneSize = d.AllCollection.length
             }
@@ -235,11 +257,7 @@ export default function Export() {
         avgDuplicateZoneSize /= duplicates.length
 
 
-        let maxEgoZoneSize = -1
-        let minEgoZoneSize = 999999999
-        let avgEgoZoneSize = 0
-
-        multiego.forEach(d => {
+        await multiego.forEach(d => {
             if (d.AllCollection.length > maxEgoZoneSize) {
                 maxEgoZoneSize = d.AllCollection.length
             }
@@ -252,10 +270,6 @@ export default function Export() {
         avgEgoZoneSize /= multiego.length
 
 
-
-        let globalWeaklyProminentLength = 0
-        let globalStronglyProminentLength = 0
-        let globalProminentLength = 0
 
         for (const key in networkStore.Network?.Nodes) {
             const node = networkStore.Network?.Nodes[key];
@@ -270,64 +284,76 @@ export default function Export() {
                 globalProminentLength++
         }
 
+
+
+
         let maxZoneOverlapSize = -1
         let minZoneOverlapSize = 99999
         let avgZoneOverlapSize = 0
 
-        await tmpZone.forEach(z1 => {
+        let zoneOverlapZonesCount = 0
+        let avgZoneOverlapZonesSize = 0
 
-            let subzoneCount = 0
-            let superzoneCount = 0
-            let duplicatesCount = 0
+
+        let maxZoneOverlapCount = -1
+        let minZoneOverlapCount = 99999
+        let avgZoneOverlapCount = 0
+
+        console.log(multiego);
+
+        await tmpZone.forEach(z1 => {
+            let superZonesCount = 0
+            let subZonesCount = 0
             let overlapCount = 0
+            let alternativeCount = 0
+
 
             tmpZone.forEach(z2 => {
+
                 if (z1.Id !== z2.Id) {
 
                     const i = z1.AllCollection.intersect(z2.AllCollection)
-                    if (i.length > 0) {
 
+                    if (i.length === 0)
+                        return
+
+                    if (i.length > 0) {
                         if (z1.AllCollection.length > z2.AllCollection.length) {
                             if (i.length === z2.AllCollection.length) {
-                                subzoneCount++
-                            } else {
-                                overlapCount++
+                                subZonesCount++
                             }
+                            // overlapCount++
+                            // avgZoneOverlapSize += i.length
                         }
                         else if (z1.AllCollection.length < z2.AllCollection.length) {
                             if (i.length === z1.AllCollection.length) {
-                                superzoneCount++
-                            } else {
-                                overlapCount++
+                                superZonesCount++
                             }
-                        } else if (i.length === z1.AllCollection.length) {
-                            duplicatesCount++
-                        } else {
-                            overlapCount++
+                            // overlapCount++
+                            // avgZoneOverlapSize += i.length
+                        } else if (i.length === z2.AllCollection.length) {
+                            alternativeCount++
                         }
+                        overlapCount++
+                        avgZoneOverlapSize += i.length
+
+                        i.forEach(n => {
+                            const e = new EgoZone(networkStore.Network!!.Nodes[n.data("id")])
+
+                            if (e.AllCollection.difference(i).length === 0) {
+                                zoneOverlapZonesCount++
+                                avgZoneOverlapZonesSize += e.AllCollection.length
+                            }
+                        })
                     }
                 }
             })
 
-            if (maxZoneOverlapSize < overlapCount) {
-                maxZoneOverlapSize = overlapCount
-            }
+            avgZoneOverlapCount += overlapCount
 
-            if (minZoneOverlapSize > overlapCount) {
-                minZoneOverlapSize = overlapCount
-            }
-
-            avgZoneOverlapSize += overlapCount
-
-
-            // console.log(z1.Id, superzoneCount, subzoneCount, duplicatesCount, overlapCount);
-
+            // console.log(z1.Ego.Id, subZonesCount, superZonesCount, overlapCount, zoneOverlapZonesCount, avgZoneOverlapZonesSize);
         })
 
-        avgZoneOverlapSize /= tmpZone.length
-
-
-        // avgZoneOverlapSize /= tmpZone.length
         avgZoneSize /= tmpZone.length
         avgZoneInnerSize /= tmpZone.length
         avgZoneOuterSize /= tmpZone.length
@@ -335,69 +361,15 @@ export default function Export() {
         avgZoneOuterCoLiasonsSize /= tmpZone.length
         avgEmbededdness /= tmpZone.length
 
-
-        const res = {
-            maxZoneSize,
-            minZoneSize,
-            avgZoneSize,
-
-            maxZoneInnerSize,
-            minZoneInnerSize,
-            avgZoneInnerSize,
-
-            maxZoneOuterSize,
-            minZoneOuterSize,
-            avgZoneOuterSize,
-
-            maxZoneOuterLiasonsSize,
-            minZoneOuterLiasonsSize,
-            avgZoneOuterLiasonsSize,
-
-            maxZoneOuterCoLiasonsSize,
-            minZoneOuterCoLiasonsSize,
-            avgZoneOuterCoLiasonsSize
-            ,
-            maxSubzoneSize,
-            minSubzoneSize,
-            avgSubzoneSize,
-
-            maxSuperzoneSize,
-            minSuperzoneSize,
-            avgSuperzoneSize,
-
-            simpleZoneLength,
-            dyadZoneLength,
-            tryadZoneLength,
-
-            maxEmbededdness,
-            minEmbededdness,
-            avgEmbededdness,
-
-            maxDuplicateZoneSize,
-            minDuplicateZoneSize,
-            avgDuplicateZoneSize,
-
-            maxEgoZoneSize,
-            minEgoZoneSize,
-            avgEgoZoneSize,
-
-            globalWeaklyProminentLength,
-            globalStronglyProminentLength,
-            globalProminentLength,
-            maxZoneOverlapSize,
-            minZoneOverlapSize,
-            avgZoneOverlapSize,
-
-            maxSubzoneCount,
-            minSubzoneCount,
-            avgSubzoneCount,
-            maxSuperzoneCount,
-            minSuperzoneCount,
-            avgSuperzoneCount,
-            avgDegree
+        const res2 = {
+            avgDegree,
+            globalStronglyProminentLength, globalWeaklyProminentLength, globalProminentLength,
+            zonesLength: tmpZone.length, avgZoneSize, avgZoneInnerSize, avgZoneOuterSize, subzonesCount,
+            avgSubzoneSize: subzonesSizesSum / subzonesCount, superzonesCount, avgSuperzoneSize: superzonesSizesSum / superzonesCount,
+            avgOverlapZonesSize: avgZoneOverlapZonesSize / zoneOverlapZonesCount, zoneOverlapZonesCount
         }
 
-        console.log(res);
+        console.table(res2);
     }
 
     const GroundTruthButton = observer(() =>
@@ -475,6 +447,8 @@ export default function Export() {
 
                             });
                             networkStore.GroundTruth = participation
+                            console.log(participation);
+
                         }
                         reader.onerror = function () {
                             console.log(reader.error);
@@ -483,7 +457,12 @@ export default function Export() {
                 }
                 } />
 
-                <Text as='samp'>"node_id", community number</Text>
+                <Text as='samp'>community number,"node_id"</Text>
+                <Text as='samp'>community number,"node_id"</Text>
+                <Text as='samp'>community number,"node_id"</Text>
+                <Text as='samp'>.</Text>
+                <Text as='samp'>.</Text>
+                <Text as='samp'>.</Text>
 
             </Stack>
         </Stack>

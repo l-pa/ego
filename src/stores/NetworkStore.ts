@@ -22,6 +22,8 @@ export class NetworkStore {
 
   public Desctructor() {
     this.network = undefined;
+    this.groundTruth = {};
+    this.loaded = false;
   }
 
   public set Network(v: Network | undefined) {

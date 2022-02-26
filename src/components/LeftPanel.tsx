@@ -181,13 +181,12 @@ export const LeftPanel: React.FunctionComponent = () => {
         >
           Export
         </Button>
-      </Stack>
       <Stack
         display="flex"
         flexDirection="row"
         justifyContent="space-around"
         alignItems="center"
-      >
+        >
       </Stack>
       <Divider />
       <Button
@@ -197,9 +196,10 @@ export const LeftPanel: React.FunctionComponent = () => {
         onClick={() => {
           setActiveButton(9);
         }}
-      >
+        >
         Demo mode
       </Button>
+      </Stack>
     </Stack>
   );
 };

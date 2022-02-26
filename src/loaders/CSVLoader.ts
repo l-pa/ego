@@ -3,6 +3,7 @@ import Network from "../objects/network/Network";
 import Node from "../objects/network/Node";
 import parse from "csv-parse/lib/sync";
 import { arrayContainsAll } from "../objects/utility/ArrayUtils";
+import { networkStore } from "..";
 
 export class CSVLoader extends Loader {
   public GetNetworkFromFile(data: any, directed?: boolean): Network {
@@ -51,5 +52,24 @@ export class CSVLoader extends Loader {
         return this.GetNetworkFromFile(text, directed);
       })
     );
+  }
+
+  public async LoadGroundTruth(text: string) {
+    const parsed = parse(text, {
+      delimiter: ",",
+      columns: false,
+      skip_empty_lines: true,
+    });
+
+    const participation: { [key: string]: Set<number> } = {};
+
+    parsed.forEach((row: string[]) => {
+      if (participation[row[1]]) {
+        participation[row[1]].add(parseInt(row[0]));
+      } else {
+        participation[row[1]] = new Set<number>([parseInt(row[0])]);
+      }
+    });
+    networkStore.GroundTruth = participation;
   }
 }

@@ -141,6 +141,56 @@ function App() {
                   isFullWidth
                   rightIcon={<ArrowForwardIcon />}
                   variant="outline"
+                  height={"fit-content"}
+                  onClick={async () => {
+                    const gdf = new GDFLoader()
+                    await gdf.GetNetworkFromURL("https://raw.githubusercontent.com/l-pa/ego/dev/src/networks/karate_weighted.gdf", directed.current?.checked).then(async (network) => {
+
+                      context.network.Network = network;
+
+                      console.log(network);
+                      console.log(Object.keys(network.Nodes));
+
+                      await fetch("https://raw.githubusercontent.com/l-pa/ego/dev/src/networks/karate_ground_truth_c.csv").then((res) =>
+                        res.text().then((text) => {
+                          new CSVLoader().LoadGroundTruth(text)
+
+                          toast({
+                            title: "Ground truth.",
+                            description: `Success`,
+                            status: "success",
+                            duration: 5000,
+                            isClosable: true,
+                          });
+                        })
+                      );
+
+                      toast({
+                        title: "Network loaded.",
+                        description: `${"KARATE"} - ${network.NodesLength()
+                          } nodes - ${network.EdgesLength()} egdes -  ${network.Directed ? "✅" : "❌"
+                          } directed`,
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                      });
+                    })
+                  }}
+                >
+
+                  {
+                    <Stack mb={1}>
+                      <Text>Karate club</Text>
+                      <Text as={"small"}>(weighted version + ground truth)</Text>
+                    </Stack>
+                  }
+                </Button>
+
+                <Button
+                  mt={5}
+                  isFullWidth
+                  rightIcon={<ArrowForwardIcon />}
+                  variant="outline"
                   onClick={() => {
                     const csv = new CSVLoader()
 

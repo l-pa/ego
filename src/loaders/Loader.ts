@@ -7,3 +7,4 @@ export abstract class Loader {
   ): Promise<Network>;
   public abstract GetNetworkFromFile(data: any, directed?: boolean): Network;
 }
+
