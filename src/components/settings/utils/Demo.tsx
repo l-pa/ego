@@ -366,8 +366,12 @@ export default function Export() {
             globalStronglyProminentLength, globalWeaklyProminentLength, globalProminentLength,
             zonesLength: tmpZone.length, avgZoneSize, avgZoneInnerSize, avgZoneOuterSize, subzonesCount,
             avgSubzoneSize: subzonesSizesSum / subzonesCount, superzonesCount, avgSuperzoneSize: superzonesSizesSum / superzonesCount,
-            avgOverlapZonesSize: avgZoneOverlapZonesSize / zoneOverlapZonesCount, zoneOverlapZonesCount
+            avgOverlapZonesSize: avgZoneOverlapZonesSize / zoneOverlapZonesCount, zoneOverlapZonesCount,
+            avgOverlapSize: avgZoneOverlapSize / avgZoneOverlapCount
         }
+        console.log(avgZoneOverlapSize, avgZoneOverlapCount);
+        console.log(avgZoneOverlapZonesSize, zoneOverlapZonesCount);
+
 
         console.table(res2);
     }
