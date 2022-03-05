@@ -6,7 +6,7 @@ import { observer } from "mobx-react-lite";
 import EgoZone from "../../../objects/zone/EgoZone";
 import CustomZone from "../../../objects/zone/CustomZone";
 import { ZoneItemCustom } from "../../ZoneItemCustom";
-import { autorun, reaction } from "mobx";
+import { reaction } from "mobx";
 import { SortByEnum } from "../../../stores/SettingsStore";
 import { NodeProminency } from "../../../objects/network/Node";
 

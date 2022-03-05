@@ -1,11 +1,10 @@
-import { autorun, makeAutoObservable } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { networkStore, zoneStore } from "..";
 import CustomZone from "../objects/zone/CustomZone";
 import EgoZone from "../objects/zone/EgoZone";
 import { cy } from "../objects/graph/Cytoscape";
 import Export, { ImageType } from "../objects/export/ExportImage";
 import { IExportSettings } from "./IExportSettings";
-import Zone from "../objects/zone/Zone";
 import { NodeLabel } from "../objects/network/Node";
 
 interface IPdfPageExportOptions {

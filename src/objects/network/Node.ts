@@ -1,6 +1,5 @@
 import type { ElementDefinition, NodeDataDefinition } from "cytoscape";
 import { networkStore } from "../..";
-import { cy } from "../graph/Cytoscape";
 
 export enum NodeProminency {
   StronglyProminent = "stronglyProminent",

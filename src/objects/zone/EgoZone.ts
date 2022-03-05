@@ -4,8 +4,7 @@ import cytoscape, { Collection } from "cytoscape";
 import { networkStore, settingsStore, zoneStore } from "../..";
 
 import { cy } from "../graph/Cytoscape";
-import Zone, { IColor } from "./Zone";
-import { reaction } from "mobx";
+import Zone from "./Zone";
 import { NodeDisplay } from "../network/Node";
 
 export default class EgoZone extends Zone {

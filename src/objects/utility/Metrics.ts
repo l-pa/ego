@@ -120,8 +120,6 @@ export class NMI implements IMetric {
     const noInputCommunitiesI = new Set<number>();
     const noInputCommunitiesG = new Set<number>();
 
-    const noGroundTruthCommunities = new Set<number>();
-
     Object.values(inputNetwork).forEach((s) => {
       s.forEach((v) => {
         noInputCommunitiesI.add(v);

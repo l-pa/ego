@@ -18,22 +18,22 @@ export const LeftPanel: React.FunctionComponent = () => {
     settingsStore.ActiveCategory = activeButton;
   }, [activeButton]);
 
-  const LatestRedo = observer(() => (
-    <ButtonGroup>
-      <IconButton
-        aria-label="Undo"
-        onClick={() => {
-          settingsStore.IsLatestRedo = !settingsStore.IsLatestRedo;
-        }}
-        icon={<ArrowBackIcon />}
-      />
-      <IconButton
-        isDisabled={settingsStore.IsLatestRedo}
-        aria-label="Redo"
-        icon={<ArrowForwardIcon />}
-      />
-    </ButtonGroup>
-  ));
+  // const LatestRedo = observer(() => (
+  //   <ButtonGroup>
+  //     <IconButton
+  //       aria-label="Undo"
+  //       onClick={() => {
+  //         settingsStore.IsLatestRedo = !settingsStore.IsLatestRedo;
+  //       }}
+  //       icon={<ArrowBackIcon />}
+  //     />
+  //     <IconButton
+  //       isDisabled={settingsStore.IsLatestRedo}
+  //       aria-label="Redo"
+  //       icon={<ArrowForwardIcon />}
+  //     />
+  //   </ButtonGroup>
+  // ));
 
   return (
     <Stack w={"10em"}>

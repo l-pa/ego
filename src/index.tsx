@@ -33,7 +33,7 @@ import contextMenus from "cytoscape-context-menus";
 // @ts-ignore
 import avsdf from 'cytoscape-avsdf';
 
-import { configure, spy } from "mobx";
+import { configure } from "mobx";
 
 interface IStore {
   zones: ZoneStore;

@@ -4,6 +4,7 @@ import Courier from "!!raw-loader!pdfkit/js/data/Courier.afm";
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import CourierBold from "pdfkit/js/data/Courier-Bold.afm";
 
+// eslint-disable-next-line
 function registerBinaryFiles(ctx) {
   ctx.keys().forEach((key) => {
     // extracts "./" from beginning of the key

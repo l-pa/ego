@@ -2,24 +2,20 @@ import {
   Button,
   Checkbox,
   Divider,
-  FormControl,
-  FormLabel,
   Heading,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Select,
   Stack,
   Switch,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
-import { networkStore, settingsStore, zoneStore } from "../../..";
+import { settingsStore, zoneStore } from "../../..";
 import { ImageType } from "../../../objects/export/ExportImage";
-import { cy } from "../../../objects/graph/Cytoscape";
-import Louvain from "../../../objects/utility/Modularity";
+
 
 export function Export() {
 
@@ -145,8 +141,6 @@ export function Export() {
             ],
           };
           try {
-
-
             // @ts-ignore
             const handle = await window.showSaveFilePicker(options);
             const writable = await handle.createWritable();
@@ -155,6 +149,8 @@ export function Export() {
             await writable.close();
             setSsExportingPdf(false)
           } catch (error) {
+            console.log(error);
+
             setSsExportingPdf(false)
           }
         })

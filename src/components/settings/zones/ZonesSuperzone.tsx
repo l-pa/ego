@@ -1,7 +1,7 @@
 import { Button, Divider, Heading, Select, Stack } from "@chakra-ui/react";
-import { action, reaction } from "mobx";
+import { reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { zoneStore } from "../../..";
 import EgoZone from "../../../objects/zone/EgoZone";
 import Zone from "../../../objects/zone/Zone";

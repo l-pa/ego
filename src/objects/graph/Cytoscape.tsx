@@ -1,8 +1,5 @@
 import cytoscape, { ElementDefinition } from "cytoscape";
-import { networkStore, settingsStore, zoneStore } from "../..";
-import Edge from "../network/Edge";
-import Centrality from "../utility/Centrality";
-import Louvain from "../utility/Modularity";
+import { networkStore, zoneStore } from "../..";
 import EgoZone from "../zone/EgoZone";
 
 export let cy: cytoscape.Core;

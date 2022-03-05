@@ -66,7 +66,6 @@ export class DuplicatesByEgo implements IFilter {
         } else {
           return zones;
         }
-        break;
 
       case "de":
         for (let i = 0; i < zones.length; i++) {
@@ -151,7 +150,6 @@ export class DuplicatesByZoneProperties implements IFilter {
         } else {
           return zones;
         }
-        break;
 
       case "moreInner":
         for (let i = 0; i < zones.length; i++) {

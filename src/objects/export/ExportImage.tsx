@@ -1,4 +1,4 @@
-import cytoscape, { Collection } from "cytoscape";
+import cytoscape from "cytoscape";
 import { networkStore, settingsStore, zoneStore } from "../..";
 import { cy } from "../graph/Cytoscape";
 import Zone from "../zone/Zone";
@@ -6,7 +6,6 @@ import C2S from "@bokeh/canvas2svg";
 
 import "../../register-files";
 import EgoZone from "../zone/EgoZone";
-import { ZoneStore } from "../../stores/ZoneStore";
 import { NodeProminency } from "../network/Node";
 
 const PDFDocument = require("pdfkit").default;
@@ -96,7 +95,7 @@ export default class ExportImage {
       y: number,
       options: object
     ) {
-      return SVGtoPDF(this, svg, x, y, options), this;
+      return SVGtoPDF(this, svg, x, y, options);
     };
   }
 
