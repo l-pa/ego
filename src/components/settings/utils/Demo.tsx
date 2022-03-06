@@ -2,7 +2,7 @@ import { Button, CheckboxGroup, Heading, Input, Stack, Switch, Text } from "@cha
 import { useEffect } from "react";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import parse from "csv-parse/lib/sync";
-import { NMI, OmegaIndex } from "../../../objects/utility/Metrics";
+import { LouvainModularity, NMI, OmegaIndex } from "../../../objects/utility/Metrics";
 import EgoZone from "../../../objects/zone/EgoZone";
 import { DuplicatesByEgo } from "../../../objects/zone/Filter";
 import { NodeProminency } from "../../../objects/network/Node";
@@ -16,22 +16,31 @@ export default function Export() {
         zoneStore.Update()
     }, [])
 
+    const calcQualityMetrics = () => {
+        if (networkStore.Network) {
+            let avgEmb = 0
+
+            zoneStore.Zones.forEach(z => {
+                avgEmb += z.Embeddedness
+            })
+            avgEmb /= zoneStore.Zones.length
+            console.log("Avg. emb. " + avgEmb);
+
+            console.log("Louvain mod. " + new LouvainModularity().CalcMetric(networkStore.Network));
+        }
+    }
+
     const calcOverlapMetrics = () => {
 
-        let avgEmb = 0
+        if (networkStore.Network) {
+            const groundTruth = toJS(networkStore.GroundTruth)
 
-        const groundTruth = toJS(networkStore.GroundTruth)
-        zoneStore.Zones.forEach(z => {
-            avgEmb += z.Embeddedness
-        })
-        avgEmb /= zoneStore.Zones.length
-        console.log("Avg. emb. " + avgEmb);
+            const omega = new OmegaIndex().CalcMetric(networkStore.Network.GetCurrentZonesParticipation(), groundTruth)
+            console.log("Omega " + omega);
 
-        const omega = new OmegaIndex().CalcMetric(networkStore.Network!!.GetCurrentZonesParticipation(), groundTruth)
-        console.log("Omega " + omega);
-
-        const nmi = new NMI().CalcMetric(networkStore.Network!!.GetCurrentZonesParticipation(), groundTruth)
-        console.log("NMI " + nmi);
+            const nmi = new NMI().CalcMetric(networkStore.Network.GetCurrentZonesParticipation(), groundTruth)
+            console.log("NMI " + nmi);
+        }
     }
 
     const calcEgoMetrics = async () => {
@@ -419,10 +428,14 @@ export default function Export() {
                 }}>Show dependency only on active edges</Switch>
                 <GroundTruthButton />
 
+                <Button onClick={() => {
+                    calcQualityMetrics()
+                }}>Zones quality</Button>
+
                 <Button onClick={async () => {
                     await calcEgoMetrics()
 
-                }}>Calc zones</Button>
+                }}>Metrics</Button>
 
                 <Input type="file" onChange={(e) => {
                     if (e.target.files) {

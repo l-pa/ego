@@ -1,11 +1,18 @@
-import { networkStore } from "../..";
+import { networkStore, zoneStore } from "../..";
+import { cy } from "../graph/Cytoscape";
+import Network from "../network/Network";
+import EgoZone from "../zone/EgoZone";
 import { combinationsOfTwo } from "./ArrayUtils";
 
-export interface IMetric {
+export interface IMetricGT {
   CalcMetric(
     inputNetwork: { [key: string]: Set<number> },
-    groundTruth: { [key: string]: Set<number> }
+    groundTruth?: { [key: string]: Set<number> }
   ): number;
+}
+
+export interface IMetricQuality {
+  CalcMetric(inputNetwork: Network): number;
 }
 
 export const intersectSet = (set1: Set<number>, set2: Set<number>) => {
@@ -17,7 +24,7 @@ export const intersectSet = (set1: Set<number>, set2: Set<number>) => {
   }
 };
 
-export class OmegaIndex implements IMetric {
+export class OmegaIndex implements IMetricGT {
   CalcMetric(
     inputNetwork: { [key: string]: Set<number> },
     groundTruth: { [key: string]: Set<number> }
@@ -108,7 +115,7 @@ export class OmegaIndex implements IMetric {
   }
 }
 
-export class NMI implements IMetric {
+export class NMI implements IMetricGT {
   CalcMetric(
     inputNetwork: { [key: string]: Set<number> },
     groundTruth: { [key: string]: Set<number> }
@@ -271,5 +278,76 @@ export class NMI implements IMetric {
         this.H(zeroes, Object.values(vector).length);
     }
     return sum;
+  }
+}
+
+export class LouvainModularity implements IMetricQuality {
+  CalcMetric(network: Network): number {
+    let m = 0;
+    let sum = 0;
+    for (const key in network.Edges) {
+      m += network.Edges[key].GetWeight();
+    }
+    // m /= 2;
+
+    // let allNodes = cy.nodes();
+    // zoneStore.Zones.forEach((z) => {
+    //   allNodes = allNodes.difference(z.AllCollection);
+    //   z.AllCollection.forEach((n1) => {
+    //     z.AllCollection.forEach((n2) => {
+    //       const e =
+    //         network.getEdgeByNodes(n1.data("id"), n2.data("id"))?.GetWeight() ||
+    //         0;
+    //       let k_i = 0;
+    //       let k_j = 0;
+    //       network.getEdges(n1.data("id")).forEach((e) => {
+    //         k_i += parseFloat(e.data("weight"));
+    //       });
+    //       network.getEdges(n2.data("id")).forEach((e) => {
+    //         k_j += parseFloat(e.data("weight"));
+    //       });
+    //       sum += e - (k_i * k_j) / (2 * m);
+    //     });
+    //   });
+    // });
+    // return (1 / (m * 2)) * sum;
+
+    // let sum = 0;
+    // const totalEdges = cy.edges();
+
+    // zoneStore.Zones.forEach((z) => {
+    //   z as EgoZone;
+    //   allNodes = allNodes.difference(z.AllCollection);
+
+    //   const edgesIn = z.AllCollection.nodes().edgesWith(z.AllCollection);
+    //   const edgesOut = z.AllCollection.nodes()
+    //     .edgesWith(cy.nodes())
+    //     .difference(edgesIn);
+    //   const a = edgesIn.length / totalEdges.length;
+    //   const b =
+    //     (2 * edgesIn.length + edgesOut.length) / (2 * totalEdges.length);
+    //   sum += a - b * b;
+    // });
+
+    cy.nodes().forEach((n1) => {
+      cy.nodes().forEach((n2) => {
+        for (let i = 0; i < zoneStore.Zones.length; i++) {
+          const z = zoneStore.Zones[i];
+          if (z.AllCollection.intersect(n1.union(n2)).length === 2) {
+            const e = network.getEdgeByNodes(n1.data("id"), n2.data("id"));
+
+            if (e) {
+              sum +=
+                e.GetWeight() - (n1.degree(false) * n2.degree(false)) / (2 * m);
+            } else {
+              sum += 0 - (n1.degree(false) * n2.degree(false)) / (2 * m);
+            }
+            break;
+          }
+        }
+      });
+    });
+
+    return (1 / (2 * m)) * sum;
   }
 }

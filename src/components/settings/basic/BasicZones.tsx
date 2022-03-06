@@ -15,7 +15,6 @@ export const BasicZones: React.FunctionComponent = () => {
   useEffect(() => {
     zoneStore.Update()
     return (() => {
-      a()
       zoneStore.HideZones()
     })
   }, [])
@@ -68,11 +67,6 @@ export const BasicZones: React.FunctionComponent = () => {
       })}
     </div>
   ));
-
-  const a = reaction(
-    () => zoneStore.Zones,
-    (zones) => console.log(zones)
-  );
 
   return (
     <Stack>

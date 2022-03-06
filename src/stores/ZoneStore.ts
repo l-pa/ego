@@ -437,12 +437,8 @@ export class ZoneStore {
       filter.filtered.forEach((z) => z.HideZone());
 
       zoneStore.HideNodesOutsideZones();
-      console.log("A");
-
       zoneStore.ColorNodesInZones(zoneStore.Zones);
     } else {
-      console.log("B");
-
       const filter = zoneStore.Filter(this.TmpZones);
 
       filter.zones.forEach((z) => z.DrawZone());

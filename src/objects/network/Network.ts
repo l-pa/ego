@@ -54,7 +54,13 @@ export default class Network {
   }
 
   public getEdges(source: string): cytoscape.EdgeCollection {
-    return cy.edges(`[source = "${source}"]`);
+    if (this.Directed) {
+      return cy.edges(`[source = "${source}"]`);
+    } else {
+      return cy
+        .edges(`[source = "${source}"]`)
+        .union(cy.edges(`[target = "${source}"]`));
+    }
   }
 
   public getEdgeByNodes(nodeAid: string, nodeBid: string): Edge | undefined {
