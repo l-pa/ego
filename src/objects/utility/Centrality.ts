@@ -1,20 +1,22 @@
+import { networkStore } from "../..";
 import { cy } from "../graph/Cytoscape";
 
 export default class Centrality {
-  static Clustering() {
-    const r: number[] = [];
-
+  public Clustering() {
+    let sum = 0;
+    let moreThanDegreeOne = 0;
     cy.nodes().forEach((n) => {
-      const a = n
-        .openNeighborhood()
-        .nodes()
-        .edgesWith(n.openNeighborhood().nodes()).length;
+      if (n.degree(false) > 1) {
+        moreThanDegreeOne++;
+        let triangles = n.neighborhood().edgesWith(n.neighborhood()).length;
+        const k = n.degree(false);
+        triangles /= k * (k - 1);
 
-      console.log(n.id(), a);
-
-      if (a != 0) r.push((2 * a) / (n.degree(false) * (n.degree(false) - 1)));
+        if (!networkStore.Network?.Directed) triangles *= 2;
+        sum += triangles;
+      }
     });
 
-    return r.reduce((a, b) => a + b, 0) * (1 / cy.nodes().length);
+    return sum / moreThanDegreeOne;
   }
 }

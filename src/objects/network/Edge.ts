@@ -24,8 +24,14 @@ export enum EdgeType {
   Blank = "",
 }
 
+export enum EdgeShowWeight {
+  Show = "edgeWeight",
+  Hide = "",
+}
+
 export interface IEdgeProperties {
   EdgeType: EdgeType;
+  EdgeWeightsShown: EdgeShowWeight;
 }
 
 export default class Edge {
@@ -36,6 +42,7 @@ export default class Edge {
 
   private classes: { [key in keyof IEdgeProperties]: string } = {
     EdgeType: EdgeType.N2N,
+    EdgeWeightsShown: EdgeShowWeight.Hide,
   };
 
   data: EdgeDataDefinition;
@@ -49,7 +56,7 @@ export default class Edge {
       source: this.NodeA.Id,
       target: this.NodeB.Id,
       edgeType: "",
-      weight: weight,
+      weight: weight.toFixed(2),
     };
 
     this.Weight = weight;
@@ -59,7 +66,10 @@ export default class Edge {
    * ChangeClass
    */
 
-  public SetClass(type: keyof IEdgeProperties, value: EdgeType) {
+  public SetClass(
+    type: keyof IEdgeProperties,
+    value: EdgeType | EdgeShowWeight
+  ) {
     this.classes[type] = value;
 
     networkStore.Network?.getEdge(this.NodeA.Id, this.NodeB.Id).classes(

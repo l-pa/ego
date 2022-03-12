@@ -105,10 +105,10 @@ export class OmegaIndex implements IMetricGT {
     let exp = 0;
 
     for (let i = 0; i < Math.min(J, K) + 1; i++) {
-      exp += (t1Counts[i] * t2Counts[i]) / (N * N);
+      const a = t1Counts[i] || 0;
+      const b = t2Counts[i] || 0;
+      exp += (a * b) / (N * N);
     }
-
-    // console.log(J, K, N, obs, exp);
 
     if (exp === 1 && obs === 1) return 1;
     else return (obs - exp) / (1 - exp);
@@ -170,6 +170,8 @@ export class NMI implements IMetricGT {
     const entropyX = this.entropy(inputMatrix);
     const entropyY = this.entropy(groundMatrix);
 
+    console.log(sumConditionalE12, sumConditionalE21);
+
     let i = 0.5 * (entropyX - sumConditionalE12 + entropyY - sumConditionalE21);
 
     return i / Math.max(entropyX, entropyY);
@@ -180,7 +182,7 @@ export class NMI implements IMetricGT {
     return -x * Math.log2(x / n);
   }
 
-  private h(p: number, n: number) {
+  private h(p: number) {
     if (p === 0) return 0;
     return -p * Math.log2(p);
   }
@@ -226,7 +228,9 @@ export class NMI implements IMetricGT {
           Object.values(cover2)
         );
 
-        if (res < compareValue) compareValue = res;
+        if (res < compareValue) {
+          compareValue = res;
+        }
       }
 
       toSum.push(compareValue);
@@ -237,7 +241,7 @@ export class NMI implements IMetricGT {
 
   private conditionalEntropy(vec1: number[], vec2: number[]) {
     const abcd = this.abcd(vec1, vec2);
-    const n = Object.values(vec1).length;
+    const n = Object.values(vec2).length;
 
     const entropyA = this.H(abcd.a, n) || 0;
     const entropyB = this.H(abcd.b, n) || 0;
@@ -245,9 +249,15 @@ export class NMI implements IMetricGT {
     const entropyD = this.H(abcd.d, n) || 0;
 
     if (
-      this.h(abcd.a, n) + this.h(abcd.d, n) >=
-      this.h(abcd.c, n) + this.h(abcd.b, n)
+      this.h(abcd.a / n) + this.h(abcd.d / n) <=
+      this.h(abcd.c / n) + this.h(abcd.b / n)
     ) {
+      // return this.H(entropyC + entropyB, n) + this.H(entropyA + entropyD, n);
+      return (
+        this.H(vec1.filter((x) => x === 1).length, n) +
+        this.H(vec1.filter((x) => x === 0).length, n)
+      );
+    } else {
       return (
         entropyA +
         entropyB +
@@ -255,12 +265,6 @@ export class NMI implements IMetricGT {
         entropyD -
         (this.H(vec2.filter((x) => x === 1).length, n) +
           this.H(vec2.filter((x) => x === 0).length, n))
-      );
-    } else {
-      // return this.H(entropyC + entropyD, n) + this.H(entropyA + entropyB, n);
-      return (
-        this.H(vec1.filter((x) => x === 1).length, n) +
-        this.H(vec1.filter((x) => x === 0).length, n)
       );
     }
   }
@@ -288,6 +292,36 @@ export class LouvainModularity implements IMetricQuality {
     for (const key in network.Edges) {
       m += network.Edges[key].GetWeight();
     }
+
+    let sum2 = 0;
+
+    zoneStore.Zones.forEach((z) => {
+      z as EgoZone;
+
+      const L_c = z.AllCollection.nodes().edgesWith(z.AllCollection).length;
+      const k_c = z.AllCollection.nodes().totalDegree(false);
+
+      let sum = 0;
+
+      z.AllCollection.forEach((i) => {
+        z.AllCollection.forEach((j) => {
+          const e = network.getEdgeByNodes(i.data("id"), j.data("id"));
+          const k_i = i.degree(false);
+          const k_j = j.degree(false);
+
+          if (e) {
+            sum += e.GetWeight() - (k_i * k_j) / (2 * m);
+          } else {
+            sum += 0 - (k_i * k_j) / (2 * m);
+          }
+        });
+      });
+      const tmp = L_c / m - Math.pow(k_c / (2 * m), 2);
+      sum2 += tmp;
+    });
+
+    return sum2;
+
     // m /= 2;
 
     // let allNodes = cy.nodes();
@@ -329,25 +363,25 @@ export class LouvainModularity implements IMetricQuality {
     //   sum += a - b * b;
     // });
 
-    cy.nodes().forEach((n1) => {
-      cy.nodes().forEach((n2) => {
-        for (let i = 0; i < zoneStore.Zones.length; i++) {
-          const z = zoneStore.Zones[i];
-          if (z.AllCollection.intersect(n1.union(n2)).length === 2) {
-            const e = network.getEdgeByNodes(n1.data("id"), n2.data("id"));
+    // cy.nodes().forEach((n1) => {
+    //   cy.nodes().forEach((n2) => {
+    //     for (let i = 0; i < zoneStore.Zones.length; i++) {
+    //       const z = zoneStore.Zones[i];
+    //       if (z.AllCollection.intersect(n1.union(n2)).length === 2) {
+    //         const e = network.getEdgeByNodes(n1.data("id"), n2.data("id"));
 
-            if (e) {
-              sum +=
-                e.GetWeight() - (n1.degree(false) * n2.degree(false)) / (2 * m);
-            } else {
-              sum += 0 - (n1.degree(false) * n2.degree(false)) / (2 * m);
-            }
-            break;
-          }
-        }
-      });
-    });
+    //         if (e) {
+    //           sum +=
+    //             e.GetWeight() - (n1.degree(false) * n2.degree(false)) / (2 * m);
+    //         } else {
+    //           sum += 0 - (n1.degree(false) * n2.degree(false)) / (2 * m);
+    //         }
+    //         break;
+    //       }
+    //     }
+    //   });
+    // });
 
-    return (1 / (2 * m)) * sum;
+    // return (1 / (2 * m)) * sum;
   }
 }

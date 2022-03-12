@@ -9,6 +9,9 @@ import { NodeProminency } from "../../../objects/network/Node";
 import { cy } from "../../../objects/graph/Cytoscape";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
+import Centrality from "../../../objects/utility/Centrality";
+import { ExportGDF } from "../../../objects/export/ExportGDF";
+import { NodeSingular } from "cytoscape";
 
 export default function Export() {
 
@@ -24,9 +27,9 @@ export default function Export() {
                 avgEmb += z.Embeddedness
             })
             avgEmb /= zoneStore.Zones.length
-            console.log("Avg. emb. " + avgEmb);
+            console.log("Avg. emb. " + avgEmb.toFixed(3));
 
-            console.log("Louvain mod. " + new LouvainModularity().CalcMetric(networkStore.Network));
+            console.log("Louvain mod. " + new LouvainModularity().CalcMetric(networkStore.Network).toFixed(3));
         }
     }
 
@@ -36,10 +39,10 @@ export default function Export() {
             const groundTruth = toJS(networkStore.GroundTruth)
 
             const omega = new OmegaIndex().CalcMetric(networkStore.Network.GetCurrentZonesParticipation(), groundTruth)
-            console.log("Omega " + omega);
+            console.log("Omega " + omega.toFixed(3));
 
             const nmi = new NMI().CalcMetric(networkStore.Network.GetCurrentZonesParticipation(), groundTruth)
-            console.log("NMI " + nmi);
+            console.log("NMI " + nmi.toFixed(3));
         }
     }
 
@@ -55,9 +58,6 @@ export default function Export() {
         const allZonesCopy = [...tmpZone]
         tmpZone = new DuplicatesByEgo().FilterWithParams(tmpZone, { duplicates: "me" }) as EgoZone[]
 
-        console.log(tmpZone);
-
-
         const duplicates = zoneStore.Difference(allZonesCopy, new DuplicatesByEgo().FilterWithParams(allZonesCopy, { duplicates: "de" }))
         const multiego = zoneStore.Difference(allZonesCopy, new DuplicatesByEgo().FilterWithParams(allZonesCopy, { duplicates: "me" }))
 
@@ -66,9 +66,6 @@ export default function Export() {
         multiego.forEach((e) => {
             exceptEgos = exceptEgos.add(cy.nodes(`#${(e as EgoZone).Ego.Id}`))
         })
-
-        console.log(exceptEgos);
-
 
         let maxZoneSize = -1
         let minZoneSize = 9999999
@@ -370,19 +367,54 @@ export default function Export() {
         avgZoneOuterCoLiasonsSize /= tmpZone.length
         avgEmbededdness /= tmpZone.length
 
+        let weaklyCounter = 0
+        let stronglyCounter = 0
+
+        tmpZone.forEach(z => {
+            let weakly = false
+            let insideSum = 0
+            let outsideSum = 0
+
+            for (let i = 0; i < z.AllCollection.length; i++) {
+                const n = z.AllCollection[i] as NodeSingular
+
+                const inside = n.edgesWith(z.AllCollection).length
+                const outside = n.degree(false) - inside
+
+                insideSum += inside
+                outsideSum += outside
+
+                if (outside >= inside) {
+                    weakly = true
+                }
+            }
+
+            if (weakly) {
+                if (insideSum > outsideSum) {
+                    weaklyCounter++
+                }
+            } else {
+                stronglyCounter++
+            }
+
+        })
+
         const res2 = {
             avgDegree,
             globalStronglyProminentLength, globalWeaklyProminentLength, globalProminentLength,
             zonesLength: tmpZone.length, avgZoneSize, avgZoneInnerSize, avgZoneOuterSize, subzonesCount,
             avgSubzoneSize: subzonesSizesSum / subzonesCount, superzonesCount, avgSuperzoneSize: superzonesSizesSum / superzonesCount,
             avgOverlapZonesSize: avgZoneOverlapZonesSize / zoneOverlapZonesCount, zoneOverlapZonesCount,
-            avgOverlapSize: avgZoneOverlapSize / avgZoneOverlapCount
+            avgOverlapSize: avgZoneOverlapSize / avgZoneOverlapCount, strongyCommunities: stronglyCounter, weaklyCommunities: weaklyCounter
         }
-        console.log(avgZoneOverlapSize, avgZoneOverlapCount);
-        console.log(avgZoneOverlapZonesSize, zoneOverlapZonesCount);
 
+        const res3: { [key: string]: number } = {}
 
-        console.table(res2);
+        for (const [key, value] of Object.entries(res2)) {
+            res3[key] = parseFloat(value.toFixed(3))
+        }
+
+        console.table(res3);
     }
 
     const GroundTruthButton = observer(() =>
@@ -434,6 +466,7 @@ export default function Export() {
 
                 <Button onClick={async () => {
                     await calcEgoMetrics()
+                    console.log("CC ", new Centrality().Clustering());
 
                 }}>Metrics</Button>
 
@@ -476,11 +509,21 @@ export default function Export() {
 
                 <Text as='samp'>community number,"node_id"</Text>
                 <Text as='samp'>community number,"node_id"</Text>
-                <Text as='samp'>community number,"node_id"</Text>
-                <Text as='samp'>.</Text>
                 <Text as='samp'>.</Text>
                 <Text as='samp'>.</Text>
 
+                <Button onClick={() => {
+                    let str = "Source;Target;Weight\n"
+                    for (const key in networkStore.Network!!.Edges) {
+                        const edge = networkStore.Network!!.Edges[key];
+                        str += `${edge.GetNodeA().Id};${edge.GetNodeB().Id};${edge.GetWeight()}\n`
+                    }
+                    // console.log(str);
+                    console.log(new ExportGDF().Export());
+
+
+
+                }}>Gephi export</Button>
             </Stack>
         </Stack>
     )

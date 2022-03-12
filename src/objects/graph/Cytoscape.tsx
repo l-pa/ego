@@ -254,6 +254,18 @@ export default class Cytoscape {
             },
           },
           {
+            selector: ".edgeWeight",
+            style: {
+              "label": 'data(weight)',
+              // @ts-ignore
+              // "source-text-rotation": "autorotate",
+              // @ts-ignore
+              // "target-text-rotation": "autorotate",
+              // "source-text-offset": 35,
+              // "target-text-offset": 35
+            },
+          },
+          {
             selector: ".edgeDependencyTargetArrow",
             style: {
               "curve-style": "bezier",

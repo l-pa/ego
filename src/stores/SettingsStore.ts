@@ -6,6 +6,7 @@ import { cy } from "../objects/graph/Cytoscape";
 import Export, { ImageType } from "../objects/export/ExportImage";
 import { IExportSettings } from "./IExportSettings";
 import { NodeLabel } from "../objects/network/Node";
+import { EdgeShowWeight } from "../objects/network/Edge";
 
 interface IPdfPageExportOptions {
   title?: boolean;
@@ -64,6 +65,8 @@ export class SettingsStore {
   private trackZonesExport: boolean = false;
   private snapshots: Export;
 
+  private showEdgeWeight = false;
+
   private demoOptions: IDemoOptions = {
     showDependencyValues: false,
     showEdgeArrows: false,
@@ -95,6 +98,26 @@ export class SettingsStore {
 
   public set DefaultSettingsCategory(i: number) {
     this.defaultCategory = i;
+  }
+
+  public get ShowEdgeWeight(): boolean {
+    return this.showEdgeWeight;
+  }
+
+  public set ShowEdgeWeight(v: boolean) {
+    this.showEdgeWeight = v;
+    let value;
+    if (v) {
+      value = EdgeShowWeight.Show;
+    } else {
+      value = EdgeShowWeight.Hide;
+    }
+    if (networkStore.Network) {
+      for (const key in networkStore.Network.Edges) {
+        const edge = networkStore.Network.Edges[key];
+        edge.SetClass("EdgeWeightsShown", value);
+      }
+    }
   }
 
   public get TrackZonesExport(): boolean {
@@ -411,5 +434,6 @@ export class SettingsStore {
     this.zonesIdk = "all";
     this.snapshots.Snapshots.length = 0;
     this.trackZonesExport = false;
+    this.showEdgeWeight = false;
   }
 }

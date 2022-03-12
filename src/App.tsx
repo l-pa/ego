@@ -72,7 +72,7 @@ function App() {
                         }
 
                         if (loader) {
-                          context.network.Network = loader.GetNetworkFromFile(e.target?.result)
+                          context.network.Network = loader.GetNetworkFromFile(e.target?.result, directed.current?.checked)
                       } else {
                         toast({
                           title: "Unknown file type",

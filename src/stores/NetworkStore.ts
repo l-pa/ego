@@ -15,6 +15,7 @@ export class NetworkStore {
   private network: Network | undefined = undefined;
   private loaded: boolean = false;
   private groundTruth: { [key: string]: Set<number> } = {};
+  private fileName: string = "unknown";
 
   public get Network(): Network | undefined {
     return this.network;
@@ -42,6 +43,14 @@ export class NetworkStore {
 
   public set Loaded(v: boolean) {
     this.loaded = v;
+  }
+
+  public get FileName(): string {
+    return this.fileName;
+  }
+
+  public set FileName(v: string) {
+    this.fileName = v;
   }
 
   public get GroundTruth(): { [key: string]: Set<number> } {

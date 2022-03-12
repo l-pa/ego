@@ -5,6 +5,7 @@ import {
   Heading,
   IconButton,
   Stack,
+  Text
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { networkStore, settingsStore, zoneStore } from "..";
@@ -50,6 +51,8 @@ export const LeftPanel: React.FunctionComponent = () => {
         >
           Exit
         </Button>
+        <Divider />
+        <Text>Network name</Text>
         <Divider />
         <Button
           isDisabled={true}
