@@ -1,6 +1,6 @@
 import { useContext, useRef } from "react";
 import "./App.css";
-import { Graph } from "./components/Graph";
+import { CustomGraph } from "./components/CustomGraph";
 import { Context, networkStore } from ".";
 import { observer } from "mobx-react-lite";
 import { CSVLoader } from './loaders/CSVLoader'
@@ -226,7 +226,7 @@ function App() {
                 <LeftPanel />
                 <Divider height={"100vh"} orientation="vertical" />
                 <Box flex={1}>
-                  <Graph />
+                  <CustomGraph />
                 </Box>
                 <Divider height={"100vh"} orientation="vertical" />
                 <RightPanel />
