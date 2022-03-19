@@ -63,10 +63,10 @@ cytoscape.use(avsdf);
 
 configure({
   enforceActions: "always",
-  computedRequiresReaction: true,
+  computedRequiresReaction: false,
   reactionRequiresObservable: true,
   observableRequiresReaction: false,
-  disableErrorBoundaries: true
+  disableErrorBoundaries: false
 })
 
 // spy(event => {

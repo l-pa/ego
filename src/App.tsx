@@ -1,7 +1,7 @@
 import { useContext, useRef } from "react";
 import "./App.css";
 import { Graph } from "./components/Graph";
-import { Context } from ".";
+import { Context, networkStore } from ".";
 import { observer } from "mobx-react-lite";
 import { CSVLoader } from './loaders/CSVLoader'
 
@@ -37,9 +37,11 @@ function App() {
           <div className="Background">
             <div className="LandingPage">
               <div>
-                <Text fontSize="6xl" fontWeight="extrabold" pb={10}>
+                <Text fontSize="6xl" fontWeight="extrabold">
                   Ego-zones
                 </Text>
+                <Text fontSize='xs' pb={7}>0.1</Text>
+
                 <Stack>
 
                   <input type="file" id="networkPicker"
@@ -52,7 +54,8 @@ function App() {
                       reader.onload = (e) => {
                         let loader: Loader | undefined
 
-                        if (file)
+                        if (file) {
+
                           switch (file[0].name.split('.').pop()) {
                             case 'csv':
                               loader = new CSVLoader();
@@ -69,6 +72,9 @@ function App() {
                           default:
                             loader = undefined
                             break;
+
+                          }
+                          networkStore.FileName = file[0].name.split('.')[0]
                         }
 
                         if (loader) {
@@ -114,11 +120,7 @@ function App() {
                     json.GetNetworkFromURL("https://raw.githubusercontent.com/l-pa/network-app/master/src/networks/karate.json", directed.current?.checked).then(network => {
 
                       context.network.Network = network;
-
-                    console.log(network);
-                      console.log(Object.keys(network.Nodes));
-
-
+                      networkStore.FileName = "Karate"
                     toast({
                       title: "Network loaded.",
                       description: `${"KARATE"} - ${
@@ -148,9 +150,6 @@ function App() {
 
                       context.network.Network = network;
 
-                      console.log(network);
-                      console.log(Object.keys(network.Nodes));
-
                       await fetch("https://raw.githubusercontent.com/l-pa/ego/dev/src/networks/karate_ground_truth_c.csv").then((res) =>
                         res.text().then((text) => {
                           new CSVLoader().LoadGroundTruth(text)
@@ -164,6 +163,7 @@ function App() {
                           });
                         })
                       );
+                      networkStore.FileName = "Karate weighted"
 
                       toast({
                         title: "Network loaded.",
@@ -199,6 +199,8 @@ function App() {
                       console.log(network);
                     
                       context.network.Network = network;
+                      networkStore.FileName = "Les Miserables"
+
                       toast({
                         title: "Network loaded.",
                         description: `${"lesmiserables"} - ${network.NodesLength()

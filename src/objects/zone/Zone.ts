@@ -1,4 +1,4 @@
-import { makeObservable, observable } from "mobx";
+import { makeObservable, observable, runInAction } from "mobx";
 import { cy } from "../graph/Cytoscape";
 import {
   Subtract,
@@ -136,7 +136,7 @@ export default abstract class Zone {
       this.layer.clear(this.ctx);
       this.canvas.remove();
       this.canvas = undefined;
-      this.isDrawn = false;
+      this.IsDrawn = false;
     }
 
     // if (zoneStore.TmpZones.length > 0) {
@@ -149,7 +149,7 @@ export default abstract class Zone {
   public HideZone() {
     if (this.canvas) {
       this.canvas.style.display = "none";
-      this.isDrawn = false;
+      this.IsDrawn = false;
     }
   }
   /**
@@ -201,13 +201,16 @@ export default abstract class Zone {
   }
 
   public set IsDrawn(v: boolean) {
-    this.isDrawn = v;
+    runInAction(() => {
+      this.isDrawn = v;
+    });
+    // console.log(v, this.IsDrawn);
 
-    if (v) {
-      this.DrawZone();
-    } else {
-      this.HideZone();
-    }
+    // if (v) {
+    //   this.DrawZone();
+    // } else {
+    //   this.HideZone();
+    // }
   }
 
   public get IsDrawn(): boolean {
@@ -223,7 +226,8 @@ export default abstract class Zone {
         this.canvas = this.layer.getCanvas();
         this.ctx = this.canvas.getContext("2d");
       }
-      this.isDrawn = true;
+
+      this.IsDrawn = true;
 
       this.Update();
     }

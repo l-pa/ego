@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import { networkStore, settingsStore, zoneStore } from "..";
 import { ArrowBackIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 import { observer } from "mobx-react-lite";
+import { ExportNetwork } from "../objects/export/ExportNetwork";
 
 export const LeftPanel: React.FunctionComponent = () => {
   const [activeButton, setActiveButton] = useState<number>(settingsStore.DefaultSettingsCategory);
@@ -18,6 +19,10 @@ export const LeftPanel: React.FunctionComponent = () => {
   useEffect(() => {
     settingsStore.ActiveCategory = activeButton;
   }, [activeButton]);
+
+  const NetworkName = observer(() => <Text fontSize='md'>{networkStore.FileName}</Text>
+  )
+
 
   // const LatestRedo = observer(() => (
   //   <ButtonGroup>
@@ -52,13 +57,15 @@ export const LeftPanel: React.FunctionComponent = () => {
           Exit
         </Button>
         <Divider />
-        <Text>Network name</Text>
+        <NetworkName />
         <Divider />
         <Button
           isDisabled={true}
           colorScheme={"primary"}
           isFullWidth={true}
           onClick={() => {
+            // const a = new ExportNetwork().Export()
+            // console.log(a);
           }}
         >
           Save

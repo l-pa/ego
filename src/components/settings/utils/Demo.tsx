@@ -1,427 +1,60 @@
-import { Button, CheckboxGroup, Heading, Input, Stack, Switch, Text } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { Button, CheckboxGroup, createStandaloneToast, Divider, Heading, Input, Stack, Switch, Text } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import parse from "csv-parse/lib/sync";
-import { LouvainModularity, NMI, OmegaIndex } from "../../../objects/utility/Metrics";
-import EgoZone from "../../../objects/zone/EgoZone";
-import { DuplicatesByEgo } from "../../../objects/zone/Filter";
-import { NodeProminency } from "../../../objects/network/Node";
-import { cy } from "../../../objects/graph/Cytoscape";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import Centrality from "../../../objects/utility/Centrality";
 import { ExportGDF } from "../../../objects/export/ExportGDF";
-import { NodeSingular } from "cytoscape";
+import React from "react";
+import { Column, TableOptions, useTable } from 'react-table'
+import { Metrics, NMI, OmegaIndex, ZonesMetrics } from "../../../objects/utility/Metrics";
+import Table from "./Table";
+import Centrality from "../../../objects/utility/Centrality";
+
 
 export default function Export() {
+    const toast = createStandaloneToast();
 
     useEffect(() => {
         zoneStore.Update()
     }, [])
 
-    const calcQualityMetrics = () => {
-        if (networkStore.Network) {
-            let avgEmb = 0
+    const [overlapTable, setOverlapTable] = useState<Object>({})
+    const [qualityTable, setQualityTable] = useState<Object>({})
+    const [metricsTable, setMetricsTable] = useState<Object>({})
 
-            zoneStore.Zones.forEach(z => {
-                avgEmb += z.Embeddedness
-            })
-            avgEmb /= zoneStore.Zones.length
-            console.log("Avg. emb. " + avgEmb.toFixed(3));
-
-            console.log("Louvain mod. " + new LouvainModularity().CalcMetric(networkStore.Network).toFixed(3));
-        }
-    }
-
-    const calcOverlapMetrics = () => {
-
-        if (networkStore.Network) {
-            const groundTruth = toJS(networkStore.GroundTruth)
-
-            const omega = new OmegaIndex().CalcMetric(networkStore.Network.GetCurrentZonesParticipation(), groundTruth)
-            console.log("Omega " + omega.toFixed(3));
-
-            const nmi = new NMI().CalcMetric(networkStore.Network.GetCurrentZonesParticipation(), groundTruth)
-            console.log("NMI " + nmi.toFixed(3));
-        }
-    }
-
-    const calcEgoMetrics = async () => {
-        let tmpZone: EgoZone[] = []
-
-        for (const key in networkStore.Network?.Nodes) {
-            const node = networkStore.Network?.Nodes[key];
-            if (node)
-                tmpZone.push(new EgoZone(node))
-        }
-
-        const allZonesCopy = [...tmpZone]
-        tmpZone = new DuplicatesByEgo().FilterWithParams(tmpZone, { duplicates: "me" }) as EgoZone[]
-
-        const duplicates = zoneStore.Difference(allZonesCopy, new DuplicatesByEgo().FilterWithParams(allZonesCopy, { duplicates: "de" }))
-        const multiego = zoneStore.Difference(allZonesCopy, new DuplicatesByEgo().FilterWithParams(allZonesCopy, { duplicates: "me" }))
-
-        let exceptEgos = cy.collection()
-
-        multiego.forEach((e) => {
-            exceptEgos = exceptEgos.add(cy.nodes(`#${(e as EgoZone).Ego.Id}`))
-        })
-
-        let maxZoneSize = -1
-        let minZoneSize = 9999999
-        let avgZoneSize = 0
-
-        let maxZoneInnerSize = -1
-        let minZoneInnerSize = 999999
-        let avgZoneInnerSize = 0
-
-        let maxZoneOuterSize = -1
-        let minZoneOuterSize = 99999999999
-        let avgZoneOuterSize = 0
-
-        let maxZoneOuterLiasonsSize = -1
-        let minZoneOuterLiasonsSize = 999999999
-        let avgZoneOuterLiasonsSize = 0
-
-        let maxZoneOuterCoLiasonsSize = -1
-        let minZoneOuterCoLiasonsSize = 9999999999
-        let avgZoneOuterCoLiasonsSize = 0
-
-        let maxSubzoneSize = -1
-        let minSubzoneSize = 999999
-        let avgSubzoneSize = 0
-
-        let maxSubzoneCount = -1
-        let minSubzoneCount = 999999
-        let avgSubzoneSum = 0
-
-        let maxSuperzoneSize = -1
-        let minSuperzoneSize = 999999
-        let avgSuperzoneSize = 0
-
-        let avgDegree = 0
-
-        let maxSuperzoneCount = -1
-        let minSuperzoneCount = 999999
-        let avgSuperzoneCount = 0
-
-        let simpleZoneLength = 0
-        let dyadZoneLength = 0
-        let tryadZoneLength = 0
-
-        let maxEmbededdness = -1
-        let minEmbededdness = 999999
-        let avgEmbededdness = 0
-
-        let subzonesCount = 0
-        let subzonesSizesSum = 0
-
-        let superzonesCount = 0
-        let superzonesSizesSum = 0
-
-        avgDegree = cy.nodes().totalDegree(false) / cy.nodes().length
-
-
-        await tmpZone.forEach(async (z) => {
-            if (z.AllCollection.length > maxZoneSize)
-                maxZoneSize = z.AllCollection.length
-            if (z.AllCollection.length < minZoneSize)
-                minZoneSize = z.AllCollection.length
-            avgZoneSize += z.AllCollection.length
-
-            if (z.InnerCollection.length > maxZoneInnerSize)
-                maxZoneInnerSize = z.InnerCollection.length
-            if (z.InnerCollection.length < minZoneInnerSize)
-                minZoneInnerSize = z.InnerCollection.length
-            avgZoneInnerSize += z.InnerCollection.length
-
-            if (z.OutsideCollection.length > maxZoneOuterSize)
-                maxZoneOuterSize = z.OutsideCollection.length
-            if (z.OutsideCollection.length < minZoneOuterSize)
-                minZoneOuterSize = z.OutsideCollection.length
-            avgZoneOuterSize += z.OutsideCollection.length
-
-
-            if (z.OutsideNodes[0].length > maxZoneOuterLiasonsSize)
-                maxZoneOuterLiasonsSize = z.OutsideNodes[0].length
-            if (z.OutsideNodes[0].length < minZoneOuterLiasonsSize)
-                minZoneOuterLiasonsSize = z.OutsideNodes[0].length
-            avgZoneOuterLiasonsSize += z.OutsideNodes[0].length
-
-            if (z.OutsideNodes[1].length > maxZoneOuterCoLiasonsSize)
-                maxZoneOuterCoLiasonsSize = z.OutsideNodes[1].length
-            if (z.OutsideNodes[1].length < minZoneOuterCoLiasonsSize)
-                minZoneOuterCoLiasonsSize = z.OutsideNodes[1].length
-            avgZoneOuterCoLiasonsSize += z.OutsideNodes[1].length
-
-
-
-
-
-
-            await zoneStore.SubzonesOfZone([z], exceptEgos).then(zones => {
-
-                const sorted = zones.sort((b: EgoZone, a: EgoZone) =>
-                    a.AllCollection.length - b.AllCollection.length
-                )
-                if (sorted.length > 0) {
-                    if (maxSubzoneSize < sorted[0].AllCollection.length) {
-                        maxSubzoneSize = sorted[0].AllCollection.length
-                    }
-                    if (minSubzoneSize > sorted[0].AllCollection.length)
-                        minSubzoneSize = sorted[sorted.length - 1].AllCollection.length
-
-                    sorted.forEach(sortedZone => {
-                        subzonesSizesSum += sortedZone.AllCollection.length
-                        subzonesCount++
-                    })
-                }
-
-
-                if (zones.length > maxSubzoneCount) {
-                    maxSubzoneCount = zones.length
-                }
-                if (zones.length < minSubzoneCount) {
-                    minSubzoneCount = zones.length
-                }
-
-            })
-
-
-
-
-
-
-            await zoneStore.SuperzoneOfZone(z, exceptEgos).then(zones => {
-                const sorted = zones.sort((b: EgoZone, a: EgoZone) =>
-                    a.AllCollection.length - b.AllCollection.length
-                )
-
-                if (sorted.length > 0) {
-                    if (maxSuperzoneSize < sorted[0].AllCollection.length)
-                        maxSuperzoneSize = sorted[0].AllCollection.length
-                    if (minSuperzoneSize > sorted[sorted.length - 1].AllCollection.length)
-                        minSuperzoneSize = sorted[sorted.length - 1].AllCollection.length
-
-                    sorted.forEach(sortedZone => {
-                        superzonesSizesSum += sortedZone.AllCollection.length
-                        superzonesCount++
-                    })
-                }
-
-                if (zones.length > maxSuperzoneCount) {
-                    maxSuperzoneCount = zones.length
-                }
-                if (zones.length < minSuperzoneCount) {
-                    minSuperzoneCount = zones.length
-                }
-            })
-
-
-            if (z.AllCollection.length === 1)
-                simpleZoneLength++
-            if (z.AllCollection.length === 2)
-                dyadZoneLength++
-            if (z.AllCollection.length === 3)
-                tryadZoneLength++
-
-
-            if (z.Embeddedness > maxEmbededdness)
-                maxEmbededdness = z.Embeddedness
-            if (z.Embeddedness < minEmbededdness)
-                minEmbededdness = z.Embeddedness
-            avgEmbededdness += z.Embeddedness
-
-        })
-
-
-        let maxDuplicateZoneSize = -1
-        let minDuplicateZoneSize = 9999999999
-        let avgDuplicateZoneSize = 0
-
-        let maxEgoZoneSize = -1
-        let minEgoZoneSize = 999999999
-        let avgEgoZoneSize = 0
-
-        let globalWeaklyProminentLength = 0
-        let globalStronglyProminentLength = 0
-        let globalProminentLength = 0
-
-        await duplicates.forEach(d => {
-            if (d.AllCollection.length > maxDuplicateZoneSize) {
-                maxDuplicateZoneSize = d.AllCollection.length
-            }
-
-            if (d.AllCollection.length < minDuplicateZoneSize) {
-                minDuplicateZoneSize = d.AllCollection.length
-            }
-
-            avgDuplicateZoneSize += d.AllCollection.length
-
-        })
-
-        avgDuplicateZoneSize /= duplicates.length
-
-
-        await multiego.forEach(d => {
-            if (d.AllCollection.length > maxEgoZoneSize) {
-                maxEgoZoneSize = d.AllCollection.length
-            }
-            if (d.AllCollection.length < minEgoZoneSize) {
-                minEgoZoneSize = d.AllCollection.length
-            }
-            avgEgoZoneSize += d.AllCollection.length
-        })
-
-        avgEgoZoneSize /= multiego.length
-
-
-
-        for (const key in networkStore.Network?.Nodes) {
-            const node = networkStore.Network?.Nodes[key];
-            const p = node?.isProminent()
-            if (p === NodeProminency.StronglyProminent)
-                globalStronglyProminentLength++
-
-            if (p === NodeProminency.WeaklyProminent)
-                globalWeaklyProminentLength++
-
-            if (p === NodeProminency.NonProminent)
-                globalProminentLength++
-        }
-
-
-
-
-        let maxZoneOverlapSize = -1
-        let minZoneOverlapSize = 99999
-        let avgZoneOverlapSize = 0
-
-        let zoneOverlapZonesCount = 0
-        let avgZoneOverlapZonesSize = 0
-
-
-        let maxZoneOverlapCount = -1
-        let minZoneOverlapCount = 99999
-        let avgZoneOverlapCount = 0
-
-        console.log(multiego);
-
-        await tmpZone.forEach(z1 => {
-            let superZonesCount = 0
-            let subZonesCount = 0
-            let overlapCount = 0
-            let alternativeCount = 0
-
-
-            tmpZone.forEach(z2 => {
-
-                if (z1.Id !== z2.Id) {
-
-                    const i = z1.AllCollection.intersect(z2.AllCollection)
-
-                    if (i.length === 0)
-                        return
-
-                    if (i.length > 0) {
-                        if (z1.AllCollection.length > z2.AllCollection.length) {
-                            if (i.length === z2.AllCollection.length) {
-                                subZonesCount++
-                            }
-                            // overlapCount++
-                            // avgZoneOverlapSize += i.length
-                        }
-                        else if (z1.AllCollection.length < z2.AllCollection.length) {
-                            if (i.length === z1.AllCollection.length) {
-                                superZonesCount++
-                            }
-                            // overlapCount++
-                            // avgZoneOverlapSize += i.length
-                        } else if (i.length === z2.AllCollection.length) {
-                            alternativeCount++
-                        }
-                        overlapCount++
-                        avgZoneOverlapSize += i.length
-
-                        i.forEach(n => {
-                            const e = new EgoZone(networkStore.Network!!.Nodes[n.data("id")])
-
-                            if (e.AllCollection.difference(i).length === 0) {
-                                zoneOverlapZonesCount++
-                                avgZoneOverlapZonesSize += e.AllCollection.length
-                            }
-                        })
-                    }
-                }
-            })
-
-            avgZoneOverlapCount += overlapCount
-
-            // console.log(z1.Ego.Id, subZonesCount, superZonesCount, overlapCount, zoneOverlapZonesCount, avgZoneOverlapZonesSize);
-        })
-
-        avgZoneSize /= tmpZone.length
-        avgZoneInnerSize /= tmpZone.length
-        avgZoneOuterSize /= tmpZone.length
-        avgZoneOuterLiasonsSize /= tmpZone.length
-        avgZoneOuterCoLiasonsSize /= tmpZone.length
-        avgEmbededdness /= tmpZone.length
-
-        let weaklyCounter = 0
-        let stronglyCounter = 0
-
-        tmpZone.forEach(z => {
-            let weakly = false
-            let insideSum = 0
-            let outsideSum = 0
-
-            for (let i = 0; i < z.AllCollection.length; i++) {
-                const n = z.AllCollection[i] as NodeSingular
-
-                const inside = n.edgesWith(z.AllCollection).length
-                const outside = n.degree(false) - inside
-
-                insideSum += inside
-                outsideSum += outside
-
-                if (outside >= inside) {
-                    weakly = true
-                }
-            }
-
-            if (weakly) {
-                if (insideSum > outsideSum) {
-                    weaklyCounter++
-                }
-            } else {
-                stronglyCounter++
-            }
-
-        })
-
-        const res2 = {
-            avgDegree,
-            globalStronglyProminentLength, globalWeaklyProminentLength, globalProminentLength,
-            zonesLength: tmpZone.length, avgZoneSize, avgZoneInnerSize, avgZoneOuterSize, subzonesCount,
-            avgSubzoneSize: subzonesSizesSum / subzonesCount, superzonesCount, avgSuperzoneSize: superzonesSizesSum / superzonesCount,
-            avgOverlapZonesSize: avgZoneOverlapZonesSize / zoneOverlapZonesCount, zoneOverlapZonesCount,
-            avgOverlapSize: avgZoneOverlapSize / avgZoneOverlapCount, strongyCommunities: stronglyCounter, weaklyCommunities: weaklyCounter
-        }
-
-        const res3: { [key: string]: number } = {}
-
-        for (const [key, value] of Object.entries(res2)) {
-            res3[key] = parseFloat(value.toFixed(3))
-        }
-
-        console.table(res3);
-    }
 
     const GroundTruthButton = observer(() =>
-        <Button disabled={Object.keys(toJS(networkStore.GroundTruth)).length === 0} colorScheme={Object.keys(toJS(networkStore.GroundTruth)).length > 0 ? "green" : "red"} onClick={() => {
-            calcOverlapMetrics()
-        }}>Overlap metrics</Button>)
+        <Stack>
 
+            <Button disabled={Object.keys(toJS(networkStore.GroundTruth)).length === 0} colorScheme={Object.keys(toJS(networkStore.GroundTruth)).length > 0 ? "green" : "red"} onClick={() => {
+
+                if (networkStore.Network && zoneStore.Zones.length > 0) {
+
+                    const groundTruth = toJS(networkStore.GroundTruth)
+                    const current = networkStore.Network.GetCurrentZonesParticipation()
+
+                    const data = {
+                        "NMI": new NMI().CalcMetric(current, groundTruth).toFixed(3),
+                        "Omega index": new OmegaIndex().CalcMetric(current, groundTruth).toFixed(3)
+                    }
+
+                    setOverlapTable(data)
+                } else {
+                    toast({
+                        title: "No zones",
+                        description: "Create at least 1 zone",
+                        status: "warning",
+                        duration: 5000,
+                        isClosable: true,
+                    });
+                }
+
+            }}>Overlap metrics</Button>
+
+            <Table data={overlapTable} />
+        </Stack>
+    )
 
     return (
         <Stack p={5}>
@@ -460,15 +93,73 @@ export default function Export() {
                 }}>Show dependency only on active edges</Switch>
                 <GroundTruthButton />
 
-                <Button onClick={() => {
-                    calcQualityMetrics()
+                <Button onClick={async () => {
+                    if (networkStore.Network && zoneStore.Zones.length > 0) {
+                        const zoneMetrics = new ZonesMetrics(networkStore.Network)
+
+                        const data = {
+                            Embeddedness: zoneMetrics.AvgEmbeddedness().toFixed(3),
+                            Modularity: zoneMetrics.Modularity().toFixed(3),
+                            "# Ground truth": zoneMetrics.NumberOfCommunities().groundTruth.toString(),
+                            "# Found communities": zoneMetrics.NumberOfCommunities().foundCommunities.toString()
+                        }
+
+                        setQualityTable(data)
+
+                    } else {
+                        toast({
+                            title: "No zones",
+                            description: "Create at least 1 zone",
+                            status: "warning",
+                            duration: 5000,
+                            isClosable: true,
+                        });
+                    }
                 }}>Zones quality</Button>
 
-                <Button onClick={async () => {
-                    await calcEgoMetrics()
-                    console.log("CC ", new Centrality().Clustering());
+                <Table data={qualityTable} />
 
+                <Divider />
+
+                <Button onClick={async () => {
+                    if (networkStore.Network) {
+                        const m = new Metrics(networkStore.Network)
+                        const prominency = m.Prominency()
+                        const strengthCom = m.CommunityStrength()
+                        const zoneSizes = m.ZoneSizes()
+                        const zoneSub = m.SubzoneSizes()
+                        const zoneSuper = m.SuperzoneSizes()
+                        const zoneOverlap = m.Overlaps()
+
+
+                        const data = {
+                            "Nodes": networkStore.Network.NodesLength(),
+                            "Edges": networkStore.Network.EdgesLength(),
+                            "Average degree": m.AvgDegree().toFixed(3),
+                            "CC": new Centrality().Clustering().toFixed(3),
+                            "Strongly-prominent": prominency.globalStronglyProminentLength,
+                            "Weakly-prominent": prominency.globalWeaklyProminentLength,
+                            "Non-prominent": prominency.globalProminentLength,
+                            "Strong communities": strengthCom.stronglyCounter,
+                            "Weakly communities": strengthCom.weaklyCounter,
+                            "Zones count": m.zonesExceptMultiego.length,
+                            "Avg. zone size": zoneSizes.avgZoneSize.toFixed(3),
+                            "Avg. inner size": zoneSizes.avgZoneInnerSize.toFixed(3),
+                            "Avg. outer size": zoneSizes.avgZoneOuterSize.toFixed(3),
+                            "Sub-zones": (await zoneSub).subzonesCount,
+                            "Avg. sub-zones size": (await zoneSub).avgSubzoneSize.toFixed(3),
+                            "Super-zones": (await zoneSuper).superzonesCount,
+                            "Avg. super-zones size": (await zoneSuper).avgSuperzoneSize.toFixed(3),
+                            "Avg. overlap size": zoneOverlap.avgOverlapSize.toFixed(3),
+                            "Zones in overlaps": zoneOverlap.zoneOverlapCount,
+                            "Avg. zones overlap size": zoneOverlap.avgOverlapZonesSize.toFixed(3)
+                        }
+
+
+                        setMetricsTable(data)
+                    }
                 }}>Metrics</Button>
+                <Table data={metricsTable} />
 
                 <Input type="file" onChange={(e) => {
                     if (e.target.files) {
@@ -524,6 +215,8 @@ export default function Export() {
 
 
                 }}>Gephi export</Button>
+
+                <Divider />
             </Stack>
         </Stack>
     )
