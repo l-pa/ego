@@ -173,7 +173,7 @@ export default class EgoZone extends Zone {
         );
       });
 
-      zoneStore.ColorNodesInZone(this);
+      // zoneStore.ColorNodesInZone(this);
     }
   }
 

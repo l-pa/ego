@@ -19,6 +19,11 @@ export const BasicZones: React.FunctionComponent = () => {
     })
   }, [])
 
+  const ZonesCount = observer(() => {
+    return (<Heading as="h4" size="md" pb={5} pt={5}>Zones - {zoneStore.Zones.length}</Heading>)
+  }
+  )
+
   const Zones = observer(() => (
     <Stack>
       <Stack p={5}>
@@ -151,9 +156,7 @@ export const BasicZones: React.FunctionComponent = () => {
         Z-index
       </Checkbox> */}
 
-        <Heading as="h4" size="md" pb={5} pt={5}>
-          Zones
-        </Heading>
+        <ZonesCount />
       </Stack>
       <Zones />
       <Divider />

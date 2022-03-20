@@ -50,25 +50,19 @@ export default class Network {
   }
 
   public getEdge(source: string, target: string): cytoscape.EdgeCollection {
-    if (this.Directed){
-      return cy.$(`edge[source = "${source}"][target = "${target}"]`);
+    const a = cy.getElementById(source + target).edges();
+    const b = cy.getElementById(target + source).edges();
+
+    if (this.Directed) {
+      return a.edges();
     } else {
-      const a = cy.$(`edge[source = "${source}"][target = "${target}"]`);
-      const b = cy.$(`edge[source = "${target}"][target = "${source}"]`);
-
       if (a.length > 0) {
-        return a
+        return a;
+      } else {
+        return b;
       }
-
-      else if (b.length > 0) {
-        return b
-      }
-      else {
-        return cy.collection()
-      }
-
-      
     }
+
   }
 
   public getEdges(source: string): cytoscape.EdgeCollection {

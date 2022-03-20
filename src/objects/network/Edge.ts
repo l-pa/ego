@@ -53,6 +53,7 @@ export default class Edge {
     this.Id = id;
 
     this.data = {
+      id: this.Id,
       source: this.NodeA.Id,
       target: this.NodeB.Id,
       edgeType: "",

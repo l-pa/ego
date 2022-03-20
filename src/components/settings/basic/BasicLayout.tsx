@@ -26,8 +26,6 @@ export function BasicLayout() {
         <option value="concentric">concentric</option>
         <option value="avsdf">avsdf </option>
 
-
-
       </Select>
       <Button
         isFullWidth={true}

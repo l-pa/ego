@@ -384,21 +384,23 @@ export class ZoneStore {
    * Adds new zone
    * @param zone Zone to be added
    */
-  public AddZone(zone: Zone, addSnapshot = true, draw = true) {
+  public AddZone(zone: Zone, addSnapshot = true, draw = true, update = true) {
     if (this.zones.filter((z) => z.Id === zone.Id).length === 0) {
       this.zones.push(zone);
       if (draw) zone.DrawZone();
 
-      if (zone instanceof EgoZone) {
-        cy.batch(() => {
-          for (const key in networkStore.Network?.Nodes) {
-            const node = networkStore.Network?.Nodes[key];
-            node?.SetClass("NodeDisplay", NodeDisplay.Visible);
-          }
-        });
+      // if (zone instanceof EgoZone) {
+      //   cy.batch(() => {
+      //     for (const key in networkStore.Network?.Nodes) {
+      //       const node = networkStore.Network?.Nodes[key];
+      //       node?.SetClass("NodeDisplay", NodeDisplay.Visible);
+      //     }
+      //   });
+      // }
+      if (update) {
+        this.Update();
+        this.SortZones();
       }
-
-      this.Update();
     } else {
       const toast = createStandaloneToast();
       toast({
@@ -410,7 +412,6 @@ export class ZoneStore {
       });
     }
     if (addSnapshot) settingsStore.ExportSnapshot.TakeSnapshot();
-    this.SortZones();
   }
 
   /**
@@ -418,10 +419,20 @@ export class ZoneStore {
    * @param zone Zones array to be added
    */
   public AddZones(zones: Zone[]) {
+    const a = performance.now();
+
     zones.forEach((zone) => {
-      this.AddZone(zone, false);
+      this.AddZone(zone, false, false, false);
     });
+    console.log("Adding zones took ", performance.now() - a);
+    const b = performance.now();
     this.Update();
+    console.log("Update took ", performance.now() - b);
+
+    const c = performance.now();
+    this.SortZones();
+    console.log("Sort took ", performance.now() - c);
+
     settingsStore.ExportSnapshot.TakeSnapshot();
   }
 
@@ -431,10 +442,17 @@ export class ZoneStore {
 
   public Update() {
     if (arrayContainsAll([0, 1, 2, 3, 8, 9], [settingsStore.ActiveCategory])) {
+      const a = performance.now();
       const filter = zoneStore.Filter(this.zones);
+      console.log("Filter init took ", performance.now() - a);
 
+      const b = performance.now();
       filter.zones.forEach((z) => z.DrawZone());
+      console.log("Filter draw took ", performance.now() - b);
+
+      const c = performance.now();
       filter.filtered.forEach((z) => z.HideZone());
+      console.log("Filter hide took ", performance.now() - c);
 
       zoneStore.HideNodesOutsideZones();
       zoneStore.ColorNodesInZones(zoneStore.Zones);
@@ -696,17 +714,15 @@ export class ZoneStore {
    * ColorNodesInZone
    */
   public ColorNodesInZone(z: Zone) {
-    cy.batch(() => {
-      for (const key in networkStore.Network?.Nodes) {
-        const node = networkStore.Network?.Nodes[key];
-        node?.SetClass("NodeProminency", NodeProminency.Blank);
-      }
+    for (const key in networkStore.Network?.Nodes) {
+      const node = networkStore.Network?.Nodes[key];
+      node?.SetClass("NodeProminency", NodeProminency.Blank);
+    }
 
-      for (const key in networkStore.Network?.Edges) {
-        const edge = networkStore.Network?.Edges[key];
-        edge?.SetClass("EdgeType", EdgeType.Blank);
-      }
-    });
+    for (const key in networkStore.Network?.Edges) {
+      const edge = networkStore.Network?.Edges[key];
+      edge?.SetClass("EdgeType", EdgeType.Blank);
+    }
 
     if (z instanceof EgoZone) {
       z.InnerNodes.forEach((n) => {
