@@ -10,7 +10,7 @@ export class CSVLoader extends Loader {
     const network = new Network([], [], directed);
 
     const parsed = parse(data, {
-      delimiter: ",",
+      delimiter: ";",
       columns: false,
       skip_empty_lines: true,
     });
@@ -56,7 +56,7 @@ export class CSVLoader extends Loader {
 
   public async LoadGroundTruth(text: string) {
     const parsed = parse(text, {
-      delimiter: ",",
+      delimiter: ";",
       columns: false,
       skip_empty_lines: true,
     });
