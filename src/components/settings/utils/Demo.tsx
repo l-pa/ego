@@ -171,7 +171,7 @@ export default function Export() {
 
                         reader.onload = function () {
                             const parsed = parse(reader.result as string, {
-                                delimiter: ",",
+                                delimiter: ";",
                                 columns: false,
                                 skip_empty_lines: true,
                             });

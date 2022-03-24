@@ -70,6 +70,6 @@ export class CSVLoader extends Loader {
         participation[row[1]] = new Set<number>([parseInt(row[0])]);
       }
     });
-    networkStore.GroundTruth = participation;
+    networkStore.GroundTruth = participation;    
   }
 }
