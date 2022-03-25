@@ -79,6 +79,16 @@ function App() {
 
                         if (loader) {
                           context.network.Network = loader.GetNetworkFromFile(e.target?.result, directed.current?.checked)
+
+                          toast({
+                            title: "Network loaded.",
+                            description: `${networkStore.FileName} - ${context.network.Network.NodesLength()
+                              } nodes - ${context.network.Network.EdgesLength()} egdes -  ${context.network.Network.Directed ? "✅" : "❌"
+                              } directed`,
+                            status: "success",
+                            duration: 5000,
+                            isClosable: true,
+                          });
                       } else {
                         toast({
                           title: "Unknown file type",

@@ -22,7 +22,7 @@ export default class EgoZone extends Zone {
   //     .toString(16)
   //     .padStart(6, "0");
 
-  private automove: any = undefined;
+  private automoveRule: any = undefined;
 
   constructor(ego: Node) {
     super(ego.Id.toString());
@@ -94,12 +94,10 @@ export default class EgoZone extends Zone {
   }
 
   public set EnableAutomove(enable: boolean) {
-    console.log(enable);
-    
     if (enable) {
-      this.automove.enable();
+      this.automoveRule.enable();
     } else {
-      this.automove.disable();
+      this.automoveRule.disable();
     }
   }
 
@@ -121,7 +119,7 @@ export default class EgoZone extends Zone {
 
       this.AllCollection.difference(nodesInZonesExceptZ).addClass("hide");
     }
-    if (this.automove) this.automove.destroy();
+    if (this.automoveRule) this.automoveRule.destroy();
 
     super.HideZone();
   }
@@ -135,7 +133,7 @@ export default class EgoZone extends Zone {
     }
 
     if (!this.IsDrawn) {
-      this.automove = (cy as any).automove({
+      this.automoveRule = (cy as any).automove({
         nodesMatching: this.innerCollection
           .subtract(this.innerCollection[0])
           .union(this.outsideCollection),
@@ -143,10 +141,10 @@ export default class EgoZone extends Zone {
         dragWith: this.innerCollection[0],
       });
 
-      this.automove.disable();
+      this.automoveRule.disable();
 
       if (settingsStore.Automove) {
-        this.automove.enable();
+        this.automoveRule.enable();
       }
 
       super.DrawZone();
@@ -173,8 +171,16 @@ export default class EgoZone extends Zone {
         );
       });
 
-      // zoneStore.ColorNodesInZone(this);
+      zoneStore.ColorNodesInZone(this);
     }
+  }
+
+  public DeleteZone() {
+    if (this.automoveRule) {
+      this.automoveRule.destroy();
+      console.log("Destroyed");
+    }
+    super.DeleteZone();
   }
 
   /**

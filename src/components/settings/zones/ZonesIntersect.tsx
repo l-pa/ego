@@ -1,6 +1,7 @@
 import {
   Button,
   Checkbox,
+  createStandaloneToast,
   Divider,
   Heading,
   Stack,
@@ -23,6 +24,7 @@ export function ZonesIntersect() {
   }, [])
 
   const zonesToIntersert: EgoZone[] = observable([]);
+  const toast = createStandaloneToast();
 
   let customZone: EgoZone;
 
@@ -35,8 +37,11 @@ export function ZonesIntersect() {
 
       if (arr.length > 1) {
         zoneStore.ClearTmpZones()
-        const a = zoneStore.Filter(zoneStore.OverlapZones(zonesToIntersert)).zones as EgoZone[]
-        zoneStore.AddTmpZone(zoneStore.Difference(a, zoneStore.Zones), true)
+        const overlap = zoneStore.OverlapZones(zonesToIntersert)
+        if (overlap) {
+          const a = zoneStore.Filter(overlap).zones as EgoZone[]
+          zoneStore.AddTmpZone(zoneStore.Difference(a, zoneStore.Zones), true)
+        }
       }
     }
   );
@@ -65,6 +70,9 @@ export function ZonesIntersect() {
         let c = 0
         let z: EgoZone | undefined = undefined
 
+        let fromZ1
+        let fromZ2 
+
         const tmpZones = zoneStore.GetAllZones()
 
         for (let i = 0; i < tmpZones.length; i++) {
@@ -74,16 +82,30 @@ export function ZonesIntersect() {
             const z2 = tmpZones[j];
 
             const a = zoneStore.OverlapZones([z1, z2])
-            if (a.length > 0 && a[0].AllCollection.length > c) {
+
+            if (a && a.length > 0 && a[0].AllCollection.length > c) {
               c = a[0].AllCollection.length
               z = a[0]
+              fromZ1 = z1
+              fromZ2 = z2
             }
 
           }
 
         }
-        if (z)
+
+        if (z) {
           zoneStore.AddZone(z, true, false)
+
+          toast({
+            title: "Max. overlap found",
+            description: `From Ego ${fromZ1?.Ego.Id} and ${fromZ2?.Ego.Id}`,
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
+
+        }
 
       }}>
         Add max. overlap

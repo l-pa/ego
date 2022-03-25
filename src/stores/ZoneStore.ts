@@ -125,50 +125,85 @@ export class ZoneStore {
     return zones;
   }
 
+  private Overlap(z1: EgoZone, z2: EgoZone) {
+    const overlapNodes = z1.AllCollection.intersect(z2.AllCollection);
+
+    if (z1.Ego.Id === z2.Ego.Id) {
+      return;
+    }
+
+    if (overlapNodes.length === 0) {
+      return;
+    }
+    if (z1.AllCollection.length > z2.AllCollection.length) {
+      if (z2.AllCollection.length === overlapNodes.length) {
+        return; // super
+      }
+      return overlapNodes;
+    }
+
+    if (z1.AllCollection.length < z2.AllCollection.length) {
+      if (z1.AllCollection.length === overlapNodes.length) {
+        return; // sub
+      }
+      return overlapNodes;
+    }
+    if (overlapNodes.length === z2.AllCollection.length) {
+      return; // alternative
+    }
+    return overlapNodes;
+  }
+
   /**
    * MaxOverlapZones
    */
   public OverlapZones(tmpZones: EgoZone[]) {
-    let egos: NodeCollection = cy.collection();
-    let aaa = true;
-    let intersect = cy.collection();
-
-    tmpZones.forEach((z) => {
-      egos = egos.add(cy.$id(z.Ego.Id));
-    });
-
-    tmpZones.forEach((z) => {
-      egos.forEach((e) => {
-        if (z.Ego.Id !== e.id()) {
-          if (z.InnerCollection.has(e)) {
-            aaa = false;
-          }
-        }
-      });
-    });
-
-    if (aaa) {
-      intersect = tmpZones[0].AllCollection.intersect(
+    if (tmpZones.length === 2) {
+      const overlap = this.Overlap(tmpZones[0], tmpZones[1]);
+      if (overlap) return this.GetZonesFromNodes(overlap);
+    } else if (tmpZones.length > 2) {
+      let overlap = tmpZones[0].AllCollection.intersect(
         tmpZones[1].AllCollection
       );
 
       for (let i = 2; i < tmpZones.length; i++) {
-        const x = tmpZones[i].AllCollection;
-
-        intersect = intersect.intersect(x);
+        const z = tmpZones[i];
+        overlap = overlap.intersect(z.AllCollection);
       }
+      return this.GetZonesFromNodes(overlap);
     }
 
-    return this.GetZonesFromNodes(intersect);
+    // let egos: NodeCollection = cy.collection();
+    // let aaa = true;
+    // let intersect = cy.collection();
+    // tmpZones.forEach((z) => {
+    //   egos = egos.add(cy.$id(z.Ego.Id));
+    // });
+    // tmpZones.forEach((z) => {
+    //   egos.forEach((e) => {
+    //     if (z.Ego.Id !== e.id()) {
+    //       if (z.InnerCollection.has(e)) {
+    //         aaa = false;
+    //       }
+    //     }
+    //   });
+    // });
+    // if (aaa) {
+    //   intersect = tmpZones[0].AllCollection.intersect(
+    //     tmpZones[1].AllCollection
+    //   );
+    //   for (let i = 2; i < tmpZones.length; i++) {
+    //     const x = tmpZones[i].AllCollection;
+    //     intersect = intersect.intersect(x);
+    //   }
+    // }
+    // return this.GetZonesFromNodes(intersect);
 
     // for (let i = 0; i < tmpZones.length; i++) {
     //   const z1 = tmpZones[i];
-
     //   for (let j = i + 1; j < tmpZones.length; j++) {
     //     const z2 = tmpZones[j];
-
     //     const intersect = z1.AllCollection.intersect(z2.AllCollection);
-
     //     if (
     //       !z1.InnerCollection.has(cy.$id(z2.Ego.Id)) &&
     //       !z2.InnerCollection.has(cy.$id(z1.Ego.Id))
@@ -177,7 +212,6 @@ export class ZoneStore {
     //     }
     //   }
     // }
-
     // return [max1, max2, max1!!.AllCollection.intersect(max2!!.AllCollection)];
   }
 

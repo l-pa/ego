@@ -75,7 +75,7 @@ export default class Edge {
 
     networkStore.Network?.getEdge(this.NodeA.Id, this.NodeB.Id).classes(
       Object.values(this.classes).join(" ")
-    );
+    );    
   }
 
   /**
