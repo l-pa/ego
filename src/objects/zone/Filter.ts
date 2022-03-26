@@ -74,14 +74,9 @@ export class DuplicatesByEgo implements IFilter {
           for (let j = i + 1; j < zones.length; j++) {
             const z2 = zones[j];
             if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
-              if (
-                z1.InnerCollection.union(z1.OutsideCollection).difference(
-                  z2.InnerCollection.union(z2.OutsideCollection)
-                ).length === 0 &&
-                z2.InnerCollection.union(z2.OutsideCollection).difference(
-                  z1.InnerCollection.union(z1.OutsideCollection)
-                ).length === 0
-              ) {
+              if (z1.AllCollection.length === z2.AllCollection.length &&
+                  z1.AllCollection.intersect(z2.AllCollection).length === z1.AllCollection.length) 
+              {
                 if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
                   zonesToReturn.push(z2);
                 }
@@ -97,16 +92,26 @@ export class DuplicatesByEgo implements IFilter {
           for (let j = i + 1; j < zones.length; j++) {
             const z2 = zones[j];
             if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
-              if (
-                z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.Id).length ===
-                  1 &&
-                z1.InnerCollection.subtract(z2.InnerCollection).length === 0 &&
-                z2.InnerCollection.subtract(z1.InnerCollection).length === 0
-              ) {
-                if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
-                  zonesToReturn.push(z2);
+              if (z1.InnerCollection.length === z2.InnerCollection.length &&
+                  z1.InnerCollection.intersect(z2.InnerCollection).length === z1.InnerCollection.length) { {
+                  if (
+                    zonesToReturn.filter((z) => z.Id === z2.Id).length === 0
+                  ) {
+                    zonesToReturn.push(z2);
+                  }
                 }
               }
+
+              // if (
+              //   z1.Ego.TwDep.filter((n) => n.Id.toString() === z2.Id).length ===
+              //     1 &&
+              //   z1.InnerCollection.subtract(z2.InnerCollection).length === 0 &&
+              //   z2.InnerCollection.subtract(z1.InnerCollection).length === 0
+              // ) {
+              //   if (zonesToReturn.filter((z) => z.Id === z2.Id).length === 0) {
+              //     zonesToReturn.push(z2);
+              //   }
+              // }
             }
           }
         }
