@@ -50,11 +50,11 @@ export default class Network {
   }
 
   public getEdge(source: string, target: string): cytoscape.EdgeCollection {
-    const a = cy.getElementById("E-" + source + target).edges();
-    const b = cy.getElementById("E-" + target + source).edges();
-
+    const a = cy.getElementById("E-"+ source + target).edges();
+    const b = cy.getElementById("E-"+ target + source).edges();
+    
     if (this.Directed) {
-      return a.edges();
+      return a;
     } else {
       if (a.length > 0) {
         return a;
@@ -71,7 +71,7 @@ export default class Network {
     if (e1) return e1;
 
     if (!networkStore.Network?.Directed) {
-      const id2 = "E-" + nodeBid + nodeAid;
+      const id2 = "E-"+nodeBid + nodeAid;
       const e2 = this.Edges[id2];
       if (e2) return e2;
     }
@@ -88,9 +88,10 @@ export default class Network {
   public addEdge(nodeA: Node, nodeB: Node, weight?: number) {
     this.addNode(nodeA);
     this.addNode(nodeB);
+    
 
-    const e = new Edge(nodeA, nodeB, nodeA.Id + nodeB.Id, weight ? weight : 1);
-    const e2 = new Edge(nodeB, nodeA, nodeB.Id + nodeA.Id, weight ? weight : 1);
+    const e = new Edge(nodeA, nodeB, "E-" + nodeA.Id+nodeB.Id, weight ? weight : 1);
+    const e2 = new Edge(nodeB, nodeA, "E-" + nodeB.Id+nodeA.Id, weight ? weight : 1);
 
     if (this.Directed && !this.Edges[e.GetId()]) {
       this.Edges[e.GetId()] = e;

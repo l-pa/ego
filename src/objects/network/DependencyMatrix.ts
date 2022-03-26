@@ -192,12 +192,13 @@ export default class Matrix {
    */
   private weight(nodeA: Node, nodeB: Node): number {
     if (this.network.Directed) {
-      const r = this.network.Edges[nodeA.Id + nodeB.Id];
+      
+      const r = this.network.getEdgeByNodes(nodeA.Id, nodeB.Id);
 
       return r ? r.GetWeight() : 1;
     } else {
-      const a = this.network.Edges[nodeA.Id + nodeB.Id];
-      const b = this.network.Edges[nodeB.Id + nodeA.Id];
+      const a = this.network.getEdgeByNodes(nodeA.Id, nodeB.Id);
+      const b = this.network.getEdgeByNodes(nodeB.Id, nodeA.Id);
       if (a) {
         return a.GetWeight();
       } else {

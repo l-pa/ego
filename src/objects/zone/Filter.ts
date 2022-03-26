@@ -92,11 +92,16 @@ export class DuplicatesByEgo implements IFilter {
           for (let j = i + 1; j < zones.length; j++) {
             const z2 = zones[j];
             if (z1 instanceof EgoZone && z2 instanceof EgoZone) {
-              if (z1.InnerCollection.length === z2.InnerCollection.length &&
-                  z1.InnerCollection.intersect(z2.InnerCollection).length === z1.InnerCollection.length) { {
+              if (
+                z1.InnerCollection.length === z2.InnerCollection.length &&
+                z1.InnerCollection.intersect(z2.InnerCollection).length ===
+                  z1.InnerCollection.length
+              ) {
+                {
                   if (
                     zonesToReturn.filter((z) => z.Id === z2.Id).length === 0
                   ) {
+                    console.log(z2.Id);
                     zonesToReturn.push(z2);
                   }
                 }
