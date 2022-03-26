@@ -50,7 +50,7 @@ export default class Edge {
   constructor(nodeA: Node, nodeB: Node, id: string, weight: number) {
     this.NodeA = nodeA;
     this.NodeB = nodeB;
-    this.Id = id;
+    this.Id = "E-" + id;
 
     this.data = {
       id: this.Id,
