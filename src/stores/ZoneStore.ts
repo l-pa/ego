@@ -125,7 +125,7 @@ export class ZoneStore {
     return zones;
   }
 
-  private Overlap(z1: EgoZone, z2: EgoZone) {
+  public Overlap(z1: EgoZone, z2: EgoZone) {
     const overlapNodes = z1.AllCollection.intersect(z2.AllCollection);
 
     if (z1.Ego.Id === z2.Ego.Id) {
@@ -572,7 +572,11 @@ export class ZoneStore {
   }
 
   private EdgeColorCalc(e: EdgeSingular) {
-    networkStore.Network?.Edges[e.source().id() + e.target().id()].ResetClass();
+    const ef = networkStore.Network?.getEdgeByNodes(
+      e.source().id(),
+      e.target().id()
+    );
+    if (ef) ef.ResetClass();
   }
 
   private blendEdgesBetweenNodes(collection: Collection) {

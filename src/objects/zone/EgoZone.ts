@@ -133,13 +133,14 @@ export default class EgoZone extends Zone {
     }
 
     if (!this.IsDrawn) {
-      this.automoveRule = (cy as any).automove({
-        nodesMatching: this.innerCollection
-          .subtract(this.innerCollection[0])
-          .union(this.outsideCollection),
-        reposition: "drag",
-        dragWith: this.innerCollection[0],
-      });
+      if (!this.automoveRule)
+        this.automoveRule = (cy as any).automove({
+          nodesMatching: this.innerCollection
+            .subtract(this.innerCollection[0])
+            .union(this.outsideCollection),
+          reposition: "drag",
+          dragWith: this.innerCollection[0],
+        });
 
       this.automoveRule.disable();
 

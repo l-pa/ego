@@ -6,11 +6,18 @@ import { arrayContainsAll } from "../objects/utility/ArrayUtils";
 import { networkStore } from "..";
 
 export class CSVLoader extends Loader {
+  delimeter: string = ";";
+
+  constructor(delimiter = ";") {
+    super();
+    this.delimeter = delimiter;
+  }
+
   public GetNetworkFromFile(data: any, directed?: boolean): Network {
     const network = new Network([], [], directed);
 
     const parsed = parse(data, {
-      delimiter: ";",
+      delimiter: this.delimeter,
       columns: false,
       skip_empty_lines: true,
     });
@@ -56,7 +63,7 @@ export class CSVLoader extends Loader {
 
   public async LoadGroundTruth(text: string) {
     const parsed = parse(text, {
-      delimiter: ";",
+      delimiter: this.delimeter,
       columns: false,
       skip_empty_lines: true,
     });
@@ -70,6 +77,6 @@ export class CSVLoader extends Loader {
         participation[row[1]] = new Set<number>([parseInt(row[0])]);
       }
     });
-    networkStore.GroundTruth = participation;    
+    networkStore.GroundTruth = participation;
   }
 }

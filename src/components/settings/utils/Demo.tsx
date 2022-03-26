@@ -131,6 +131,7 @@ export default function Export() {
                         const zoneSuper = m.SuperzoneSizes()
                         const zoneOverlap = m.Overlaps()
 
+                        console.log(new Centrality().Clustering());
 
                         const data = {
                             "Nodes": networkStore.Network.NodesLength(),
@@ -147,13 +148,31 @@ export default function Export() {
                             "Avg. inner size": zoneSizes.avgZoneInnerSize.toFixed(3),
                             "Avg. outer size": zoneSizes.avgZoneOuterSize.toFixed(3),
                             "Sub-zones": (await zoneSub).subzonesCount,
+                            "Avg. sub-zones count": (await zoneSub).subzonesCount / m.zonesExceptMultiego.length,
                             "Avg. sub-zones size": (await zoneSub).avgSubzoneSize.toFixed(3),
                             "Super-zones": (await zoneSuper).superzonesCount,
+                            "Avg. super-zones count": (await zoneSuper).superzonesCount / m.zonesExceptMultiego.length,
                             "Avg. super-zones size": (await zoneSuper).avgSuperzoneSize.toFixed(3),
                             "Avg. overlap size": zoneOverlap.avgOverlapSize.toFixed(3),
+                            "Overlaps": zoneOverlap.totalOverlapCount,
                             "Zones in overlaps": zoneOverlap.zoneOverlapCount,
-                            "Avg. zones overlap size": zoneOverlap.avgOverlapZonesSize.toFixed(3)
+                            "Max overlap size": zoneOverlap.maxZoneOverlapSize,
+                            "Avg. zones overlap size": zoneOverlap.avgOverlapZonesSize.toFixed(3),
+                            "Max overlap zone size": zoneOverlap.maxZoneSize
                         }
+
+                        const resCsv: number[] = []
+                        const klk: string[] = []
+
+                        for (var key in data) {
+                            if (data.hasOwnProperty(key)) {
+                                const a = data[key as keyof Object].toString()
+                                resCsv.push(parseFloat(a))
+                                klk.push(key)
+                            }
+                        }
+                        console.log(klk.join(";"));
+                        console.log(resCsv.join(";"));
 
 
                         setMetricsTable(data)

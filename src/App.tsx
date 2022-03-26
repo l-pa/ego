@@ -24,6 +24,7 @@ import { ArrowForwardIcon } from "@chakra-ui/icons";
 import { JSONLoader } from "./loaders/JSONLoader";
 import { Loader } from "./loaders/Loader";
 import { GDFLoader } from "./loaders/GDFLoader";
+import { cy } from "./objects/graph/Cytoscape";
 
 function App() {
   const context = useContext(Context);
@@ -202,7 +203,7 @@ function App() {
                   rightIcon={<ArrowForwardIcon />}
                   variant="outline"
                   onClick={() => {
-                    const csv = new CSVLoader()
+                    const csv = new CSVLoader(",")
 
                     csv.GetNetworkFromURL("https://raw.githubusercontent.com/graphistry/pygraphistry/master/demos/data/lesmiserables.csv", directed.current?.checked).then(network => {
                       // new Matrix(network).nodesDependency();

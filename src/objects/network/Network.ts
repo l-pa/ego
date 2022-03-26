@@ -98,6 +98,7 @@ export default class Network {
   public addEdge(nodeA: Node, nodeB: Node, weight?: number) {
     this.addNode(nodeA);
     this.addNode(nodeB);
+
     const e = new Edge(nodeA, nodeB, nodeA.Id + nodeB.Id, weight ? weight : 1);
     const e2 = new Edge(nodeB, nodeA, nodeB.Id + nodeA.Id, weight ? weight : 1);
 
@@ -106,10 +107,10 @@ export default class Network {
       return;
     }
 
-    if (!this.Edges[e.GetId()] && !this.Edges[e2.GetId()]) {
+    if (!(e.GetId() in this.Edges) && !(e2.GetId() in this.Edges)) {
       this.Edges[e.GetId()] = e;
       return;
-    }
+    }    
   }
 
   /**

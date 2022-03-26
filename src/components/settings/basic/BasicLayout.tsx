@@ -89,6 +89,8 @@ export function BasicLayout() {
           onClick={() => {
             runAlg()
             setIsRunning(true)
+
+
           }}
         >
           Run
@@ -97,6 +99,9 @@ export function BasicLayout() {
             isFullWidth={true}
             onClick={() => {
               setIsRunning(false)
+              //@ts-ignore
+              cy.layout({ name: "cola", nodeSpacing: function (node) { return 25; }, edgeLength: function (e) { return 5; } }).run();
+
             }}
           >
             Stop

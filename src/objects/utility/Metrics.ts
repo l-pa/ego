@@ -1,10 +1,10 @@
-import cytoscape, { NodeSingular } from "cytoscape";
-import { networkStore, zoneStore } from "../..";
+import cytoscape, { NodeCollection, NodeSingular } from "cytoscape";
+import { networkStore, settingsStore, zoneStore } from "../..";
 import { cy } from "../graph/Cytoscape";
 import Network from "../network/Network";
 import { NodeProminency } from "../network/Node";
 import EgoZone from "../zone/EgoZone";
-import { DuplicatesByEgo } from "../zone/Filter";
+import Filter, { DuplicatesByEgo } from "../zone/Filter";
 import { combinationsOfTwo } from "./ArrayUtils";
 
 export interface IMetricGT {
@@ -486,24 +486,26 @@ export class Metrics {
         duplicates: "me",
       }) as EgoZone[]
     ) as EgoZone[];
+
     this.duplicates = zoneStore.Difference(
       this.allZones,
       new DuplicatesByEgo().FilterWithParams(this.allZones, {
         duplicates: "de",
       }) as EgoZone[]
     ) as EgoZone[];
+
     this.zonesExceptMultiego = zoneStore.Difference(
       this.allZones,
       this.multiego
     ) as EgoZone[];
-
-    console.log("aaaaaaaaaaaaa " + this.allZones.length, this.multiego.length);
 
     this.multiego.forEach((n) => {
       this.multiegoNodes = this.multiegoNodes.add(
         this.network.getNode(n.Ego.Id)
       );
     });
+
+    console.log(this.allZones.length, this.multiego.length);
   }
 
   /**
@@ -847,6 +849,123 @@ export class Metrics {
     let zoneOverlapCount = 0;
     let avgOverlapZonesSize = 0;
 
+    let maxZoneSize = -1;
+
+    const Ida: string[] = [];
+
+    for (let i = 0; i < this.zonesExceptMultiego.length; i++) {
+      const z1 = this.zonesExceptMultiego[i];
+      let overlapCount = 0;
+
+      for (let j = i + 1; j < this.zonesExceptMultiego.length; j++) {
+        const z2 = this.zonesExceptMultiego[j];
+
+        const i = zoneStore.Overlap(z1, z2);
+
+        if (i) {
+          if (i.length === 0) continue;
+
+          if (i.length > 0) {
+            overlapCount++;
+            if (i.length > maxZoneOverlapSize) maxZoneOverlapSize = i.length;
+            if (i.length < minZoneOverlapSize) minZoneOverlapSize = i.length;
+
+            avgOverlapSize += i.length;
+
+            zoneStore.GetZonesFromNodes(i).forEach((e) => {
+              if (
+                !Ida.includes(e.Id) &&
+                this.multiegoNodes.nodes().getElementById(e.Id).length === 0 &&
+                i.length > settingsStore.MinNodesZoneShow
+              ) {
+                Ida.push(e.Id);
+                if (maxZoneSize < e.AllCollection.length)
+                  maxZoneSize = e.AllCollection.length;
+                zoneOverlapCount++;
+                avgOverlapZonesSize += e.AllCollection.length;
+              }
+            });
+          }
+        }
+      }
+      if (overlapCount > maxZoneOverlapCount)
+        maxZoneOverlapCount = overlapCount;
+
+      if (overlapCount < minZoneOverlapCount)
+        minZoneOverlapCount = overlapCount;
+
+      totalOverlapCount += overlapCount;
+    }
+
+    // this.zonesExceptMultiego.forEach((z1) => {
+    //   let overlapCount = 0;
+
+    //   this.zonesExceptMultiego.forEach((z2) => {
+    //     if (z1.Id !== z2.Id) {
+
+    //       const i = zoneStore.Overlap(z1, z2)
+
+    //       if (i) {
+    //         if (i.length === 0) return;
+
+    //         if (i.length > 0) {
+    //           overlapCount++;
+    //           if (i.length > maxZoneOverlapSize) maxZoneOverlapSize = i.length;
+    //           if (i.length < minZoneOverlapSize) minZoneOverlapSize = i.length;
+
+    //           avgOverlapSize += i.length;
+
+    //           zoneStore.GetZonesFromNodes(i).forEach((e) => {
+    //             if (e.AllCollection.nodes().difference(i.nodes()).length === 0) {
+    //               zoneOverlapCount++;
+    //               avgOverlapZonesSize += e.AllCollection.length;
+    //             }
+    //           });
+    //         }
+
+    //       }
+
+    //     }
+    //   });
+
+    //   if (overlapCount > maxZoneOverlapCount)
+    //     maxZoneOverlapCount = overlapCount;
+
+    //   if (overlapCount < minZoneOverlapCount)
+    //     minZoneOverlapCount = overlapCount;
+
+    //   totalOverlapCount += overlapCount;
+    // });
+    avgOverlapSize = avgOverlapSize / totalOverlapCount;
+    avgOverlapZonesSize = avgOverlapZonesSize / zoneOverlapCount;
+
+    // const d = (this.zonesExceptMultiego.length * (this.zonesExceptMultiego.length - 1)) / 2
+
+    return {
+      avgOverlapSize,
+      avgOverlapZonesSize,
+      totalOverlapCount,
+      zoneOverlapCount,
+      maxZoneOverlapSize,
+      maxZoneSize,
+    };
+  }
+
+  /**
+   * Overlaps
+   */
+  public Overlaps2() {
+    let maxZoneOverlapSize = -1;
+    let minZoneOverlapSize = 99999;
+    let avgOverlapSize = 0;
+
+    let maxZoneOverlapCount = -1;
+    let minZoneOverlapCount = 99999;
+    let totalOverlapCount = 0;
+
+    let zoneOverlapCount = 0;
+    let avgOverlapZonesSize = 0;
+
     this.zonesExceptMultiego.forEach((z1) => {
       let overlapCount = 0;
 
@@ -895,6 +1014,7 @@ export class Metrics {
       avgOverlapZonesSize,
       totalOverlapCount,
       zoneOverlapCount,
+      maxZoneOverlapSize,
     };
   }
 }
