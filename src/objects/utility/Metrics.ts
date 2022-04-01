@@ -473,6 +473,9 @@ export class Metrics {
   zonesExceptMultiego: EgoZone[] = [];
   multiegoNodes: cytoscape.Collection = cy.collection();
 
+  tmpSubZones: string[] = [];
+  tmpSuperZones: string[] = [];
+
   constructor(network: Network) {
     this.network = network;
 
@@ -595,6 +598,18 @@ export class Metrics {
     let weaklyCounter = 0;
     let stronglyCounter = 0;
 
+    const weaklyPromCounter = {
+      non: 0,
+      weakly: 0,
+      strongly: 0,
+    };
+
+    const stronglyPromCounter = {
+      non: 0,
+      weakly: 0,
+      strongly: 0,
+    };
+
     this.zonesExceptMultiego.forEach((z) => {
       let weakly = false;
       let insideSum = 0;
@@ -617,13 +632,45 @@ export class Metrics {
       if (weakly) {
         if (insideSum > outsideSum) {
           weaklyCounter++;
+          switch (z.Ego.isProminent()) {
+            case NodeProminency.NonProminent:
+              weaklyPromCounter.non++;
+              break;
+            case NodeProminency.WeaklyProminent:
+              weaklyPromCounter.weakly++;
+              break;
+            case NodeProminency.StronglyProminent:
+              weaklyPromCounter.strongly++;
+              break;
+            default:
+              break;
+          }
         }
       } else {
         stronglyCounter++;
+        switch (z.Ego.isProminent()) {
+          case NodeProminency.NonProminent:
+            stronglyPromCounter.non++;
+            break;
+          case NodeProminency.WeaklyProminent:
+            stronglyPromCounter.weakly++;
+            break;
+          case NodeProminency.StronglyProminent:
+            stronglyPromCounter.strongly++;
+            break;
+          default:
+            break;
+        }
       }
     });
+    console.log(stronglyPromCounter, weaklyPromCounter);
 
-    return { stronglyCounter, weaklyCounter };
+    return {
+      stronglyCounter,
+      weaklyCounter,
+      stronglyPromCounter,
+      weaklyPromCounter,
+    };
   }
 
   /**
@@ -643,6 +690,10 @@ export class Metrics {
       await zoneStore
         .SubzonesOfZone([z], this.multiegoNodes.nodes())
         .then((zones) => {
+          zones.forEach((z) => {
+            this.tmpSubZones.push(z.Ego.Id);
+          });
+
           const sorted = zones.sort(
             (b: EgoZone, a: EgoZone) =>
               a.AllCollection.length - b.AllCollection.length
@@ -668,7 +719,6 @@ export class Metrics {
     }
 
     const avgSubzoneSize = subzonesSizesSum / subzonesCount;
-
     return { subzonesCount, avgSubzoneSize };
   }
 
@@ -689,6 +739,10 @@ export class Metrics {
       await zoneStore
         .SuperzoneOfZone(z, this.multiegoNodes.nodes())
         .then((zones) => {
+          zones.forEach((z) => {
+            this.tmpSuperZones.push(z.Ego.Id);
+          });
+
           const sorted = zones.sort(
             (b: EgoZone, a: EgoZone) =>
               a.AllCollection.length - b.AllCollection.length
@@ -755,6 +809,30 @@ export class Metrics {
     });
     avgEmbededdness /= this.zonesExceptMultiego.length;
     return { minEmbededdness, maxEmbededdness, avgEmbededdness };
+  }
+
+  /**
+   * Liasons
+   */
+  public Liasons() {
+    let maxLiason = -1;
+    let avgLiasons = 0;
+
+    let maxCoLiason = -1;
+    let avgCoLiasons = 0;
+
+    this.zonesExceptMultiego.forEach((z) => {
+      if (z.OutsideNodes[0].length > maxLiason)
+        maxLiason = z.OutsideNodes[0].length;
+      if (z.OutsideNodes[1].length > maxCoLiason)
+        maxCoLiason = z.OutsideNodes[1].length;
+      avgLiasons += z.OutsideNodes[0].length;
+      avgCoLiasons += z.OutsideNodes[1].length;
+    });
+    avgLiasons /= this.zonesExceptMultiego.length;
+    avgCoLiasons /= this.zonesExceptMultiego.length;
+
+    return { maxLiason, avgLiasons, maxCoLiason, avgCoLiasons };
   }
 
   /**
@@ -850,6 +928,7 @@ export class Metrics {
     let avgOverlapZonesSize = 0;
 
     let maxZoneSize = -1;
+    let avgDensity = 0;
 
     const Ida: string[] = [];
 
@@ -883,6 +962,13 @@ export class Metrics {
                   maxZoneSize = e.AllCollection.length;
                 zoneOverlapCount++;
                 avgOverlapZonesSize += e.AllCollection.length;
+                avgDensity +=
+                  e.AllCollection.nodes()
+                    .edgesWith(e.AllCollection.nodes())
+                    .edges().length /
+                  ((e.AllCollection.nodes().length *
+                    (e.AllCollection.nodes().length - 1)) /
+                    2);
               }
             });
           }
@@ -940,7 +1026,7 @@ export class Metrics {
     avgOverlapZonesSize = avgOverlapZonesSize / zoneOverlapCount;
 
     // const d = (this.zonesExceptMultiego.length * (this.zonesExceptMultiego.length - 1)) / 2
-
+    avgDensity /= zoneOverlapCount;
     return {
       avgOverlapSize,
       avgOverlapZonesSize,
@@ -948,6 +1034,7 @@ export class Metrics {
       zoneOverlapCount,
       maxZoneOverlapSize,
       maxZoneSize,
+      avgDensity,
     };
   }
 

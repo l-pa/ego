@@ -7,6 +7,7 @@ import Export, { ImageType } from "../objects/export/ExportImage";
 import { IExportSettings } from "./IExportSettings";
 import { NodeLabel } from "../objects/network/Node";
 import { EdgeShowWeight } from "../objects/network/Edge";
+import _ from "lodash";
 
 interface IPdfPageExportOptions {
   title?: boolean;
@@ -359,9 +360,13 @@ export class SettingsStore {
   }
 
   public set MinNodesZoneShow(v: number) {
-    this.minNodesZoneShow = v;
-    this.filterChanged = !this.filterChanged;
-    zoneStore.Update();
+    const a = _.debounce(() => {
+      this.minNodesZoneShow = v;
+      this.filterChanged = !this.filterChanged;
+      zoneStore.Update();
+    }, 1500);
+
+    a();
   }
 
   public get Duplicates(): string {

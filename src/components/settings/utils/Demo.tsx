@@ -138,6 +138,11 @@ export default function Export() {
                             "Edges": networkStore.Network.EdgesLength(),
                             "Average degree": m.AvgDegree().toFixed(3),
                             "CC": new Centrality().Clustering().toFixed(3),
+                            "Avg. liasons": m.Liasons().avgLiasons.toFixed(3),
+                            "Avg. Coliasons": m.Liasons().avgCoLiasons.toFixed(3),
+                            "Max. liasons": m.Liasons().maxLiason,
+                            "Max. coliasons": m.Liasons().maxCoLiason,
+
                             "Strongly-prominent": prominency.globalStronglyProminentLength,
                             "Weakly-prominent": prominency.globalWeaklyProminentLength,
                             "Non-prominent": prominency.globalProminentLength,
@@ -148,17 +153,19 @@ export default function Export() {
                             "Avg. inner size": zoneSizes.avgZoneInnerSize.toFixed(3),
                             "Avg. outer size": zoneSizes.avgZoneOuterSize.toFixed(3),
                             "Sub-zones": (await zoneSub).subzonesCount,
-                            "Avg. sub-zones count": (await zoneSub).subzonesCount / m.zonesExceptMultiego.length,
+                            "Avg. sub-zones count": ((await zoneSub).subzonesCount / m.zonesExceptMultiego.length).toFixed(3),
                             "Avg. sub-zones size": (await zoneSub).avgSubzoneSize.toFixed(3),
                             "Super-zones": (await zoneSuper).superzonesCount,
-                            "Avg. super-zones count": (await zoneSuper).superzonesCount / m.zonesExceptMultiego.length,
+                            "Avg. super-zones count": ((await zoneSuper).superzonesCount / m.zonesExceptMultiego.length).toFixed(3),
                             "Avg. super-zones size": (await zoneSuper).avgSuperzoneSize.toFixed(3),
                             "Avg. overlap size": zoneOverlap.avgOverlapSize.toFixed(3),
                             "Overlaps": zoneOverlap.totalOverlapCount,
                             "Zones in overlaps": zoneOverlap.zoneOverlapCount,
                             "Max overlap size": zoneOverlap.maxZoneOverlapSize,
                             "Avg. zones overlap size": zoneOverlap.avgOverlapZonesSize.toFixed(3),
-                            "Max overlap zone size": zoneOverlap.maxZoneSize
+                            "Max overlap zone size": zoneOverlap.maxZoneSize,
+                            "Overlap avg. density": zoneOverlap.avgDensity.toFixed(3),
+
                         }
 
                         const resCsv: number[] = []
@@ -171,6 +178,36 @@ export default function Export() {
                                 klk.push(key)
                             }
                         }
+                        // klk.push("NMI")
+                        // klk.push("Omega index")
+
+                        // if (Object.keys(toJS(networkStore.GroundTruth)).length > 0) {
+                        //     resCsv.push(0)
+                        //     resCsv.push(0)
+                        // } else {
+                        //     const groundTruth = toJS(networkStore.GroundTruth)
+                        //     const current = networkStore.Network.GetCurrentZonesParticipation()
+
+                        //     resCsv.push(new NMI().CalcMetric(current, groundTruth))
+                        //     resCsv.push(new OmegaIndex().CalcMetric(current, groundTruth))
+                        // }
+
+                        // klk.push("Embededdness")
+                        // klk.push("Modularity")
+
+
+                        // const zoneMetrics = new ZonesMetrics(networkStore.Network)
+
+                        // resCsv.push(zoneMetrics.AvgEmbeddedness())
+                        // resCsv.push(zoneMetrics.Modularity())
+
+                        // klk.push("GT")
+                        // klk.push("Found")
+
+                        // resCsv.push(zoneMetrics.NumberOfCommunities().groundTruth)
+                        // resCsv.push(zoneMetrics.NumberOfCommunities().foundCommunities)
+
+
                         console.log(klk.join(";"));
                         console.log(resCsv.join(";"));
 

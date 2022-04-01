@@ -101,7 +101,6 @@ export class DuplicatesByEgo implements IFilter {
                   if (
                     zonesToReturn.filter((z) => z.Id === z2.Id).length === 0
                   ) {
-                    console.log(z2.Id);
                     zonesToReturn.push(z2);
                   }
                 }

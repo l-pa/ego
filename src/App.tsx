@@ -41,7 +41,7 @@ function App() {
                 <Text fontSize="6xl" fontWeight="extrabold">
                   Ego-zones
                 </Text>
-                <Text fontSize='xs' pb={7}>0.1</Text>
+                <Text fontSize='xs' pb={7}></Text>
 
                 <Stack>
 
