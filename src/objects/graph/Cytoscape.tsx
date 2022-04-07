@@ -25,25 +25,23 @@ export default class Cytoscape {
 
         wheelSensitivity: 0.15,
 
-        layout: {
-          // @ts-ignore
-          name: "cose-bilkent",
-          // @ts-ignore
-          quality: "proof",
-          // @ts-ignore
-          nodeRepulsion: 4500,
-          // @ts-ignore
-          idealEdgeLength: 100,
-          // @ts-ignore
-          edgeElasticity: 0.45,
-          // Nesting factor (multiplier) to compute ideal edge length for inter-graph edges
-          nestingFactor: 0.1,
-          // Gravity force (constant)
-          gravity: 0.25,
-        },
-        //  wheelSensitivity: 0.3,
+        // layout: {
+        //   // @ts-ignore
+        //   name: "cose-bilkent",
+        //   // @ts-ignore
+        //   quality: "proof",
+        //   // @ts-ignore
+        //   nodeRepulsion: 4500,
+        //   // @ts-ignore
+        //   idealEdgeLength: 100,
+        //   // @ts-ignore
+        //   edgeElasticity: 0.45,
+        //   // Nesting factor (multiplier) to compute ideal edge length for inter-graph edges
+        //   nestingFactor: 0.1,
+        //   // Gravity force (constant)
+        //   gravity: 0.25,
+        // },
         style: [
-          // the stylesheet for the graph
           {
             selector: "node",
 

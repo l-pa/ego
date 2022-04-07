@@ -3,6 +3,8 @@ import Edge from "./Edge";
 import { cy } from "../graph/Cytoscape";
 import { networkStore, zoneStore } from "../..";
 import EgoZone from "../zone/EgoZone";
+import { IJSONExport } from "../export/ExportNetwork";
+import { IExportSettings } from "../../stores/IExportSettings";
 
 export default class Network {
   public Nodes: { [id: string]: Node } = {};
@@ -13,12 +15,22 @@ export default class Network {
   public StronglyProminent: number = 0;
   public WeaklyProminent: number = 0;
 
+  private jsonData: IJSONExport | undefined;
+
   constructor(nodes: {}, edges: {}, directed?: boolean) {
     this.Edges = edges;
     this.Nodes = nodes;
     if (directed) {
       this.Directed = directed;
     }
+  }
+
+  public set JSONData(v: IJSONExport | undefined) {
+    this.jsonData = v;
+  }
+
+  public get JSONData(): IJSONExport | undefined {
+    return this.jsonData;
   }
 
   /**
@@ -45,14 +57,14 @@ export default class Network {
     if (!(node.Id in this.Nodes)) this.Nodes[node.Id] = node;
   }
 
-  public getNode(nodeId: string): cytoscape.NodeCollection {
+  public getNode(nodeId: string): cytoscape.NodeSingular {
     return cy.getElementById(nodeId);
   }
 
   public getEdge(source: string, target: string): cytoscape.EdgeCollection {
-    const a = cy.getElementById("E-"+ source + target).edges();
-    const b = cy.getElementById("E-"+ target + source).edges();
-    
+    const a = cy.getElementById("E-" + source + target).edges();
+    const b = cy.getElementById("E-" + target + source).edges();
+
     if (this.Directed) {
       return a;
     } else {
@@ -62,7 +74,6 @@ export default class Network {
         return b;
       }
     }
-
   }
 
   public getEdgeByNodes(nodeAid: string, nodeBid: string): Edge | undefined {
@@ -71,7 +82,7 @@ export default class Network {
     if (e1) return e1;
 
     if (!networkStore.Network?.Directed) {
-      const id2 = "E-"+nodeBid + nodeAid;
+      const id2 = "E-" + nodeBid + nodeAid;
       const e2 = this.Edges[id2];
       if (e2) return e2;
     }
@@ -88,10 +99,19 @@ export default class Network {
   public addEdge(nodeA: Node, nodeB: Node, weight?: number) {
     this.addNode(nodeA);
     this.addNode(nodeB);
-    
 
-    const e = new Edge(nodeA, nodeB, "E-" + nodeA.Id+nodeB.Id, weight ? weight : 1);
-    const e2 = new Edge(nodeB, nodeA, "E-" + nodeB.Id+nodeA.Id, weight ? weight : 1);
+    const e = new Edge(
+      nodeA,
+      nodeB,
+      "E-" + nodeA.Id + nodeB.Id,
+      weight ? weight : 1
+    );
+    const e2 = new Edge(
+      nodeB,
+      nodeA,
+      "E-" + nodeB.Id + nodeA.Id,
+      weight ? weight : 1
+    );
 
     if (this.Directed && !this.Edges[e.GetId()]) {
       this.Edges[e.GetId()] = e;
@@ -101,7 +121,7 @@ export default class Network {
     if (!(e.GetId() in this.Edges) && !(e2.GetId() in this.Edges)) {
       this.Edges[e.GetId()] = e;
       return;
-    }    
+    }
   }
 
   /**

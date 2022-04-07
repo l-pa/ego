@@ -19,6 +19,7 @@ import EgoZone from "../objects/zone/EgoZone";
 import { WarningIcon } from "@chakra-ui/icons";
 import { cy } from "../objects/graph/Cytoscape";
 import { NodeProminency } from "../objects/network/Node";
+import { Circle } from "./Circle";
 
 export const ZoneItem: React.FunctionComponent<{
   zone: EgoZone;
@@ -48,42 +49,11 @@ export const ZoneItem: React.FunctionComponent<{
     <Box zIndex={1} bg={!greyed ? zone.StringColorRGB() : "grey"} p={4}>
       <Box display={"flex"}>
         {zone.Ego.isProminent() === NodeProminency.StronglyProminent ? (
-          <Avatar
-            name={zone.Id.split("").join(" ")}
-            backgroundColor={!greyed ? "red.400" : "grey"}
-            colorScheme={"primary"}
-            outline=""
-            onMouseEnter={(e) => {
-              mouseEnterFunction();
-            }}
-            onMouseLeave={(e) => {
-              mouseLeaveFunction();
-            }}
-          />
+          <Circle onMouseEnterF={mouseEnterFunction} onMouseLeaveF={mouseLeaveFunction} color={!greyed ? "red.400" : "grey"} message={zone.Id} />
         ) : zone.Ego.isProminent() === NodeProminency.WeaklyProminent ? (
-          <Avatar
-            name={zone.Id.split("").join(" ")}
-            backgroundColor={!greyed ? "yellow.400" : "grey"}
-            colorScheme={"primary"}
-            onMouseEnter={(e) => {
-              mouseEnterFunction();
-            }}
-            onMouseLeave={(e) => {
-              mouseLeaveFunction();
-            }}
-          />
+            <Circle onMouseEnterF={mouseEnterFunction} onMouseLeaveF={mouseLeaveFunction} color={!greyed ? "yellow.400" : "grey"} message={zone.Id} />
         ) : (
-          <Avatar
-            name={zone.Id.split("").join(" ")}
-            backgroundColor={!greyed ? "green.400" : "grey"}
-            colorScheme={"primary"}
-            onMouseEnter={(e) => {
-              mouseEnterFunction();
-            }}
-            onMouseLeave={(e) => {
-              mouseLeaveFunction();
-            }}
-          />
+              <Circle onMouseEnterF={mouseEnterFunction} onMouseLeaveF={mouseLeaveFunction} color={!greyed ? "green.400" : "grey"} message={zone.Id} />
         )}
         <Stack ml="2">
           <Box

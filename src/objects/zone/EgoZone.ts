@@ -4,7 +4,7 @@ import cytoscape, { Collection } from "cytoscape";
 import { networkStore, settingsStore, zoneStore } from "../..";
 
 import { cy } from "../graph/Cytoscape";
-import Zone from "./Zone";
+import Zone, { IColor } from "./Zone";
 import { NodeDisplay } from "../network/Node";
 
 export default class EgoZone extends Zone {
@@ -24,8 +24,8 @@ export default class EgoZone extends Zone {
 
   private automoveRule: any = undefined;
 
-  constructor(ego: Node) {
-    super(ego.Id.toString());
+  constructor(ego: Node, color?: IColor) {
+    super(ego.Id.toString(), color);
 
     this.ego = ego;
 

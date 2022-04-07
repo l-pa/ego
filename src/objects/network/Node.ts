@@ -16,6 +16,11 @@ export enum NodeLabel {
   None = "nodeLabelNone",
 }
 
+export enum NodeColor {
+  ColorZones = "colorZones",
+  ColorNetwork = "colorNetwork",
+}
+
 export enum NodeDisplay {
   Visible = "",
   Hidden = "hide",

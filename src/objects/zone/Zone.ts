@@ -35,7 +35,7 @@ export default abstract class Zone {
   private ctx: any = undefined;
   private label: string = "";
   private ctxStyle: string | IColor = "rgba(0,0,0,1)";
-  private color: IColor = this.randomColor;
+  private color: IColor;
   private points: Array<IPoint> = [];
   private collection: cytoscape.Collection = cy.collection();
   private id: string;
@@ -44,9 +44,13 @@ export default abstract class Zone {
 
   public static hullPadding = 70;
 
-  constructor(id: string) {
+  constructor(id: string, color?: IColor) {
     this.id = id;
-
+    if (color) {
+      this.color = color;
+    } else {
+      this.color = this.randomColor;
+    }
     makeObservable<this, "isDrawn">(this, {
       isDrawn: observable,
     });

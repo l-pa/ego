@@ -14,7 +14,7 @@ import { observer, useLocalObservable } from "mobx-react-lite";
 import { useEffect } from "react";
 import { networkStore, settingsStore, zoneStore } from "../../..";
 import { cy } from "../../../objects/graph/Cytoscape";
-import { NodeLabel } from "../../../objects/network/Node";
+import { NodeColor, NodeLabel } from "../../../objects/network/Node";
 import Zone from "../../../objects/zone/Zone";
 
 export function BasicNodes() {
@@ -115,6 +115,12 @@ export function BasicNodes() {
           onClick={() => {
             zoneStore.AddZones(localObserverable.zonesForNodes);
             localObserverable.zonesForNodes = zoneStore.Difference(localObserverable.zonesForNodes, zoneStore.Zones)
+
+            zoneStore.ClearTmpZones()
+            zoneStore.HideAllZones()
+            zoneStore.AddTmpZone(localObserverable.zonesForNodes, true);
+            zoneStore.UpdateTmp();
+
           }}
         >
           Add
@@ -147,6 +153,7 @@ export function BasicNodes() {
           );
           localObserverable.nodesAvailable = nodesAvailable;
         }
+        zoneStore.HideAllZones()
         zoneStore.AddTmpZone(localObserverable.zonesForNodes, true);
         zoneStore.UpdateTmp();
       }
@@ -192,7 +199,7 @@ export function BasicNodes() {
 
   const Size = observer(() => (
 
-    <Select defaultValue={settingsStore.GetNodeSize()} onChange={(e) => {
+    <Select value={settingsStore.GetNodeSize()} onChange={(e) => {
 
       switch (e.target.value) {
         case "fixed":
@@ -214,12 +221,23 @@ export function BasicNodes() {
 
   const Label = observer(() => (
 
-    <Select defaultValue={settingsStore.NodeLabel} onChange={(e) => {
+    <Select value={settingsStore.NodeLabel} onChange={(e) => {
       settingsStore.NodeLabel = e.target.value as NodeLabel
     }}>
       <option value={NodeLabel.Id}>Id</option>
       <option value={NodeLabel.Label}>Label</option>
       <option value={NodeLabel.None}>None</option>
+    </Select>
+
+  ));
+
+  const Color = observer(() => (
+
+    <Select value={settingsStore.NodeColor} onChange={(e) => {
+      settingsStore.NodeColor = e.target.value as NodeColor
+    }}>
+      <option value={NodeColor.ColorZones}>Color zones</option>
+      <option value={NodeColor.ColorNetwork}>Network colors</option>
     </Select>
 
   ));
@@ -250,12 +268,12 @@ export function BasicNodes() {
 
       <Label />
       <Divider paddingBottom={5} marginBottom={5} />
-
-
-      <Heading as="h4" size="md" pb={5}>
-        Show
+      <Heading size="sm">
+        Color
       </Heading>
-      <Divider />
+
+      <Color />
+      <Divider paddingBottom={5} marginBottom={5} />
       <Heading as="h4" size="md" pt={5}>
         Same zones
       </Heading>

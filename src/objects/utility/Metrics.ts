@@ -581,6 +581,12 @@ export class Metrics {
       avgZoneOuterSize,
       avgZoneOuterLiasonsCount,
       avgZoneOuterCoLiasonsCount,
+      maxZoneInnerSize,
+      minZoneInnerSize,
+      maxZoneOuterSize,
+      minZoneOuterSize,
+      maxZoneSize,
+      minZoneSize,
     };
   }
 

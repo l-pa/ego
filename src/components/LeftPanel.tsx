@@ -1,17 +1,15 @@
 import {
   Button,
-  ButtonGroup,
   Divider,
   Heading,
-  IconButton,
   Stack,
   Text
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { networkStore, settingsStore, zoneStore } from "..";
-import { ArrowBackIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 import { observer } from "mobx-react-lite";
 import { ExportNetwork } from "../objects/export/ExportNetwork";
+import exportFile from "../objects/utility/SaveFIle";
 
 export const LeftPanel: React.FunctionComponent = () => {
   const [activeButton, setActiveButton] = useState<number>(settingsStore.DefaultSettingsCategory);
@@ -60,12 +58,28 @@ export const LeftPanel: React.FunctionComponent = () => {
         <NetworkName />
         <Divider />
         <Button
-          isDisabled={true}
+          isDisabled={false}
           colorScheme={"primary"}
           isFullWidth={true}
-          onClick={() => {
-            // const a = new ExportNetwork().Export()
-            // console.log(a);
+          onClick={async () => {
+            const a = new ExportNetwork().Export()
+
+            const options = {
+              suggestedName: `Ego-${networkStore.FileName
+                }-${new Date().toLocaleString()}.json`,
+              startIn: "desktop",
+              types: [
+                {
+                  description: "Network JSON",
+                  accept: {
+                    "application/json": [".json"],
+                  },
+                },
+              ],
+            };
+
+            await exportFile<string>(JSON.stringify(a), `Ego-${networkStore.FileName}-${new Date().toISOString()}.json`, options)
+
           }}
         >
           Save
@@ -199,11 +213,23 @@ export const LeftPanel: React.FunctionComponent = () => {
         >
       </Stack>
       <Divider />
-      <Button
-        isActive={activeButton === 9}
-        colorScheme="primary"
-        variant="ghost"
-        onClick={() => {
+        <Button
+          isActive={activeButton === 10}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
+            setActiveButton(10);
+          }}
+        >
+          Metrics
+        </Button>
+        <Divider />
+
+        <Button
+          isActive={activeButton === 9}
+          colorScheme="primary"
+          variant="ghost"
+          onClick={() => {
           setActiveButton(9);
         }}
         >

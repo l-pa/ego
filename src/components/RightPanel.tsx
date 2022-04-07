@@ -12,6 +12,7 @@ import { ZonesSuperzone } from "./settings/zones/ZonesSuperzone";
 import { Filters } from "../components/Filters";
 import { Export } from "./settings/utils/Export";
 import Demo from "./settings/utils/Demo";
+import MetricsComponent from "./settings/utils/Metrics";
 
 export const RightPanel: React.FunctionComponent = () => {
   const Settings = observer(() => (
@@ -38,6 +39,8 @@ export const RightPanel: React.FunctionComponent = () => {
             return <Export />;
           case 9:
             return <Demo />;
+          case 10:
+            return <MetricsComponent />;
           default:
             return <p>None</p>;
         }

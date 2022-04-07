@@ -13,7 +13,11 @@ import Filter, {
 } from "../objects/zone/Filter";
 import { SortByEnum } from "./SettingsStore";
 import { arrayContainsAll } from "../objects/utility/ArrayUtils";
-import { NodeDisplay, NodeProminency } from "../objects/network/Node";
+import {
+  NodeColor,
+  NodeDisplay,
+  NodeProminency,
+} from "../objects/network/Node";
 import { EdgeType } from "../objects/network/Edge";
 
 export class ZoneStore {
@@ -219,7 +223,7 @@ export class ZoneStore {
    * Stats
    */
   public Stats() {
-    let tmpZones: EgoZone[] = [];
+    let tmpZones: EgoZone[] = zoneStore.Zones as EgoZone[];
     let totalMax = 0;
     let innerMax = 0;
     let outerMax = 0;
@@ -235,13 +239,13 @@ export class ZoneStore {
     let triad = 0;
 
     let meCount = 0;
-    let meMax = 0;
+    let meMax: string | number = 0;
     let meAvg = 0;
 
-    Object.keys(networkStore.Network!!.Nodes).forEach((k) => {
-      const z = new EgoZone(networkStore.Network!!.Nodes[k]);
-      tmpZones.push(z);
-    });
+    // Object.keys(networkStore.Network!!.Nodes).forEach((k) => {
+    //   const z = new EgoZone(networkStore.Network!!.Nodes[k]);
+    //   tmpZones.push(z);
+    // });
     // tmpZones = new DuplicatesByEgo().FilterWithParams(tmpZones, {
     //   duplicates: "de",
     // }) as EgoZone[];
@@ -312,9 +316,7 @@ export class ZoneStore {
       duplicates: "me",
     }) as EgoZone[];
 
-    const mesDiff = tmpZones.filter(
-      (zTmp) => !mes.some((zMe) => zTmp.Ego.Id === zMe.Ego.Id)
-    );
+    const mesDiff = this.Difference(tmpZones, mes) as EgoZone[];
 
     mesDiff.sort((a: EgoZone, b: EgoZone) => {
       if (a.AllCollection.length > b.AllCollection.length) return -1;
@@ -328,7 +330,7 @@ export class ZoneStore {
     });
 
     meCount = tmpZones.length - mes.length;
-    meMax = mesDiff[0].AllCollection.length;
+    meMax = mesDiff.length > 0 ? mesDiff[0].AllCollection.length : "-";
     meAvg = tmp / mesDiff.length;
 
     return {
@@ -345,10 +347,9 @@ export class ZoneStore {
       trivial: trivial,
       dyad: dyad,
       triad: triad,
-      embeddedness: embeddedness.toFixed(2),
       multiego: {
         count: meCount,
-        max: meMax.toFixed(2),
+        max: meMax,
         avg: meAvg.toFixed(2),
       },
     };
@@ -475,7 +476,9 @@ export class ZoneStore {
    */
 
   public Update() {
-    if (arrayContainsAll([0, 1, 2, 3, 8, 9], [settingsStore.ActiveCategory])) {
+    if (
+      arrayContainsAll([0, 1, 2, 3, 8, 9, 10], [settingsStore.ActiveCategory])
+    ) {
       const a = performance.now();
       const filter = zoneStore.Filter(this.zones);
       console.log("Filter init took ", performance.now() - a);
@@ -715,12 +718,17 @@ export class ZoneStore {
    */
 
   public ColorNodesInZones(zones: Zone[]) {
-    if (cy) {
-      if (settingsStore.DemoSettings.showZoneNodeColors) {
-        zoneStore.ColorZoneType(zones);
-      } else {
+    if (settingsStore.NodeColor === NodeColor.ColorNetwork) {
+      this.ColorAllNodes();
+      this.ColorAllEdges();
+    } else {
+      if (cy) {
         this.colorNodesInZones(zones);
       }
+    }
+
+    if (settingsStore.DemoSettings.showZoneNodeColors) {
+      zoneStore.ColorZoneType(zones);
     }
   }
 
@@ -743,7 +751,6 @@ export class ZoneStore {
    */
   public ColorAllEdges() {
     cy.edges().forEach((e) => {
-      //console.log(event.target.style("background-color"));
       this.EdgeColorCalc(e);
     });
   }

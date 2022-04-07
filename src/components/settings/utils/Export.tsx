@@ -100,7 +100,7 @@ export function Export() {
             Summary
           </Checkbox>
         </Stack>
-        <Heading as="h4" size="sm" pt={5}>
+        {/* <Heading as="h4" size="sm" pt={5}>
           Zones per page
         </Heading>
         <NumberInput onChange={(v) => {
@@ -111,7 +111,7 @@ export function Export() {
             <NumberIncrementStepper />
             <NumberDecrementStepper />
           </NumberInputStepper>
-        </NumberInput>
+        </NumberInput> */}
 
 
       </Stack>

@@ -15,6 +15,7 @@ import {
 import { observer } from "mobx-react-lite";
 import React, { FunctionComponent } from "react";
 import { networkStore, settingsStore } from "..";
+import { arrayContainsAll } from "../objects/utility/ArrayUtils";
 
 export const Filters: FunctionComponent = () => {
 
@@ -23,7 +24,7 @@ export const Filters: FunctionComponent = () => {
       <Stack display="flex" flexDirection='row' alignItems="baseline">
 
         <Heading marginRight={2} size="md">Filters</Heading>
-        {settingsStore.ActiveCategory !== 0 ? < Icon margin={0} padding={0} as={WarningTwoIcon} color="orange.500" /> : ""}
+        {!arrayContainsAll([0, 1, 2, 3, 8, 9, 10], [settingsStore.ActiveCategory]) ? < Icon margin={0} padding={0} as={WarningTwoIcon} color="orange.500" /> : ""}
       </Stack>
     )
   })
@@ -37,7 +38,7 @@ export const Filters: FunctionComponent = () => {
 
         <Slider
           aria-label="slider-ex-1"
-          defaultValue={settingsStore.MinNodesZoneShow}
+          value={settingsStore.MinNodesZoneShow}
           min={0}
           max={Object.keys(networkStore.Network!!.Nodes).length}
           onChange={(e) => {
@@ -53,6 +54,40 @@ export const Filters: FunctionComponent = () => {
     );
   });
 
+  const Duplicates = observer(() => {
+    return (
+      <Select
+        value={settingsStore.Duplicates}
+        isFullWidth={true}
+        onChange={(e) => {
+          settingsStore.Duplicates = e.target.value;
+        }}
+      >
+        <option value="all">All</option>
+        <option value="me">Mutli-ego</option>
+        <option value="de">Duplicates</option>
+      </Select>
+    )
+  })
+
+  const ZoneSizes = observer(() => {
+    return (
+      <Select
+        value={settingsStore.ZoneSizes}
+        isFullWidth={true}
+        onChange={(e) => {
+          settingsStore.ZoneSizes = e.target.value;
+        }}
+      >
+        <option value="all">All</option>
+        <option value="moreInner">Inner {">"} outer</option>
+        <option value="moreOuter">Inner {"<"} outer</option>
+        <option value="sameBoth">Inner = outer</option>
+        <option value="withoutOuter">No outer</option>
+      </Select>
+    )
+  })
+
   return (
     <Stack height={"50%"} p={5}>
       <Box bg={"black"}></Box>
@@ -66,35 +101,13 @@ export const Filters: FunctionComponent = () => {
       <Heading as="h4" size="md">
         Duplicates
       </Heading>
-      <Select
-        defaultValue={settingsStore.Duplicates}
-        isFullWidth={true}
-        onChange={(e) => {
-          settingsStore.Duplicates = e.target.value;
-        }}
-      >
-        <option value="all">All</option>
-        <option value="me">Mutli-ego</option>
-        <option value="de">Duplicates</option>
-      </Select>
+      <Duplicates />
 
       <Divider />
       <Heading as="h4" size="md">
         Zone sizes
       </Heading>
-      <Select
-        defaultValue={settingsStore.ZoneSizes}
-        isFullWidth={true}
-        onChange={(e) => {
-          settingsStore.ZoneSizes = e.target.value;
-        }}
-      >
-        <option value="all">All</option>
-        <option value="moreInner">Inner {">"} outer</option>
-        <option value="moreOuter">Inner {"<"} outer</option>
-        <option value="sameBoth">Inner = outer</option>
-        <option value="withoutOuter">No outer</option>
-      </Select>
+      <ZoneSizes />
     </Stack>
   );
 };

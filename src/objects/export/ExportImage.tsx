@@ -7,6 +7,7 @@ import C2S from "@bokeh/canvas2svg";
 import "../../register-files";
 import EgoZone from "../zone/EgoZone";
 import { NodeProminency } from "../network/Node";
+import { Metrics, ZonesMetrics } from "../utility/Metrics";
 
 const PDFDocument = require("pdfkit").default;
 const SVGtoPDF = require("svg-to-pdfkit");
@@ -206,7 +207,6 @@ export default class ExportImage {
   }
 
   public getPdf(): Promise<void> {
-    console.log(zoneStore.Stats());
 
     const doc = new PDFDocument({
       size: [a4.w, a4.h],
@@ -235,6 +235,7 @@ export default class ExportImage {
 
       if (settingsStore.PdfExportOptions.firstPageOptions.summary) {
 
+        doc.font('Helvetica').text('Name: ', 50, a4.h - 100, textOptions).font('Helvetica-Bold').text(`${networkStore.FileName}`);
 
         doc.font('Helvetica').text('Nodes: ', 50, a4.h - 135, textOptions).font('Helvetica-Bold').text(`${cy.nodes().length}`);
 
@@ -248,28 +249,37 @@ export default class ExportImage {
 
         doc.font('Helvetica').text('Weak-prominents: ', 235, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${networkStore.Network?.WeaklyProminent} (${((networkStore.Network!!.WeaklyProminent / cy.nodes().length) * 100).toFixed(2)}%)`);
 
-        doc.font('Helvetica').text('Modularity: ', 415, a4.h - 135, textOptions).font('Helvetica-Bold').text(`${0}`);
-        const stats = zoneStore.Stats()
-        doc.font('Helvetica').text('Embedd.: ', 415, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${stats.embeddedness}`);
+        const metrics = new ZonesMetrics(networkStore.Network!!)
+        const n = new Metrics(networkStore.Network!!)
+        const zones = n.ZoneSizes()
+        const simple = n.Zone123()
+        const me = n.MultiEgoSizes()
+
+        const de = n.DuplicatesSize()
+
+        // doc.font('Helvetica').text('Modularity: ', 415, a4.h - 135, textOptions).font('Helvetica-Bold').text(`${metrics.Modularity().toFixed(3)}`);
+        // doc.font('Helvetica').text('Avg. embedd.: ', 415, a4.h - 150, textOptions).font('Helvetica-Bold').text(`${metrics.AvgEmbeddedness().toFixed(3)}`);
 
 
+        doc.font('Helvetica').text('Total - Max: ', 50, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${zones.maxZoneSize}`);
+        doc.font('Helvetica').text('Inner - Max: ', 50, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${zones.maxZoneInnerSize}`);
+        doc.font('Helvetica').text('Outer - Max: ', 50, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${zones.maxZoneOuterSize}`);
 
-        doc.font('Helvetica').text('Total - Max: ', 50, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.max.total}`);
-        doc.font('Helvetica').text('Inner - Max: ', 50, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.max.inner}`);
-        doc.font('Helvetica').text('Outer - Max: ', 50, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.max.outer}`);
+        doc.font('Helvetica').text('(avg: ', 140, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${zones.avgZoneSize.toFixed(3)})`);
+        doc.font('Helvetica').text('(avg: ', 140, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${zones.avgZoneInnerSize.toFixed(3)})`);
+        doc.font('Helvetica').text('(avg: ', 140, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${zones.avgZoneOuterSize.toFixed(3)})`);
 
-        doc.font('Helvetica').text('(avg: ', 140, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.avg.total})`);
-        doc.font('Helvetica').text('(avg: ', 140, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.avg.inner})`);
-        doc.font('Helvetica').text('(avg: ', 140, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.avg.outer})`);
+        doc.font('Helvetica').text('Trivial zones: ', 235, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${simple.simpleZoneLength}`);
+        doc.font('Helvetica').text('Dyad zones: ', 235, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${simple.dyadZoneLength}`);
+        doc.font('Helvetica').text('Triad zones: ', 235, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${simple.tryadZoneLength}`);
 
-        doc.font('Helvetica').text('Trivial zones: ', 235, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.trivial}`);
-        doc.font('Helvetica').text('Dyad zones: ', 235, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.triad}`);
-        doc.font('Helvetica').text('Triad zones: ', 235, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.dyad}`);
+        doc.font('Helvetica').text('ME: ', 345, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${n.multiego.length}`);
+        doc.font('Helvetica').text('ME Max: ', 345, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${me.maxEgoZoneSize}`);
+        doc.font('Helvetica').text('ME Avg: ', 345, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${me.avgEgoZoneSize.toFixed(3)}`);
 
-        doc.font('Helvetica').text('ME: ', 390, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${stats.multiego.count}`);
-        doc.font('Helvetica').text('ME Max: ', 390, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${stats.multiego.max}`);
-        doc.font('Helvetica').text('ME Avg: ', 390, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${stats.multiego.avg}`);
-
+        doc.font('Helvetica').text('DE: ', 445, a4.h - 210, textOptions).font('Helvetica-Bold').text(`${n.duplicates.length}`);
+        doc.font('Helvetica').text('DE Max: ', 445, a4.h - 195, textOptions).font('Helvetica-Bold').text(`${de.maxDuplicateZoneSize}`);
+        doc.font('Helvetica').text('DE Avg: ', 445, a4.h - 180, textOptions).font('Helvetica-Bold').text(`${de.avgDuplicateZoneSize.toFixed(3)}`);
 
 
       }

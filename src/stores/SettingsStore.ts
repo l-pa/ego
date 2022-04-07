@@ -1,13 +1,12 @@
 import { makeAutoObservable } from "mobx";
-import { networkStore, zoneStore } from "..";
+import { networkStore, settingsStore, zoneStore } from "..";
 import CustomZone from "../objects/zone/CustomZone";
 import EgoZone from "../objects/zone/EgoZone";
 import { cy } from "../objects/graph/Cytoscape";
 import Export, { ImageType } from "../objects/export/ExportImage";
 import { IExportSettings } from "./IExportSettings";
-import { NodeLabel } from "../objects/network/Node";
+import { NodeColor, NodeLabel } from "../objects/network/Node";
 import { EdgeShowWeight } from "../objects/network/Edge";
-import _ from "lodash";
 
 interface IPdfPageExportOptions {
   title?: boolean;
@@ -56,6 +55,8 @@ export class SettingsStore {
   private selectedEdgeBlend: string = "normal";
   private nodeSize: string = "fixed";
   private nodeLabel: NodeLabel = NodeLabel.Id;
+  private nodeColor: NodeColor = NodeColor.ColorZones;
+
   private defaultCategory: number = 0;
 
   private filterChanged: boolean = false;
@@ -121,6 +122,15 @@ export class SettingsStore {
     }
   }
 
+  public get NodeColor(): NodeColor {
+    return this.nodeColor;
+  }
+
+  public set NodeColor(v: NodeColor) {
+    this.nodeColor = v;
+    zoneStore.ColorNodesInZones(zoneStore.Zones);
+  }
+
   public get TrackZonesExport(): boolean {
     return this.trackZonesExport;
   }
@@ -133,7 +143,10 @@ export class SettingsStore {
       if (this.snapshots.Snapshots.length === 0) {
         console.log("init");
 
+        settingsStore.NodeColor = NodeColor.ColorNetwork;
         this.snapshots.initSnapshots();
+        settingsStore.NodeColor = NodeColor.ColorZones;
+        zoneStore.ColorNodesInZones(zoneStore.Zones)
       }
       this.snapshots.TakeSnapshot();
       this.trackZonesExport = v;
@@ -360,13 +373,9 @@ export class SettingsStore {
   }
 
   public set MinNodesZoneShow(v: number) {
-    const a = _.debounce(() => {
-      this.minNodesZoneShow = v;
-      this.filterChanged = !this.filterChanged;
-      zoneStore.Update();
-    }, 1500);
-
-    a();
+    this.minNodesZoneShow = v;
+    this.filterChanged = !this.filterChanged;
+    zoneStore.Update();
   }
 
   public get Duplicates(): string {
