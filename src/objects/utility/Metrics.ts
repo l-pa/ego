@@ -170,8 +170,6 @@ export class NMI implements IMetricGT {
     }
 
     const sumConditionalE12 = this.compareCovers(inputMatrix, groundMatrix);
-    console.log("-----------------");
-
     const sumConditionalE21 = this.compareCovers(groundMatrix, inputMatrix);
 
     const entropyX = this.entropy(inputMatrix);

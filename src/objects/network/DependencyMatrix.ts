@@ -5,11 +5,11 @@ import { NodeProminency } from "./Node";
 export default class Matrix {
   private network: Network;
 
-  private CommonNeighbors: Map<string, Node[]>;
+  private NodeNeighbors: Map<string, Node[]>;
 
   constructor(network: Network) {
     this.network = network;
-    this.CommonNeighbors = new Map<string, Node[]>();
+    this.NodeNeighbors = new Map<string, Node[]>();
   }
 
   /**
@@ -21,17 +21,17 @@ export default class Matrix {
   public dependencyMatrix() {
     Object.keys(this.network.Edges).forEach((key) => {
       const e = this.network.Edges[key];
-      if (this.CommonNeighbors.has(e.GetNodeA().Id)) {
-        this.CommonNeighbors.get(e.GetNodeA().Id)?.push(e.GetNodeB());
+      if (this.NodeNeighbors.has(e.GetNodeA().Id)) {
+        this.NodeNeighbors.get(e.GetNodeA().Id)?.push(e.GetNodeB());
       } else {
-        this.CommonNeighbors.set(e.GetNodeA().Id, [e.GetNodeB()]);
+        this.NodeNeighbors.set(e.GetNodeA().Id, [e.GetNodeB()]);
       }
 
       if (!this.network.Directed) {
-        if (this.CommonNeighbors.has(e.GetNodeB().Id)) {
-          this.CommonNeighbors.get(e.GetNodeB().Id)?.push(e.GetNodeA());
+        if (this.NodeNeighbors.has(e.GetNodeB().Id)) {
+          this.NodeNeighbors.get(e.GetNodeB().Id)?.push(e.GetNodeA());
         } else {
-          this.CommonNeighbors.set(e.GetNodeB().Id, [e.GetNodeA()]);
+          this.NodeNeighbors.set(e.GetNodeB().Id, [e.GetNodeA()]);
         }
       }
     });
@@ -192,7 +192,6 @@ export default class Matrix {
    */
   private weight(nodeA: Node, nodeB: Node): number {
     if (this.network.Directed) {
-      
       const r = this.network.getEdgeByNodes(nodeA.Id, nodeB.Id);
 
       return r ? r.GetWeight() : 1;
@@ -236,10 +235,10 @@ export default class Matrix {
 
   private dependency(nodeA: Node, nodeB: Node): number {
     const w = this.weight(nodeA, nodeB);
-    const cN = this.CommonNeighbors.get(nodeA.Id)?.filter((value) =>
-      this.CommonNeighbors.get(nodeB.Id)?.some((v2) => v2.Id === value.Id)
+    const cN = this.NodeNeighbors.get(nodeA.Id)?.filter((value) =>
+      this.NodeNeighbors.get(nodeB.Id)?.some((v2) => v2.Id === value.Id)
     );
-    const N = this.CommonNeighbors.get(nodeA.Id);
+    const N = this.NodeNeighbors.get(nodeA.Id);
 
     let cNSum = 0;
     let NSum = 0;

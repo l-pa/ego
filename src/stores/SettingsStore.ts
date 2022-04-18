@@ -332,7 +332,7 @@ export class SettingsStore {
       const min = cy.nodes().minDegree(false);
       const max = cy.nodes().maxDegree(false);
 
-      if (max - min !== 0) {
+      if (max - min > 0) {
         cy.nodes().forEach((n) => {
           const v =
             ((maxA - minA) * (n.degree(false) - min)) / (max - min) + minA;

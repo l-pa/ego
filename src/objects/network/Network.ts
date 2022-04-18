@@ -4,7 +4,6 @@ import { cy } from "../graph/Cytoscape";
 import { networkStore, zoneStore } from "../..";
 import EgoZone from "../zone/EgoZone";
 import { IJSONExport } from "../export/ExportNetwork";
-import { IExportSettings } from "../../stores/IExportSettings";
 
 export default class Network {
   public Nodes: { [id: string]: Node } = {};

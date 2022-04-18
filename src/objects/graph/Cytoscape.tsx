@@ -44,7 +44,6 @@ export default class Cytoscape {
         style: [
           {
             selector: "node",
-
             style: {
               "text-valign": "center",
               "text-halign": "center",
@@ -53,7 +52,8 @@ export default class Cytoscape {
           {
             selector: ".nodeLabelId",
             style: {
-              label: "data(id)"
+              label: "data(id)",
+              "font-size": "5"
             },
           },
           {
