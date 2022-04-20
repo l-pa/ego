@@ -40,6 +40,18 @@ export default class Network {
   }
 
   /**
+   * ForceUpdateNodesClass
+   */
+  public ForceUpdateNodesClass() {
+    for (const key in this.Nodes) {
+      if (Object.prototype.hasOwnProperty.call(this.Nodes, key)) {
+        const element = this.Nodes[key];
+        element.ForceUpdate();
+      }
+    }
+  }
+
+  /**
    * EdgesLength
    */
   public EdgesLength() {

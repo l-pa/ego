@@ -341,6 +341,7 @@ export class SettingsStore {
         });
       }
     }
+    networkStore.Network?.ForceUpdateNodesClass();
   }
 
   public get SelectedEdgeBlendMode(): string {
