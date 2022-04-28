@@ -225,7 +225,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         </Button>
         <Divider />
 
-        <Button
+        {/* <Button
           isActive={activeButton === 9}
           colorScheme="primary"
           variant="ghost"
@@ -234,7 +234,7 @@ export const LeftPanel: React.FunctionComponent = () => {
         }}
         >
         Demo mode
-      </Button>
+      </Button> */}
       </Stack>
     </Stack>
   );
