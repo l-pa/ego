@@ -161,6 +161,7 @@ export default function MetricsComponent() {
                         reader.readAsText(file);
 
                         reader.onload = function () {
+                            try {
                             const parsed = parse(reader.result as string, {
                                 delimiter: ";",
                                 columns: false,
@@ -180,12 +181,33 @@ export default function MetricsComponent() {
                             });
                             networkStore.GroundTruth = participation
                             console.log(participation);
+                            } catch (error) {
+                                networkStore.GroundTruth = {}
 
+                                toast({
+                                    title: "Error",
+                                    description: `${error}`,
+                                    status: "error",
+                                    duration: 5000,
+                                    isClosable: true,
+                                });
+                            }
                         }
                         reader.onerror = function () {
                             console.log(reader.error);
+                            networkStore.GroundTruth = {}
+
+                            toast({
+                                title: "Error",
+                                description: `${reader.error}`,
+                                status: "error",
+                                duration: 5000,
+                                isClosable: true,
+                            });
                         };
+
                     }
+
                 }
                 } />
 

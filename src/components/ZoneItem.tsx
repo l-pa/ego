@@ -188,7 +188,7 @@ export const ZoneItem: React.FunctionComponent<{
                   </Text>
                 </Stack>
               </Tooltip>
-              <Tooltip
+              {/* <Tooltip
                 zIndex={2}
                 aria-label="modularity"
                 label={"-"}
@@ -197,7 +197,7 @@ export const ZoneItem: React.FunctionComponent<{
                 <Stack>
                   <Text className="itemRight">-</Text>
                 </Stack>
-              </Tooltip>
+              </Tooltip> */}
             </Box>
             <Box>
               <Tooltip
@@ -228,7 +228,7 @@ export const ZoneItem: React.FunctionComponent<{
               >
                 <Text className="itemRight">Outside</Text>
               </Tooltip>
-              <Tooltip
+              {/* <Tooltip
                 zIndex={2}
                 aria-label="emb"
                 label={""}
@@ -237,7 +237,7 @@ export const ZoneItem: React.FunctionComponent<{
                 <Text className="itemRight">
                   <span className="itemDeps">Mod</span>
                 </Text>
-              </Tooltip>
+              </Tooltip> */}
             </Box>
           </Box>
         </Stack>
