@@ -1,6 +1,9 @@
+import { createStandaloneToast } from "@chakra-ui/react";
 import Network from "../objects/network/Network";
 import Node from "../objects/network/Node";
 import { Loader } from "./Loader";
+
+const toast = createStandaloneToast();
 
 export class GDFLoader extends Loader {
   public async GetNetworkFromURL(
@@ -15,61 +18,71 @@ export class GDFLoader extends Loader {
   }
   public GetNetworkFromFile(data: any, directed?: boolean): Network {
     const network = new Network([], [], directed);
-    const split = (data as string).split("\n");
 
-    let idIndex = 0;
-    let labelIndex = 1;
+    try {
+      const split = (data as string).split("\n");
 
-    const nodeHeaders = split[0].split(">")[1].split(",");
+      let idIndex = 0;
+      let labelIndex = 1;
 
-    for (let i = 0; i < nodeHeaders.length; i++) {
-      const element = nodeHeaders[i].split(" ");
-      if (element[0] === "name") idIndex = i;
-      if (element[0] === "label") labelIndex = i;
-    }
+      const nodeHeaders = split[0].split(">")[1].split(",");
 
-    let i = 1;
+      for (let i = 0; i < nodeHeaders.length; i++) {
+        const element = nodeHeaders[i].split(" ");
+        if (element[0] === "name") idIndex = i;
+        if (element[0] === "label") labelIndex = i;
+      }
 
-    while (i < split.length) {
-      const line = split[i].split(",");
+      let i = 1;
 
-      if (line.length > 0) {
-        if (line[0].includes(">")) {
-          break;
+      while (i < split.length) {
+        const line = split[i].split(",");
+
+        if (line.length > 0) {
+          if (line[0].includes(">")) {
+            break;
+          }
+          network.addNode(new Node(line[idIndex], line[labelIndex]));
         }
-        network.addNode(new Node(line[idIndex], line[labelIndex]));
+        i++;
       }
-      i++;
-    }
 
-    let sourceIndex = 0;
-    let targetIndex = 1;
-    let weightIndex = 2;
+      let sourceIndex = 0;
+      let targetIndex = 1;
+      let weightIndex = 2;
 
-    const edgeHeaders = split[i].split(">")[1].split(",");
+      const edgeHeaders = split[i].split(">")[1].split(",");
 
-    for (let i = 0; i < edgeHeaders.length; i++) {
-      const element = edgeHeaders[i].split(" ");
-      if (element[0] === "node1") sourceIndex = i;
-      if (element[0] === "node2") targetIndex = i;
-      if (element[0] === "weight") weightIndex = i;
-    }
-
-    i++;
-
-    while (i < split.length) {
-      const line = split[i].split(",");
-
-      if (line.length > 1) {
-        network.addEdge(
-          network.Nodes[line[sourceIndex]],
-          network.Nodes[line[targetIndex]],
-          Number.parseFloat(line[weightIndex])
-        );
+      for (let i = 0; i < edgeHeaders.length; i++) {
+        const element = edgeHeaders[i].split(" ");
+        if (element[0] === "node1") sourceIndex = i;
+        if (element[0] === "node2") targetIndex = i;
+        if (element[0] === "weight") weightIndex = i;
       }
+
       i++;
+
+      while (i < split.length) {
+        const line = split[i].split(",");
+
+        if (line.length > 1) {
+          network.addEdge(
+            network.Nodes[line[sourceIndex]],
+            network.Nodes[line[targetIndex]],
+            Number.parseFloat(line[weightIndex])
+          );
+        }
+        i++;
+      }
+    } catch (error) {
+      toast({
+        title: `Parsing error`,
+        description: `${error as string}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
-    
     return network;
   }
 }

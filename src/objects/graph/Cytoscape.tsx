@@ -1,8 +1,10 @@
+import { createStandaloneToast } from "@chakra-ui/react";
 import cytoscape, { ElementDefinition } from "cytoscape";
 import { networkStore, zoneStore } from "../..";
 import EgoZone from "../zone/EgoZone";
 
 export let cy: cytoscape.Core;
+const toast = createStandaloneToast();
 
 export default class Cytoscape {
   constructor(div: HTMLDivElement | null) {
@@ -11,7 +13,7 @@ export default class Cytoscape {
         const e = networkStore.Network!!.Edges[key]
         e.UpdateClasses();
       });
-
+      try {
       cy = cytoscape({
         container: div,
         elements: [
@@ -343,6 +345,18 @@ export default class Cytoscape {
       for (const [key, value] of Object.entries(c())) {
         cy.$id(key).attr("louvain", value)
       }
+      } catch (err) {
+        networkStore.Network = undefined
+        console.log(err);
+        toast({
+          title: `Parsing error`,
+          description: `${err as string}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     }
+
   }
 }

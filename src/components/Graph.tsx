@@ -4,16 +4,31 @@ import "./style.css";
 import { networkStore, settingsStore, zoneStore } from "..";
 import Cytoscape, { cy } from "../objects/graph/Cytoscape";
 import EgoZone from "../objects/zone/EgoZone";
+import { createStandaloneToast } from "@chakra-ui/react";
 
 export const Graph: React.FunctionComponent = () => {
   const container = useRef<HTMLDivElement>(null);
+  const toast = createStandaloneToast();
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const aa = new Cytoscape(container.current);
-    console.log("CREATED", cy.nodes());
+    try {
+      console.log("CREATED", cy.nodes());
+    } catch (error) {
+      console.log(error);
+      networkStore.Network = undefined
+      toast({
+        title: `Parsing error`,
+        description: `${error as string}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+    if (cy) {
 
-    if (networkStore.Network?.JSONData) {
+      if (networkStore.Network?.JSONData) {
 
       cy.zoom(networkStore.Network?.JSONData.cySettings.zoom)
       cy.pan(networkStore.Network?.JSONData.cySettings.pan)
@@ -44,9 +59,24 @@ export const Graph: React.FunctionComponent = () => {
       }).start()
     }
 
+      if (networkStore.Network) {
+        toast({
+          title: "Network loaded.",
+          description: `${networkStore.FileName} - ${networkStore.Network.NodesLength()
+            } nodes - ${networkStore.Network.EdgesLength()} edges -  ${networkStore.Network.Directed ? "✅" : "❌"
+            } directed`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    }
+
     return () => {
-      cy.off("click mouseout mousein render cyCanvas.resize");
-      cy.on("destroy", () => {
+      if (cy) {
+
+        cy.off("click mouseout mousein render cyCanvas.resize");
+        cy.on("destroy", () => {
         networkStore.Network = undefined;
 
         cy.elements().remove()
@@ -57,6 +87,7 @@ export const Graph: React.FunctionComponent = () => {
         })
       cy.destroy();
 
+      }
     };
   }, []);
 

@@ -4,9 +4,6 @@ import { networkStore, settingsStore, zoneStore } from "../../..";
 import parse from "csv-parse/lib/sync";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { ExportGDF } from "../../../objects/export/ExportGDF";
-import React from "react";
-import { Column, TableOptions, useTable } from 'react-table'
 import { Metrics, NMI, OmegaIndex, ZonesMetrics } from "../../../objects/utility/Metrics";
 import Table from "./Table";
 import Centrality from "../../../objects/utility/Centrality";
@@ -180,6 +177,14 @@ export default function MetricsComponent() {
 
                             });
                             networkStore.GroundTruth = participation
+                                toast({
+                                    title: "Ground truth.",
+                                    description: `Loaded`,
+                                    status: "success",
+                                    duration: 5000,
+                                    isClosable: true,
+                                });
+
                             console.log(participation);
                             } catch (error) {
                                 networkStore.GroundTruth = {}

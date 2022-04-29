@@ -1,43 +1,51 @@
-import { networkStore, settingsStore, zoneStore } from "..";
+import { createStandaloneToast } from "@chakra-ui/react";
 import { IJSONExport } from "../objects/export/ExportNetwork";
-import { cy } from "../objects/graph/Cytoscape";
 import Network from "../objects/network/Network";
 import Node from "../objects/network/Node";
-import EgoZone from "../objects/zone/EgoZone";
-import { IExportSettings } from "../stores/IExportSettings";
 import { Loader } from "./Loader";
+
+const toast = createStandaloneToast();
 
 export class JSONLoader extends Loader {
   public GetNetworkFromFile(data: any, directed?: boolean): Network {
     const network = new Network([], [], directed);
+    try {
+      let d = JSON.parse(data);
 
-    let d = JSON.parse(data);
+      if (d["app"]) {
+        const json = d as IJSONExport;
 
-    if (d["app"]) {
-      const json = d as IJSONExport;
+        network.Directed = json.network.directed;
 
-      network.Directed = json.network.directed;
+        for (const key in json.network.edges) {
+          if (Object.prototype.hasOwnProperty.call(json.network.edges, key)) {
+            const edge = json.network.edges[key];
 
-      for (const key in json.network.edges) {
-        if (Object.prototype.hasOwnProperty.call(json.network.edges, key)) {
-          const edge = json.network.edges[key];
-
-          network.addEdge(
-            new Node(edge.source, json.network.nodes[edge.source].label),
-            new Node(edge.target, json.network.nodes[edge.source].label),
-            edge.weight
-          );
+            network.addEdge(
+              new Node(edge.source, json.network.nodes[edge.source].label),
+              new Node(edge.target, json.network.nodes[edge.source].label),
+              edge.weight
+            );
+          }
         }
-      }
 
-      network.JSONData = json;
-    } else {
-      d.edges.forEach((element: any) => {
-        network.addEdge(
-          new Node(element.source),
-          new Node(element.target),
-          element.size
-        );
+        network.JSONData = json;
+      } else {
+        d.edges.forEach((element: any) => {
+          network.addEdge(
+            new Node(element.source),
+            new Node(element.target),
+            element.size
+          );
+        });
+      }
+    } catch (error) {
+      toast({
+        title: `Parsing error`,
+        description: `${error as string}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
       });
     }
     return network;

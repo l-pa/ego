@@ -80,20 +80,10 @@ function App() {
 
                         if (loader) {
                           context.network.Network = loader.GetNetworkFromFile(e.target?.result, directed.current?.checked)
-
-                          toast({
-                            title: "Network loaded.",
-                            description: `${networkStore.FileName} - ${context.network.Network.NodesLength()
-                              } nodes - ${context.network.Network.EdgesLength()} egdes -  ${context.network.Network.Directed ? "✅" : "❌"
-                              } directed`,
-                            status: "success",
-                            duration: 5000,
-                            isClosable: true,
-                          });
                       } else {
                         toast({
                           title: "Unknown file type",
-                          description: "Couldnt recognize the file type, supported (CSV, JSON)",
+                          description: "Unrecognized or Unknown File Type, supported (CSV, GML, JSON)",
                           status: "error",
                           duration: 5000,
                           isClosable: true,
@@ -132,17 +122,17 @@ function App() {
 
                       context.network.Network = network;
                       networkStore.FileName = "Karate"
-                    toast({
-                      title: "Network loaded.",
-                      description: `${"KARATE"} - ${
-                        network.NodesLength()
-                        } nodes - ${network.EdgesLength()} egdes -  ${
-                        network.Directed ? "✅" : "❌"
-                      } directed`,
-                      status: "success",
-                      duration: 5000,
-                      isClosable: true,
-                    });
+                    // toast({
+                    //   title: "Network loaded.",
+                    //   description: `${"KARATE"} - ${
+                    //     network.NodesLength()
+                    //     } nodes - ${network.EdgesLength()} egdes -  ${
+                    //     network.Directed ? "✅" : "❌"
+                    //   } directed`,
+                    //   status: "success",
+                    //   duration: 5000,
+                    //   isClosable: true,
+                    // });
                     })
                 }}
                 >
@@ -160,6 +150,7 @@ function App() {
                     await gdf.GetNetworkFromURL("https://raw.githubusercontent.com/l-pa/ego/dev/src/networks/karate_weighted.gdf", directed.current?.checked).then(async (network) => {
 
                       context.network.Network = network;
+                      networkStore.FileName = "Karate weighted"
 
                       await fetch("https://raw.githubusercontent.com/l-pa/ego/dev/src/networks/karate_ground_truth_c.csv").then((res) =>
                         res.text().then((text) => {
@@ -167,24 +158,23 @@ function App() {
 
                           toast({
                             title: "Ground truth.",
-                            description: `Success`,
+                            description: `Loaded`,
                             status: "success",
                             duration: 5000,
                             isClosable: true,
                           });
                         })
                       );
-                      networkStore.FileName = "Karate weighted"
 
-                      toast({
-                        title: "Network loaded.",
-                        description: `${"KARATE"} - ${network.NodesLength()
-                          } nodes - ${network.EdgesLength()} egdes -  ${network.Directed ? "✅" : "❌"
-                          } directed`,
-                        status: "success",
-                        duration: 5000,
-                        isClosable: true,
-                      });
+                      // toast({
+                      //   title: "Network loaded.",
+                      //   description: `${"KARATE"} - ${network.NodesLength()
+                      //     } nodes - ${network.EdgesLength()} egdes -  ${network.Directed ? "✅" : "❌"
+                      //     } directed`,
+                      //   status: "success",
+                      //   duration: 5000,
+                      //   isClosable: true,
+                      // });
                     })
                   }}
                 >
@@ -212,15 +202,15 @@ function App() {
                       context.network.Network = network;
                       networkStore.FileName = "Les Miserables"
 
-                      toast({
-                        title: "Network loaded.",
-                        description: `${"lesmiserables"} - ${network.NodesLength()
-                          } nodes - ${network.EdgesLength()} egdes -  ${network.Directed ? "✅" : "❌"
-                          } directed`,
-                        status: "success",
-                        duration: 5000,
-                        isClosable: true,
-                      });
+                      // toast({
+                      //   title: "Network loaded.",
+                      //   description: `${"lesmiserables"} - ${network.NodesLength()
+                      //     } nodes - ${network.EdgesLength()} egdes -  ${network.Directed ? "✅" : "❌"
+                      //     } directed`,
+                      //   status: "success",
+                      //   duration: 5000,
+                      //   isClosable: true,
+                      // });
                     })
                   }}
                 >
