@@ -33,16 +33,21 @@ export function ZonesMax() {
   }
 
   const maxAll = () => {
-    let tmp: EgoZone[] = [];
+    let tmp: Zone[] = [];
     Object.keys(networkStore.Network!!.Nodes).forEach(function (key) {
       const n = networkStore.Network!!.Nodes[key]
       tmp.push(new EgoZone(n));
     });
 
+    if (!localObserverable.s) {
+      tmp = zoneStore.Difference(tmp, zoneStore.Zones)
+    }
+
     largestEgoZone = tmp.sort(
-      (a: EgoZone, b: EgoZone) =>
+      (a: Zone, b: Zone) =>
         b.AllCollection.length - a.AllCollection.length
-    )[0];
+    )[0] as EgoZone;
+
 
     return (tmp.filter(
       (z) =>
@@ -77,10 +82,15 @@ export function ZonesMax() {
     })
 
     const c = reaction(() => zoneStore.Zones.slice(), () => {
+      const diff = zoneStore.Difference(zoneStore.TmpZones, zoneStore.Zones)
       zoneStore.ClearTmpZones()
+
       if (localObserverable.s) {
         setZones(maxExisting())
       } else {
+        // zoneStore.AddTmpZone(diff, true)
+        // setZones(zoneStore.TmpZones)
+
         setZones(maxAll())
       }
     })
@@ -105,102 +115,20 @@ export function ZonesMax() {
   });
 
   const setZones = action((z: Zone[]) => {
-    localObserverable.zones = z;
+    if (localObserverable.s) {
+      localObserverable.zones = z;
+    } else {
+      localObserverable.zones = zoneStore.Difference(z, zoneStore.Zones);
+    }
   });
 
 
 
-  const Aaa = observer(() => {
+  const MaxZone = observer(() => {
     return (<Stack>{localObserverable.zones.map((z) => <ZoneItem zone={z as EgoZone}></ZoneItem>)}</Stack>
     )
   }
   )
-
-
-
-  // let onlyExistingZones = observable({ idk: true });
-
-  // const LargestZone = observer(() => {
-  //   if (onlyExistingZones.idk) {
-  //     if (zoneStore.Zones.length > 0) {
-  //       let largestZone = [...zoneStore.Zones].filter(
-  //         (z) => z instanceof EgoZone
-  //       );
-
-  //       largestEgoZone = largestZone.sort(
-  //         (a, b) => b.AllCollection.length - a.AllCollection.length
-  //       )[0] as EgoZone;
-
-  //       const tmp = largestZone.filter(
-  //         (z) =>
-  //           z.AllCollection.length === largestZone[0].AllCollection.length
-  //       );
-
-  //       return (
-  //         <Stack>
-  //           {tmp.map((z) => {
-  //             z.DrawZone()
-  //             return <ZoneItem key={z.Id} zone={z as EgoZone}></ZoneItem>;
-  //           })}
-  //         </Stack>
-  //       );
-  //     } else {
-  //       return (
-  //         <Heading p={5} size="sm">
-  //           Select at least one zone
-  //         </Heading>
-  //       );
-  //     }
-  //   } else {
-  //     let tmp: EgoZone[] = [];
-  //     Object.keys(networkStore.Network!!.Nodes).forEach(function (key) {
-  //       const n = networkStore.Network!!.Nodes[key]
-  //       tmp.push(new EgoZone(n));
-  //     });
-
-  //     largestEgoZone = tmp.sort(
-  //       (a: EgoZone, b: EgoZone) =>
-  //         b.AllCollection.length - a.AllCollection.length
-  //     )[0];
-
-  //     tmp = tmp.filter(
-  //       (z) =>
-  //         z.AllCollection.length === largestEgoZone.AllCollection.length
-  //     );
-
-
-  //     return (
-  //       <Stack>
-  //         {tmp.map((zone) => {
-  //           if (!zoneStore.Zones.some((z) => z.Id === zone.Id)) {
-  //             return (
-  //               <ZoneItem
-  //                 key={zone.Id}
-  //                 addButton={true}
-  //                 zone={zone}
-  //               ></ZoneItem>
-  //             );
-  //           } else {
-  //             return (
-  //               <ZoneItem
-  //                 key={zone.Id}
-  //                 addButton={false}
-  //                 zone={
-  //                   zoneStore.Zones.filter(
-  //                     (z) => z.Id === zone.Id
-  //                   )[0] as EgoZone
-  //                 }
-  //               ></ZoneItem>
-  //             );
-  //           }
-  //         }
-  //         )
-
-  //         }
-  //       </Stack>
-  //     );
-  //   }
-  // });
 
   return (
     <Stack>
@@ -222,7 +150,7 @@ export function ZonesMax() {
         </FormControl>
       </Stack>
       {/* <LargestZone /> */}
-      <Aaa />
+      <MaxZone />
     </Stack>
   );
 }

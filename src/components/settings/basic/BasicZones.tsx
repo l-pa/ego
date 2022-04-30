@@ -31,7 +31,7 @@ export const BasicZones: React.FunctionComponent = () => {
         <Heading as="h4" size="sm" pt={5}>
           Sort by
         </Heading>
-        <Select onChange={(e) => {
+        <Select defaultValue={settingsStore.SortBy} onChange={(e) => {
           settingsStore.SortBy = Number.parseInt(e.target.value)
         }}>
           <option value={SortByEnum.TotalSize}>Total size</option>
@@ -133,7 +133,7 @@ export const BasicZones: React.FunctionComponent = () => {
             settingsStore.HideOutsideZones = e.target.checked;
           }}
         >
-          In zones
+          Show nodes only in zones
         </Checkbox>
         <Checkbox
           defaultIsChecked={settingsStore.Automove}

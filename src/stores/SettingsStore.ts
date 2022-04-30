@@ -146,7 +146,7 @@ export class SettingsStore {
         settingsStore.NodeColor = NodeColor.ColorNetwork;
         this.snapshots.initSnapshots();
         settingsStore.NodeColor = NodeColor.ColorZones;
-        zoneStore.ColorNodesInZones(zoneStore.Zones)
+        zoneStore.ColorNodesInZones(zoneStore.Zones);
       }
       this.snapshots.TakeSnapshot();
       this.trackZonesExport = v;
@@ -226,6 +226,10 @@ export class SettingsStore {
   public set SortBy(v: SortByEnum) {
     this.sortZonesBy = v;
     zoneStore.SortZones();
+  }
+
+  public get SortBy(): SortByEnum {
+    return this.sortZonesBy;
   }
 
   /**
